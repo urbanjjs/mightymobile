@@ -1992,23 +1992,27 @@ body.mobile-mode .player-area.user {
 }
 
 body.mobile-mode .player-area.user .player-hand {
-    min-height: 58px;
-    padding-left: 5px;
+    min-height: 50px;
+    padding-left: 0;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 3px 3px;
 }
 
 body.mobile-mode .player-area.user .card {
-    width: 42px;
-    height: 59px;
+    width: 38px;
+    height: 53px;
+    flex-shrink: 0;
 }
 
 body.mobile-mode .player-area.user .player-hand .card {
-    margin-left: -16px;
+    margin-left: 0;
 }
 
 body.mobile-mode .player-area.user .player-hand .card:first-child {
     margin-left: 0;
 }
+
 
 body.mobile-mode .player-area.user .player-name { font-size:11px; }
 body.mobile-mode .player-area.user .player-score { font-size:10px;margin-top:1px; }
@@ -2134,18 +2138,6 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
         </header>
 <!-- 모바일 전용 AI 2x2 그리드 -->
 <div id="mobile-ai-grid">
-    <div class="mobile-ai-cell" data-ai="1">
-        <div class="cell-header">
-            <span class="cell-name">AI-1</span>
-            <span class="cell-role"></span>
-        </div>
-        <div class="cell-info">
-            <span class="cell-score">0점</span>
-            <span class="cell-cards">10장</span>
-        </div>
-        <div class="cell-bid-bubble"></div>
-        <div class="cell-trick-card"></div>
-    </div>
     <div class="mobile-ai-cell" data-ai="2">
         <div class="cell-header">
             <span class="cell-name">AI-2</span>
@@ -2170,6 +2162,18 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
         <div class="cell-bid-bubble"></div>
         <div class="cell-trick-card"></div>
     </div>
+    <div class="mobile-ai-cell" data-ai="1">
+        <div class="cell-header">
+            <span class="cell-name">AI-1</span>
+            <span class="cell-role"></span>
+        </div>
+        <div class="cell-info">
+            <span class="cell-score">0점</span>
+            <span class="cell-cards">10장</span>
+        </div>
+        <div class="cell-bid-bubble"></div>
+        <div class="cell-trick-card"></div>
+    </div>
     <div class="mobile-ai-cell" data-ai="4">
         <div class="cell-header">
             <span class="cell-name">AI-4</span>
@@ -2183,6 +2187,7 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
         <div class="cell-trick-card"></div>
     </div>
 </div>
+
 
 <!-- 모바일 전용 유저 트릭 카드 + 정보 -->
 <div id="mobile-center-area">
