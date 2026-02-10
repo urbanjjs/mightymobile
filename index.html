@@ -1140,290 +1140,303 @@
             color: #d32f2f;
         }
 
-        /* 게임 결과 모달 */
-        #result-modal {
-            min-width: 480px;
-            max-width: 540px;
-            padding: 15px 18px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+/* 게임 결과 모달 */
+#result-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    transform: none;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
 
-        #result-title {
-            font-size: 20px;
-            margin-bottom: 8px;
-        }
+#result-modal .result-inner {
+    width: 100%;
+    max-width: 500px;
+    padding: 12px 15px;
+    margin: auto;
+}
 
-        #result-title.win {
-            color: #4CAF50;
-        }
+#result-title {
+    font-size: 22px;
+    margin-bottom: 6px;
+    text-align: center;
+}
 
-        #result-title.lose {
-            color: #f44336;
-        }
+#result-title.win {
+    color: #4CAF50;
+}
 
-        #result-content {
-            margin-bottom: 10px;
-        }
+#result-title.lose {
+    color: #f44336;
+}
 
-        .result-summary {
-            text-align: center;
-            margin-bottom: 8px;
-            font-size: 14px;
-            line-height: 1.4;
-        }
+#result-content {
+    margin-bottom: 8px;
+}
 
-        .result-summary p {
-            margin: 0;
-            display: inline;
-        }
+.result-summary {
+    text-align: center;
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.3;
+    color: #ccc;
+}
 
-        .result-summary p::after {
-            content: '  |  ';
-            color: #666;
-        }
+.result-scores {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+}
 
-        .result-summary p:last-child::after {
-            content: '';
-        }
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+    font-size: 10px;
+    color: #aaa;
+}
 
-        .result-scores {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            padding: 8px 10px;
-        }
+.result-header span:first-child {
+    flex: 1;
+}
 
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-            font-weight: bold;
-            font-size: 11px;
-            color: #aaa;
-        }
+.result-header span:nth-child(2),
+.result-header span:nth-child(3) {
+    width: 45px;
+    text-align: right;
+}
 
-        .result-header span:first-child {
-            flex: 1;
-        }
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    font-size: 12px;
+}
 
-        .result-header span:nth-child(2),
-        .result-header span:nth-child(3) {
-            width: 50px;
-            text-align: right;
-        }
+.score-row:last-child {
+    border-bottom: none;
+}
 
-        .score-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 3px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-            font-size: 13px;
-        }
+.score-row .player-name {
+    font-weight: bold;
+    flex: 1;
+    font-size: 11px;
+}
 
-        .score-row:last-child {
-            border-bottom: none;
-        }
+.score-row .earned-points {
+    width: 45px;
+    text-align: right;
+    color: #FFD700;
+    font-weight: bold;
+}
 
-        .score-row .player-name {
-            font-weight: bold;
-            flex: 1;
-            font-size: 12px;
-        }
+.score-row .score-change {
+    width: 45px;
+    text-align: right;
+    font-weight: bold;
+}
 
-        .score-row .earned-points {
-            width: 50px;
-            text-align: right;
-            color: #FFD700;
-            font-weight: bold;
-        }
+.score-row .score-change.positive {
+    color: #4CAF50;
+}
 
-        .score-row .score-change {
-            width: 50px;
-            text-align: right;
-            font-weight: bold;
-        }
+.score-row .score-change.negative {
+    color: #f44336;
+}
 
-        .score-row .score-change.positive {
-            color: #4CAF50;
-        }
+.friend-contribution {
+    margin-top: 6px;
+    padding: 4px 8px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
 
-        .score-row .score-change.negative {
-            color: #f44336;
-        }
+.contribution-header {
+    font-size: 11px;
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 3px;
+    text-align: center;
+}
 
-        .friend-contribution {
-            margin-top: 8px;
-            padding: 6px 10px;
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 6px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
+.contribution-details {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
 
-        .contribution-header {
-            font-size: 12px;
-            font-weight: bold;
-            color: #FFD700;
-            margin-bottom: 4px;
-            text-align: center;
-        }
+.contribution-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 5px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
 
-        .contribution-details {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+.contribution-label {
+    color: #aaa;
+    font-size: 10px;
+}
 
-        .contribution-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 6px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-        }
+.contribution-value {
+    font-weight: bold;
+    color: #fff;
+    font-size: 11px;
+}
 
-        .contribution-label {
-            color: #aaa;
-            font-size: 11px;
-        }
+.contribution-value.special {
+    color: #FF9800;
+}
 
-        .contribution-value {
-            font-weight: bold;
-            color: #fff;
-            font-size: 12px;
-        }
+/* 게임 기록 테이블 */
+.game-history {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
 
-        .contribution-value.special {
-            color: #FF9800;
-        }
+.history-header {
+    font-size: 11px;
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 4px;
+    text-align: center;
+}
 
-        /* 게임 기록 테이블 */
-        .game-history {
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
+.history-table-wrapper {
+    max-height: 100px;
+    overflow-y: auto;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+}
 
-        .history-header {
-            font-size: 12px;
-            font-weight: bold;
-            color: #FFD700;
-            margin-bottom: 5px;
-            text-align: center;
-        }
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+}
 
-        .history-table-wrapper {
-            max-height: 130px;
-            overflow-y: auto;
-            border-radius: 4px;
-            background: rgba(0, 0, 0, 0.2);
-        }
+.history-table th,
+.history-table td {
+    padding: 2px 2px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
 
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 11px;
-        }
+.history-table th {
+    background: rgba(0, 0, 0, 0.3);
+    color: #aaa;
+    font-weight: normal;
+    position: sticky;
+    top: 0;
+    font-size: 9px;
+}
 
-        .history-table th,
-        .history-table td {
-            padding: 3px 3px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-        }
+.history-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
 
-        .history-table th {
-            background: rgba(0, 0, 0, 0.3);
-            color: #aaa;
-            font-weight: normal;
-            position: sticky;
-            top: 0;
-            font-size: 10px;
-        }
+.history-table td.positive {
+    color: #4CAF50;
+}
 
-        .history-table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
+.history-table td.negative {
+    color: #f44336;
+}
 
-        .history-table td.positive {
-            color: #4CAF50;
-        }
+.history-table td.gov-win {
+    color: #4CAF50;
+    font-weight: bold;
+}
 
-        .history-table td.negative {
-            color: #f44336;
-        }
+.history-table td.opp-win {
+    color: #2196F3;
+    font-weight: bold;
+}
 
-        .history-table td.gov-win {
-            color: #4CAF50;
-            font-weight: bold;
-        }
+.history-table tfoot {
+    background: rgba(0, 0, 0, 0.3);
+}
 
-        .history-table td.opp-win {
-            color: #2196F3;
-            font-weight: bold;
-        }
+.history-table tfoot td {
+    padding: 3px 2px;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
 
-        .history-table tfoot {
-            background: rgba(0, 0, 0, 0.3);
-        }
+.history-legend {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 3px;
+    font-size: 9px;
+    color: #888;
+}
 
-        .history-table tfoot td {
-            padding: 4px 3px;
-            border-top: 2px solid rgba(255, 255, 255, 0.2);
-        }
+.history-legend span {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
 
-        .history-legend {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 4px;
-            font-size: 10px;
-            color: #888;
-        }
+.result-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding-bottom: 15px;
+}
 
-        .history-legend span {
-            display: flex;
-            align-items: center;
-            gap: 2px;
-        }
+#new-game-btn {
+    padding: 10px 35px;
+    font-size: 15px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-        .result-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
+#new-game-btn:hover {
+    background: #45a049;
+}
 
-        #new-game-btn {
-            padding: 8px 30px;
-            font-size: 14px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+#end-game-btn {
+    padding: 10px 35px;
+    font-size: 15px;
+    background: #666;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-        #new-game-btn:hover {
-            background: #45a049;
-        }
+#end-game-btn:hover {
+    background: #555;
+}
 
-        #end-game-btn {
-            padding: 8px 30px;
-            font-size: 14px;
-            background: #666;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #end-game-btn:hover {
-            background: #555;
-        }
 
 
         /* 설정 모달 */
@@ -6814,102 +6827,99 @@ renderMobileUserTrick() {
             }
 
             // ===== 결과 모달 =====
-            showResultModal(result, gameHistory = []) {
-                const title = document.getElementById('result-title');
-                const content = document.getElementById('result-content');
-                const userResult = result.results.find(r => r.player === 0);
-                const userWon = userResult && userResult.change > 0;
+                showResultModal(result, gameHistory = []) {
+        const title = document.getElementById('result-title');
+        const content = document.getElementById('result-content');
+        const userResult = result.results.find(r => r.player === 0);
+        const userWon = userResult && userResult.change > 0;
 
-                title.textContent = userWon ? '🎉 승리!' : '😢 패배';
-                title.className = userWon ? 'win' : 'lose';
+        title.textContent = userWon ? '🎉 승리!' : '😢 패배';
+        title.className = userWon ? 'win' : 'lose';
 
-                const govScore = this.gameState.governmentScore;
-                const bidValue = this.gameState.contract.bidValue;
-                const winnerText = result.winner === 'government' ? '여당 승리' : '야당 승리';
-                const backrunText = result.isBackrun ? ' (백런!)' : '';
+        const govScore = this.gameState.governmentScore;
+        const bidValue = this.gameState.contract.bidValue;
+        const winnerText = result.winner === 'government' ? '여당 승리' : '야당 승리';
+        const backrunText = result.isBackrun ? ' (백런!)' : '';
 
-                let html = `<div class="result-summary">${winnerText}${backrunText} — 여당 ${govScore}점 / 공약 ${bidValue}점</div>`;
+        let html = '<div class="result-inner">';
+        html += `<div class="result-summary">${winnerText}${backrunText} — 여당 ${govScore}점 / 공약 ${bidValue}점</div>`;
 
-                html += '<div class="result-scores">';
-                html += '<div class="result-header"><span>플레이어</span><span>획득</span><span>변동</span></div>';
-                for (const r of result.results) {
-                    const player = this.gameState.players[r.player];
-                    const earnedPoints = player.getScore();
-                    const changeClass = r.change >= 0 ? 'positive' : 'negative';
-                    const changeText = r.change >= 0 ? `+${r.change}` : `${r.change}`;
-                    const roleText = player.getRoleText() || '야당';
-                    html += `<div class="score-row">
-                <span class="player-name">${player.name}(${roleText})</span>
+        html += '<div class="result-scores">';
+        html += '<div class="result-header"><span>플레이어</span><span>획득</span><span>변동</span></div>';
+        for (const r of result.results) {
+            const player = this.gameState.players[r.player];
+            const earnedPoints = player.getScore();
+            const changeClass = r.change >= 0 ? 'positive' : 'negative';
+            const changeText = r.change >= 0 ? `+${r.change}` : `${r.change}`;
+            const roleIcon = player.role === ROLES.MASTER ? '★' : (player.role === ROLES.FRIEND ? '◆' : '');
+            html += `<div class="score-row">
+                <span class="player-name">${roleIcon}${player.name}</span>
                 <span class="earned-points">${earnedPoints}점</span>
                 <span class="score-change ${changeClass}">${changeText}</span>
             </div>`;
-                }
-                html += '</div>';
+        }
+        html += '</div>';
 
-                const contract = this.gameState.contract;
-                const friendContrib = this.gameState.friendContribution;
-                if (!contract.isNoFriend && !contract.isSolino && contract.friend !== null) {
-                    const friendPlayer = this.gameState.players[contract.friend];
-                    const friendName = friendPlayer ? friendPlayer.name : '친구';
-                    const specialCards = [];
-                    if (friendContrib.mightyUsed) specialCards.push('마이티');
-                    if (friendContrib.jokerUsed) specialCards.push('조커');
-                    const specialText = specialCards.length > 0
-                        ? `<div class="contribution-item"><span class="contribution-label">특수카드</span><span class="contribution-value special">${specialCards.join(',')}</span></div>`
-                        : '';
-                    html += `<div class="friend-contribution">
-                <div class="contribution-header">🤝 친구(${friendName}) 공헌</div>
-
-                <div class="contribution-details">
-                    <div class="contribution-item"><span class="contribution-label">트릭</span><span class="contribution-value">${friendContrib.tricksWon}회</span></div>
-                    <div class="contribution-item"><span class="contribution-label">점수</span><span class="contribution-value">${friendContrib.pointsSecured}점</span></div>
-                    ${specialText}
-                </div>
+        // 친구 공헌 (축약)
+        const contract = this.gameState.contract;
+        const friendContrib = this.gameState.friendContribution;
+        if (!contract.isNoFriend && !contract.isSolino && contract.friend !== null && friendContrib.tricksWon > 0) {
+            const friendPlayer = this.gameState.players[contract.friend];
+            const friendName = friendPlayer ? friendPlayer.name : '친구';
+            const specialCards = [];
+            if (friendContrib.mightyUsed) specialCards.push('마이티');
+            if (friendContrib.jokerUsed) specialCards.push('조커');
+            const specialText = specialCards.length > 0 ? ` | ${specialCards.join(',')}` : '';
+            html += `<div class="friend-contribution">
+                <div class="contribution-header">🤝 ${friendName} 공헌: ${friendContrib.tricksWon}트릭 ${friendContrib.pointsSecured}점${specialText}</div>
             </div>`;
+        }
+
+        // 게임 기록 (최근 5게임만)
+        if (gameHistory && gameHistory.length > 0) {
+            const recentGames = gameHistory.slice(-5);
+            html += '<div class="game-history"><div class="history-header">📊 최근 기록</div>';
+            html += '<div class="history-table-wrapper"><table class="history-table">';
+            html += '<thead><tr><th>#</th><th>공약</th><th>결과</th>';
+            for (let i = 0; i < 5; i++) { html += `<th>${i === 0 ? '나' : `A${i}`}</th>`; }
+            html += '</tr></thead><tbody>';
+            for (const game of recentGames) {
+                const girudaSymbol = game.giruda ? SUIT_SYMBOLS[game.giruda] : 'No';
+                const gWinText = game.winner === 'government' ? '여' : '야';
+                const gWinClass = game.winner === 'government' ? 'gov-win' : 'opp-win';
+                html += `<tr><td>${game.gameNumber}</td><td>${game.bidValue}${girudaSymbol}</td><td class="${gWinClass}">${gWinText}${game.isBackrun ? '백' : ''}</td>`;
+                for (let i = 0; i < 5; i++) {
+                    const change = game.results.find(r => r.player === i)?.change || 0;
+                    const cls = change >= 0 ? 'positive' : 'negative';
+                    const txt = change >= 0 ? `+${change}` : `${change}`;
+                    const role = game.master === i ? '★' : (game.friend === i ? '☆' : '');
+                    html += `<td class="${cls}">${role}${txt}</td>`;
                 }
-
-                if (gameHistory && gameHistory.length > 0) {
-                    html += '<div class="game-history"><div class="history-header">📊 게임 기록</div>';
-                    html += '<div class="history-table-wrapper"><table class="history-table">';
-                    html += '<thead><tr><th>#</th><th>공약</th><th>결과</th>';
-                    for (let i = 0; i < 5; i++) { html += `<th>${i === 0 ? '나' : `AI${i}`}</th>`; }
-                    html += '</tr></thead><tbody>';
-                    for (const game of gameHistory) {
-                        const girudaSymbol = game.giruda ? SUIT_SYMBOLS[game.giruda] : 'No';
-                        const gWinText = game.winner === 'government' ? '여' : '야';
-                        const gWinClass = game.winner === 'government' ? 'gov-win' : 'opp-win';
-                        html += `<tr><td>${game.gameNumber}</td><td>${game.bidValue}${girudaSymbol}</td><td class="${gWinClass}">${gWinText}${game.isBackrun ? '백' : ''}</td>`;
-                        for (let i = 0; i < 5; i++) {
-                            const change = game.results.find(r => r.player === i)?.change || 0;
-                            const cls = change >= 0 ? 'positive' : 'negative';
-                            const txt = change >= 0 ? `+${change}` : `${change}`;
-                            const role = game.master === i ? '★' : (game.friend === i ? '☆' : '');
-                            html += `<td class="${cls}">${role}${txt}</td>`;
-                        }
-                        html += '</tr>';
-                    }
-                    html += '</tbody><tfoot><tr><td colspan="3"><strong>합계</strong></td>';
-                    const last = gameHistory[gameHistory.length - 1];
-                    for (let i = 0; i < 5; i++) {
-                        const total = last.cumulativeScores[i];
-                        const cls = total >= 0 ? 'positive' : 'negative';
-                        const txt = total >= 0 ? `+${total}` : `${total}`;
-                        html += `<td class="${cls}"><strong>${txt}</strong></td>`;
-                    }
-                    html += '</tr></tfoot></table></div>';
-                    html += '<div class="history-legend"><span>★주공</span><span>☆친구</span></div></div>';
-                }
-
-                content.innerHTML = html;
-                document.getElementById('modal-overlay').classList.remove('hidden');
-                document.getElementById('result-modal').classList.remove('hidden');
+                html += '</tr>';
             }
-
-
-            hideResultModal() {
-                document.getElementById('modal-overlay').classList.add('hidden');
-                document.getElementById('result-modal').classList.add('hidden');
+            html += '</tbody><tfoot><tr><td colspan="3"><b>합계</b></td>';
+            const last = gameHistory[gameHistory.length - 1];
+            for (let i = 0; i < 5; i++) {
+                const total = last.cumulativeScores[i];
+                const cls = total >= 0 ? 'positive' : 'negative';
+                const txt = total >= 0 ? `+${total}` : `${total}`;
+                html += `<td class="${cls}"><b>${txt}</b></td>`;
             }
+            html += '</tr></tfoot></table></div></div>';
+        }
+
+        html += '</div>'; // result-inner 닫기
+
+        content.innerHTML = html;
+        document.getElementById('modal-overlay').classList.remove('hidden');
+        document.getElementById('result-modal').classList.remove('hidden');
+    }
+
+    hideResultModal() {
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.getElementById('result-modal').classList.add('hidden');
+    }
+
 
             showSettingsModal() {
                 document.getElementById('setting-show-ai-cards').checked = this.settings.showAICards;
