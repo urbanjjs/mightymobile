@@ -3282,6 +3282,10 @@ body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
 
                 this.updateCardTracker(playerIndex, card, this.trick.leadSuit);
                 this.currentTurn = this.getNextPlayer(playerIndex);
+                const events = this.detectPlayEvents(playerIndex, card);
+                for (const evt of events) {
+                    eventBus.emit(evt.type, evt.data);
+                }
             }
 
             determineTrickWinner() {
@@ -3604,6 +3608,98 @@ body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
                     tracker.playerVoidSuits.get(playerIndex).add(leadSuit);
                 }
             }
+
+            detectPlayEvents(playerIndex, card) {
+    const events = [];
+    const mighty = this.contract.mighty;
+    const giruda = this.contract.giruda;
+    const trickCards = this.trick.cards;
+    const round = this.round;
+
+    // 마이티 등장
+    if (mighty && card.equals(mighty)) {
+        events.push({ type: 'mighty-played', data: { player: playerIndex, card } });
+    }
+
+    // 조커 등장
+    if (card.isJoker && round >= 2 && round <= 9) {
+        events.push({ type: 'joker-played', data: { player: playerIndex, card } });
+    }
+
+    // 조커콜 발동
+    if (trickCards.length === 1 && this.trick.jokerCalled) {
+        events.push({ type: 'joker-called', data: { player: playerIndex, card } });
+    }
+
+    // 친구 카드 공개
+    if (this.contract.friendCard && card.equals(this.contract.friendCard) && !this.friendRevealed) {
+        // friendRevealed는 이미 revealFriend에서 true로 설정됨
+        events.push({ type: 'friend-revealed', data: { player: playerIndex, card } });
+    }
+
+    // 기루다 컷 / 오버컷 감지
+    if (trickCards.length >= 2 && !card.isJoker && !card.equals(mighty)) {
+        const leadSuit = this.trick.leadSuit;
+
+        // 이전 승자 찾기
+        const prevCards = trickCards.slice(0, -1);
+        let prevWinner = null;
+        let prevWinCard = null;
+        if (prevCards.length > 0) {
+            // 간이 승자 판정
+            for (const p of prevCards) {
+                if (!prevWinner || this.compareCards(p.card, prevWinCard, leadSuit) > 0) {
+                    prevWinner = p.player;
+                    prevWinCard = p.card;
+                }
+            }
+        }
+
+        if (prevWinCard && giruda && card.suit === giruda && leadSuit !== giruda) {
+            // 기루다 컷!
+            if (prevWinCard.suit === giruda) {
+                // 오버컷 (이전 승자도 기루다였는데 더 높은 기루다)
+                if (RANK_VALUES[card.rank] > RANK_VALUES[prevWinCard.rank]) {
+                    events.push({
+                        type: 'over-cut',
+                        data: { player: playerIndex, card, prevWinner, prevCard: prevWinCard }
+                    });
+                }
+            } else {
+                events.push({
+                    type: 'giruda-cut',
+                    data: { player: playerIndex, card, prevWinner, prevCard: prevWinCard }
+                });
+            }
+        }
+
+        // 마이티로 조커 격파
+        if (card.equals(mighty) && prevWinCard && prevWinCard.isJoker) {
+            events.push({
+                type: 'mighty-beats-joker',
+                data: { player: playerIndex, card, prevCard: prevWinCard }
+            });
+        }
+    }
+
+    return events;
+}
+
+compareCards(cardA, cardB, leadSuit) {
+    const mighty = this.contract.mighty;
+    const giruda = this.contract.giruda;
+
+    const scoreCard = (c) => {
+        if (c.equals(mighty)) return 10000;
+        if (c.isJoker) return 9000;
+        let base = RANK_VALUES[c.rank];
+        if (giruda && c.suit === giruda) base += 5000;
+        else if (c.suit === leadSuit) base += 1000;
+        return base;
+    };
+
+    return scoreCard(cardA) - scoreCard(cardB);
+}
 
             doesPlayerHaveSuit(playerIndex, suit) {
                 const voidSuits = this.cardTracker.playerVoidSuits.get(playerIndex);
@@ -7095,9 +7191,439 @@ renderMobileUserTrick() {
                 setTimeout(() => this.playTone(659.25, 'sine', 0.2, 0.4), 150); // E5
                 setTimeout(() => this.playTone(783.99, 'sine', 0.4, 0.4), 300); // G5
             }
+            playMightySound() {
+    if (!this.enabled) return;
+    // 묵직한 임팩트 + 금관 느낌
+    this.playTone(200, 'sine', 0.15, 0.6);
+    setTimeout(() => this.playTone(400, 'triangle', 0.2, 0.5), 100);
+    setTimeout(() => this.playTone(600, 'sine', 0.3, 0.4), 200);
+    setTimeout(() => this.playTone(800, 'sine', 0.4, 0.3), 350);
+}
+
+playJokerSound() {
+    if (!this.enabled) return;
+    // 미스터리한 상승음
+    this.playTone(300, 'sine', 0.2, 0.4);
+    setTimeout(() => this.playTone(450, 'triangle', 0.2, 0.4), 120);
+    setTimeout(() => this.playTone(600, 'sine', 0.3, 0.3), 240);
+    setTimeout(() => this.playTone(900, 'sine', 0.15, 0.2), 360);
+}
+
+playCutSound() {
+    if (!this.enabled) return;
+    // 칼로 베는 느낌 - 하강 후 상승
+    this.playTone(800, 'sawtooth', 0.08, 0.4);
+    setTimeout(() => this.playTone(400, 'triangle', 0.15, 0.5), 80);
+    setTimeout(() => this.playTone(600, 'sine', 0.2, 0.3), 200);
+}
+
+playOverCutSound() {
+    if (!this.enabled) return;
+    // 더 강한 컷 - 에스컬레이션
+    this.playTone(600, 'sawtooth', 0.08, 0.5);
+    setTimeout(() => this.playTone(300, 'triangle', 0.1, 0.5), 60);
+    setTimeout(() => this.playTone(500, 'sawtooth', 0.08, 0.5), 150);
+    setTimeout(() => this.playTone(800, 'sine', 0.3, 0.4), 250);
+    setTimeout(() => this.playTone(1000, 'sine', 0.2, 0.3), 400);
+}
+
+playClashSound() {
+    if (!this.enabled) return;
+    // 충돌음 - 마이티 vs 조커
+    this.playTone(150, 'sawtooth', 0.15, 0.6);
+    this.playTone(200, 'square', 0.1, 0.4);
+    setTimeout(() => {
+        this.playTone(523, 'sine', 0.2, 0.5);
+        this.playTone(659, 'sine', 0.2, 0.4);
+    }, 200);
+    setTimeout(() => this.playTone(784, 'sine', 0.4, 0.3), 400);
+}
+
+playJokerCallSound() {
+    if (!this.enabled) return;
+    // 호출음 - 뿔피리 느낌
+    this.playTone(587, 'square', 0.15, 0.3);
+    setTimeout(() => this.playTone(784, 'square', 0.15, 0.3), 150);
+    setTimeout(() => this.playTone(587, 'square', 0.15, 0.3), 300);
+    setTimeout(() => this.playTone(784, 'square', 0.3, 0.3), 450);
+}
+
+playFriendRevealSound() {
+    if (!this.enabled) return;
+    // 부드러운 벨
+    this.playTone(523, 'sine', 0.3, 0.3);
+    setTimeout(() => this.playTone(659, 'sine', 0.3, 0.3), 150);
+    setTimeout(() => this.playTone(784, 'sine', 0.5, 0.2), 300);
+}
+
+playBackrunSound() {
+    if (!this.enabled) return;
+    // 충격적인 하강음
+    this.playTone(800, 'sawtooth', 0.3, 0.6);
+    setTimeout(() => this.playTone(400, 'sawtooth', 0.3, 0.6), 200);
+    setTimeout(() => this.playTone(200, 'sawtooth', 0.3, 0.6), 400);
+    setTimeout(() => this.playTone(100, 'square', 0.5, 0.5), 600);
+}
+
+playCoinSound() {
+    if (!this.enabled) return;
+    // 동전 소리
+    this.playTone(1200, 'sine', 0.1, 0.3);
+    setTimeout(() => this.playTone(1500, 'sine', 0.1, 0.3), 80);
+    setTimeout(() => this.playTone(1800, 'sine', 0.15, 0.2), 160);
+}
+
         }
 
         const soundManager = new SoundManager();
+
+        class EffectManager {
+    constructor() {
+        this.setupStyles();
+        this.listenEvents();
+    }
+
+    setupStyles() {
+        const style = document.createElement('style');
+        style.textContent = `
+            /* 화면 흔들림 */
+            @keyframes screenShake {
+                0%, 100% { transform: translate(0, 0); }
+                10% { transform: translate(-4px, 2px); }
+                20% { transform: translate(4px, -2px); }
+                30% { transform: translate(-2px, 4px); }
+                40% { transform: translate(2px, -4px); }
+                50% { transform: translate(-4px, 0); }
+                60% { transform: translate(4px, 2px); }
+                70% { transform: translate(-2px, -2px); }
+                80% { transform: translate(2px, 4px); }
+                90% { transform: translate(0, -2px); }
+            }
+            body.shake { animation: screenShake 0.4s ease; }
+
+            /* 중앙 텍스트 팝업 */
+            .event-popup {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0.3);
+                font-size: 32px;
+                font-weight: bold;
+                z-index: 5000;
+                pointer-events: none;
+                opacity: 0;
+                text-shadow: 0 0 20px currentColor, 0 2px 4px rgba(0,0,0,0.5);
+                white-space: nowrap;
+                animation: popupAppear 1.2s ease forwards;
+            }
+
+            @keyframes popupAppear {
+                0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+                15%  { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+                30%  { transform: translate(-50%, -50%) scale(1.0); }
+                70%  { opacity: 1; transform: translate(-50%, -50%) scale(1.0); }
+                100% { opacity: 0; transform: translate(-50%, -60%) scale(0.8); }
+            }
+
+            /* 카드 임팩트 줌 */
+            @keyframes impactZoom {
+                0%   { transform: scale(1); }
+                20%  { transform: scale(1.5); }
+                40%  { transform: scale(1.0); }
+                60%  { transform: scale(1.2); }
+                100% { transform: scale(1.0); }
+            }
+
+            .trick-card.impact .card {
+                animation: impactZoom 0.5s ease !important;
+                z-index: 100;
+            }
+
+            /* 광채 효과 */
+            .trick-card.glow-gold .card {
+                box-shadow: 0 0 30px rgba(255, 215, 0, 1), 0 0 60px rgba(255, 215, 0, 0.5) !important;
+            }
+            .trick-card.glow-purple .card {
+                box-shadow: 0 0 30px rgba(156, 39, 176, 1), 0 0 60px rgba(156, 39, 176, 0.5) !important;
+            }
+            .trick-card.glow-red .card {
+                box-shadow: 0 0 30px rgba(244, 67, 54, 1), 0 0 60px rgba(244, 67, 54, 0.5) !important;
+            }
+            .trick-card.glow-pink .card {
+                box-shadow: 0 0 30px rgba(255, 105, 180, 1), 0 0 60px rgba(255, 105, 180, 0.5) !important;
+            }
+            .trick-card.glow-blue .card {
+                box-shadow: 0 0 30px rgba(33, 150, 243, 1), 0 0 60px rgba(33, 150, 243, 0.5) !important;
+            }
+
+            /* 깨지는 효과 (이전 승자) */
+            @keyframes cardCrack {
+                0%   { opacity: 1; filter: brightness(1); }
+                30%  { filter: brightness(2); }
+                60%  { opacity: 0.6; filter: brightness(0.5) grayscale(0.8); }
+                100% { opacity: 0.4; filter: brightness(0.3) grayscale(1); }
+            }
+            .trick-card.cracked .card {
+                animation: cardCrack 0.6s ease forwards !important;
+            }
+
+            /* 파티클 컨테이너 */
+            .particle-container {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%; height: 100%;
+                pointer-events: none;
+                z-index: 4999;
+                overflow: hidden;
+            }
+
+            .particle {
+                position: absolute;
+                font-size: 20px;
+                animation: particleFly 1.5s ease-out forwards;
+                pointer-events: none;
+            }
+
+            @keyframes particleFly {
+                0%   { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+                100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(0.3) rotate(var(--pr)); }
+            }
+
+            /* 모바일 셀 광채 */
+            .mobile-ai-cell.glow-gold { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8) !important; }
+            .mobile-ai-cell.glow-purple { box-shadow: 0 0 20px rgba(156, 39, 176, 0.8) !important; }
+            .mobile-ai-cell.glow-red { box-shadow: 0 0 20px rgba(244, 67, 54, 0.8) !important; }
+            .mobile-ai-cell.glow-pink { box-shadow: 0 0 20px rgba(255, 105, 180, 0.8) !important; }
+
+            /* 모바일 트릭카드 임팩트 */
+            .mobile-ai-cell .cell-trick-card.impact .card,
+            #mobile-user-trick.impact .card {
+                animation: impactZoom 0.5s ease !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    listenEvents() {
+        eventBus.on('mighty-played', (data) => this.onMightyPlayed(data));
+        eventBus.on('joker-played', (data) => this.onJokerPlayed(data));
+        eventBus.on('joker-called', (data) => this.onJokerCalled(data));
+        eventBus.on('friend-revealed', (data) => this.onFriendRevealed(data));
+        eventBus.on('giruda-cut', (data) => this.onGirudaCut(data));
+        eventBus.on('over-cut', (data) => this.onOverCut(data));
+        eventBus.on('mighty-beats-joker', (data) => this.onMightyBeatsJoker(data));
+        eventBus.on('backrun', (data) => this.onBackrun(data));
+        eventBus.on('contract-achieved', (data) => this.onContractAchieved(data));
+        eventBus.on('big-score-trick', (data) => this.onBigScoreTrick(data));
+    }
+
+    // ===== Tier 1 이벤트 =====
+
+    onMightyPlayed(data) {
+        this.shakeScreen();
+        this.showPopup('👑 마이티!', '#FFD700');
+        this.addGlow(data.player, 'gold');
+        this.addImpact(data.player);
+        this.spawnParticles(data.player, ['✨', '⭐', '💫', '👑'], 12);
+        soundManager.playMightySound();
+    }
+
+    onJokerPlayed(data) {
+        this.showPopup('🃏 조커!', '#9C27B0');
+        this.addGlow(data.player, 'purple');
+        this.addImpact(data.player);
+        this.spawnParticles(data.player, ['🃏', '✨', '💜', '🔮'], 10);
+        soundManager.playJokerSound();
+    }
+
+    onMightyBeatsJoker(data) {
+        this.shakeScreen();
+        this.showPopup('💥 마이티 > 조커!', '#FF5722');
+        this.addGlow(data.player, 'gold');
+        this.addImpact(data.player);
+        this.spawnParticles(data.player, ['💥', '⚡', '👑', '🔥'], 15);
+        soundManager.playClashSound();
+    }
+
+    // ===== Tier 2 이벤트 =====
+
+    onGirudaCut(data) {
+        this.showPopup('⚔️ 기루다 컷!', '#f44336');
+        this.addGlow(data.player, 'red');
+        this.addImpact(data.player);
+        this.addCrack(data.prevWinner);
+        this.spawnParticles(data.player, ['⚔️', '🔥', '💢'], 8);
+        soundManager.playCutSound();
+    }
+
+    onOverCut(data) {
+        this.shakeScreen();
+        this.showPopup('🔥 오버컷!', '#FF5722');
+        this.addGlow(data.player, 'red');
+        this.addImpact(data.player);
+        this.addCrack(data.prevWinner);
+        this.spawnParticles(data.player, ['🔥', '⚡', '💥', '🗡️'], 12);
+        soundManager.playOverCutSound();
+    }
+
+    onJokerCalled(data) {
+        this.showPopup('📢 조커콜!', '#2196F3');
+        this.addGlow(data.player, 'blue');
+        soundManager.playJokerCallSound();
+    }
+
+    onFriendRevealed(data) {
+        this.showPopup('💕 친구 등장!', '#FF69B4');
+        this.addGlow(data.player, 'pink');
+        this.spawnParticles(data.player, ['💕', '❤️', '💖', '✨'], 8);
+        soundManager.playFriendRevealSound();
+    }
+
+    // ===== Tier 3 이벤트 =====
+
+    onContractAchieved(data) {
+        this.showPopup('✅ 공약 달성!', '#4CAF50');
+        this.spawnParticles(null, ['🎉', '✅', '⭐', '🎊'], 15);
+        soundManager.playWin();
+    }
+
+    onBackrun(data) {
+        this.shakeScreen();
+        this.showPopup('⚡ 백런!!!', '#FF1744');
+        this.spawnParticles(null, ['⚡', '💥', '🔥', '💀'], 20);
+        soundManager.playBackrunSound();
+    }
+
+    onBigScoreTrick(data) {
+        this.showPopup(`💰 ${data.points}점 획득!`, '#FFD700');
+        this.spawnParticles(data.player, ['💰', '💎', '🪙'], 8);
+        soundManager.playCoinSound();
+    }
+
+    // ===== 효과 실행 메서드 =====
+
+    shakeScreen() {
+        document.body.classList.add('shake');
+        setTimeout(() => document.body.classList.remove('shake'), 400);
+    }
+
+    showPopup(text, color) {
+        const popup = document.createElement('div');
+        popup.className = 'event-popup';
+        popup.textContent = text;
+        popup.style.color = color;
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 1300);
+    }
+
+    addGlow(playerIndex, color) {
+        const isMobile = document.body.classList.contains('mobile-mode');
+
+        if (isMobile) {
+            if (playerIndex === 0) {
+                const userTrick = document.getElementById('mobile-user-trick');
+                if (userTrick) {
+                    userTrick.classList.add(`glow-${color}`);
+                    setTimeout(() => userTrick.classList.remove(`glow-${color}`), 2000);
+                }
+            } else {
+                const cell = document.querySelector(`.mobile-ai-cell[data-ai="${playerIndex}"]`);
+                if (cell) {
+                    cell.classList.add(`glow-${color}`);
+                    setTimeout(() => cell.classList.remove(`glow-${color}`), 2000);
+                }
+            }
+        } else {
+            const trickCard = document.querySelector(`.trick-card[data-player="${playerIndex}"]`);
+            if (trickCard) {
+                trickCard.classList.add(`glow-${color}`);
+                setTimeout(() => trickCard.classList.remove(`glow-${color}`), 2000);
+            }
+        }
+    }
+
+    addImpact(playerIndex) {
+        const isMobile = document.body.classList.contains('mobile-mode');
+
+        if (isMobile) {
+            if (playerIndex === 0) {
+                const el = document.getElementById('mobile-user-trick');
+                if (el) { el.classList.add('impact'); setTimeout(() => el.classList.remove('impact'), 600); }
+            } else {
+                const cell = document.querySelector(`.mobile-ai-cell[data-ai="${playerIndex}"]`);
+                const trickArea = cell?.querySelector('.cell-trick-card');
+                if (trickArea) { trickArea.classList.add('impact'); setTimeout(() => trickArea.classList.remove('impact'), 600); }
+            }
+        } else {
+            const el = document.querySelector(`.trick-card[data-player="${playerIndex}"]`);
+            if (el) { el.classList.add('impact'); setTimeout(() => el.classList.remove('impact'), 600); }
+        }
+    }
+
+    addCrack(playerIndex) {
+        const isMobile = document.body.classList.contains('mobile-mode');
+        if (isMobile) {
+            // 모바일에서는 이전 승자의 트릭카드를 어둡게
+            if (playerIndex === 0) {
+                const el = document.getElementById('mobile-user-trick');
+                if (el) { el.style.opacity = '0.4'; setTimeout(() => el.style.opacity = '', 2000); }
+            } else {
+                const cell = document.querySelector(`.mobile-ai-cell[data-ai="${playerIndex}"]`);
+                const trickArea = cell?.querySelector('.cell-trick-card');
+                if (trickArea) { trickArea.classList.add('cracked'); setTimeout(() => trickArea.classList.remove('cracked'), 2000); }
+            }
+        } else {
+            const el = document.querySelector(`.trick-card[data-player="${playerIndex}"]`);
+            if (el) { el.classList.add('cracked'); setTimeout(() => el.classList.remove('cracked'), 2000); }
+        }
+    }
+
+    spawnParticles(playerIndex, emojis, count) {
+        const container = document.createElement('div');
+        container.className = 'particle-container';
+        document.body.appendChild(container);
+
+        let cx = window.innerWidth / 2;
+        let cy = window.innerHeight / 2;
+
+        if (playerIndex !== null) {
+            const isMobile = document.body.classList.contains('mobile-mode');
+            let el;
+            if (isMobile) {
+                el = playerIndex === 0
+                    ? document.getElementById('mobile-user-trick')
+                    : document.querySelector(`.mobile-ai-cell[data-ai="${playerIndex}"]`);
+            } else {
+                el = document.querySelector(`.trick-card[data-player="${playerIndex}"]`);
+            }
+            if (el) {
+                const rect = el.getBoundingClientRect();
+                cx = rect.left + rect.width / 2;
+                cy = rect.top + rect.height / 2;
+            }
+        }
+
+        for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
+            const dist = 80 + Math.random() * 120;
+            const px = Math.cos(angle) * dist;
+            const py = Math.sin(angle) * dist - 40;
+            const pr = (Math.random() - 0.5) * 720;
+            p.style.left = cx + 'px';
+            p.style.top = cy + 'px';
+            p.style.setProperty('--px', px + 'px');
+            p.style.setProperty('--py', py + 'px');
+            p.style.setProperty('--pr', pr + 'deg');
+            p.style.animationDelay = (Math.random() * 0.2) + 's';
+            container.appendChild(p);
+        }
+
+        setTimeout(() => container.remove(), 2000);
+    }
+}
 
         // ========================================
         // ===== main.js =====
@@ -7117,6 +7643,8 @@ renderMobileUserTrick() {
                 this.isProcessing = false;
                 this.gameHistory = [];
                 this.setupCallbacks();
+                this.effectManager = new EffectManager();
+
 
                 // SoundManager 초기화 (사용자 상호작용 필요하므로 클릭 이벤트 등에서 init 호출 권장되지만 여기서는 우선 생성)
                 document.addEventListener('click', () => { soundManager.init(); }, { once: true });
@@ -7670,6 +8198,27 @@ renderMobileUserTrick() {
                 this.ui.setMessage(`${this.gameState.players[winner].name}이(가) ${winningCard.toString()}(으)로 승리!`);
                 await this.delay(2000);
                 this.gameState.endTrick();
+                // endTrick() 안, this.gameState.endTrick() 다음 줄에 추가
+
+                // ★ Tier 3 이벤트 체크
+                const trickPoints = this.gameState.players[winner].scoreCards.length;
+                const prevGovScore = this.gameState.governmentScore;
+
+                // 대량 점수 트릭 (이번 트릭에서 3점 이상)
+                const thisRoundPoints = this.gameState.trick.cards
+                    ? this.gameState.trick.cards.reduce((s, p) => s + (p.card && p.card.isPointCard() ? 1 : 0), 0)
+                    : 0;
+                // trick.cards는 이미 endTrick에서 처리되었으므로, 점수는 승자의 scoreCards 변화로 판단
+                // 간접적으로 판단: endTrick 전후의 governmentScore 차이
+                this.gameState.updateTeamScores();
+                const newGovScore = this.gameState.governmentScore;
+
+                // 공약 달성 순간
+                const bidValue = this.gameState.contract.bidValue;
+                if (prevGovScore < bidValue && newGovScore >= bidValue) {
+                    eventBus.emit('contract-achieved', { score: newGovScore, bidValue });
+                }
+
                 this.ui.renderAll();
 
                 if (this.gameState.round >= GAME_CONFIG.TOTAL_ROUNDS) {
