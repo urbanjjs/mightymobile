@@ -2290,6 +2290,60 @@ body.mobile-mode .final-summary-content .fs-footer {
     font-size: 10px;
 }
 
+/* ===== 모바일 점수 진행 바 ===== */
+#mobile-score-progress {
+    display: none;
+}
+
+body.mobile-mode #mobile-score-progress {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 5px;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+
+body.mobile-mode #mobile-score-progress .score-label {
+    font-size: 10px;
+    min-width: 65px;
+    white-space: nowrap;
+}
+
+body.mobile-mode #mobile-score-progress .score-label.government {
+    color: #4CAF50;
+    text-align: right;
+}
+
+body.mobile-mode #mobile-score-progress .score-label.opposition {
+    color: #2196F3;
+    text-align: left;
+}
+
+body.mobile-mode #mobile-score-progress .score-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+body.mobile-mode #mobile-score-progress .score-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+body.mobile-mode #mobile-score-progress .score-bar-fill.government {
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+}
+
+body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
+    background: linear-gradient(90deg, #2196F3, #03A9F4);
+}
 
 </style>
 </head>
@@ -2361,11 +2415,13 @@ body.mobile-mode .final-summary-content .fs-footer {
 </div>
 
 
-<!-- 모바일 전용 유저 트릭 카드 + 정보 -->
+<!-- 모바일 전용 유저 트릭 카드 + 정보 + 점수 바 -->
 <div id="mobile-center-area">
+    <div id="mobile-score-progress"></div>
     <div id="mobile-user-trick"></div>
     <div id="mobile-trick-info"></div>
 </div>
+
 
 
         <main id="game-area">
@@ -5800,31 +5856,64 @@ body.mobile-mode .final-summary-content .fs-footer {
                 }
             }
             renderMobileGirudaBg() {
-    const el = document.getElementById('mobile-giruda-bg');
-    if (!el || !document.body.classList.contains('mobile-mode')) return;
+                const el = document.getElementById('mobile-giruda-bg');
+                if (!el || !document.body.classList.contains('mobile-mode')) return;
+
+                const contract = this.gameState.contract;
+                if (!contract.bidValue ||
+                    this.gameState.phase === PHASES.WAITING ||
+                    this.gameState.phase === PHASES.BIDDING) {
+                    el.style.display = 'none';
+                    return;
+                }
+
+                el.style.display = 'block';
+
+                if (contract.isNoGiruda) {
+                    el.textContent = 'No';
+                    el.style.color = 'rgba(158, 158, 158, 0.25)';
+                    el.style.fontSize = '80px';
+                } else if (contract.giruda) {
+                    el.textContent = SUIT_SYMBOLS[contract.giruda];
+                    const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
+                    el.style.color = isRed ? 'rgba(211, 47, 47, 0.2)' : 'rgba(255, 255, 255, 0.15)';
+                    el.style.fontSize = '120px';
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+            renderMobileScoreProgress() {
+    if (!document.body.classList.contains('mobile-mode')) return;
+    const container = document.getElementById('mobile-score-progress');
+    if (!container) return;
 
     const contract = this.gameState.contract;
     if (!contract.bidValue ||
         this.gameState.phase === PHASES.WAITING ||
-        this.gameState.phase === PHASES.BIDDING) {
-        el.style.display = 'none';
+        this.gameState.phase === PHASES.BIDDING ||
+        this.gameState.phase === PHASES.DEALING) {
+        container.innerHTML = '';
+        container.style.display = 'none';
         return;
     }
 
-    el.style.display = 'block';
+    container.style.display = '';
 
-    if (contract.isNoGiruda) {
-        el.textContent = 'No';
-        el.style.color = 'rgba(158, 158, 158, 0.25)';
-        el.style.fontSize = '80px';
-    } else if (contract.giruda) {
-        el.textContent = SUIT_SYMBOLS[contract.giruda];
-        const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
-        el.style.color = isRed ? 'rgba(211, 47, 47, 0.2)' : 'rgba(255, 255, 255, 0.15)';
-        el.style.fontSize = '120px';
-    } else {
-        el.style.display = 'none';
-    }
+    const govScore = this.gameState.governmentScore;
+    const oppScore = this.gameState.oppositionScore;
+    const bidValue = contract.bidValue;
+    const totalPoints = GAME_CONFIG.TOTAL_POINTS;
+
+    container.innerHTML = `
+        <span class="score-label government">여당 ${govScore}/${bidValue}</span>
+        <div class="score-bar">
+            <div class="score-bar-fill government" style="width: ${(govScore / totalPoints) * 100}%"></div>
+        </div>
+        <div class="score-bar">
+            <div class="score-bar-fill opposition" style="width: ${(oppScore / totalPoints) * 100}%"></div>
+        </div>
+        <span class="score-label opposition">야당 ${oppScore}</span>
+    `;
 }
 
 
@@ -5834,11 +5923,13 @@ renderAll(options = {}) {
     this.renderTrick();
     this.renderGirudaBackground();
     this.renderScoreProgress();
-    this.renderMobileAIGrid();      // ← 변경
-    this.renderMobileUserTrick();   // ← 추가
-    this.renderMobileGirudaBg(); 
+    this.renderMobileAIGrid();
+    this.renderMobileUserTrick();
+    this.renderMobileScoreProgress();
+    this.renderMobileGirudaBg();
     this.renderAILog();
 }
+
 
 
 
