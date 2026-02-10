@@ -1525,6 +1525,39 @@
             display: none !important;
         }
 
+/* ★ 카드 교환 모달 - 기존패 / 바닥패 구분 */
+.exchange-section-label {
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+    margin: 8px 0 4px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.exchange-section-label:first-child {
+    margin-top: 0;
+}
+
+.exchange-section-label.floor-label {
+    color: #FF9800;
+    border-bottom-color: rgba(255, 152, 0, 0.3);
+}
+
+.exchange-hand-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+body.mobile-mode .exchange-section-label {
+    font-size: 10px;
+    margin: 5px 0 3px;
+}
+
+
         /* ===== 애니메이션 ===== */
         @keyframes pulse {
             0% {
@@ -6488,28 +6521,67 @@ renderMobileUserTrick() {
                 this.isNoGiruda = false;
                 this.isSolino = false;
 
-                const player = this.gameState.players[this.gameState.contract.master];
+                const masterIndex = this.gameState.contract.master;
+                const player = this.gameState.players[masterIndex];
                 const handContainer = document.getElementById('exchange-hand');
                 handContainer.innerHTML = '';
-                const sortedHand = sortCards(player.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
 
-                for (const card of sortedHand) {
+                // ★ 바닥에서 가져온 3장 식별
+                const floorCards = this.gameState.floorCards;
+                const originalCards = player.hand.filter(
+                    c => !floorCards.some(fc => fc.equals(c))
+                );
+                const floorCardsInHand = player.hand.filter(
+                    c => floorCards.some(fc => fc.equals(c))
+                );
+
+                const sortedOriginal = sortCards(originalCards, this.gameState.contract.giruda, this.gameState.contract.mighty);
+                const sortedFloor = sortCards(floorCardsInHand, this.gameState.contract.giruda, this.gameState.contract.mighty);
+
+                // ★ 기존 패 라벨 + 카드
+                const origLabel = document.createElement('div');
+                origLabel.className = 'exchange-section-label';
+                origLabel.textContent = `기존 패 (${sortedOriginal.length}장)`;
+                handContainer.appendChild(origLabel);
+
+                const origGroup = document.createElement('div');
+                origGroup.className = 'exchange-hand-group';
+                for (const card of sortedOriginal) {
                     const cardEl = this.createCardElement(card, { faceUp: true, isSpecial: this.isSpecialCard(card) });
                     cardEl.style.cursor = 'pointer';
                     cardEl.addEventListener('click', () => this.toggleExchangeCard(card, cardEl));
-                    handContainer.appendChild(cardEl);
+                    origGroup.appendChild(cardEl);
                 }
+                handContainer.appendChild(origGroup);
+
+                // ★ 바닥 패 라벨 + 카드
+                const floorLabel = document.createElement('div');
+                floorLabel.className = 'exchange-section-label floor-label';
+                floorLabel.textContent = `바닥에서 가져온 카드 (${sortedFloor.length}장)`;
+                handContainer.appendChild(floorLabel);
+
+                const floorGroup = document.createElement('div');
+                floorGroup.className = 'exchange-hand-group';
+                for (const card of sortedFloor) {
+                    const cardEl = this.createCardElement(card, { faceUp: true, isSpecial: this.isSpecialCard(card) });
+                    cardEl.style.cursor = 'pointer';
+                    cardEl.addEventListener('click', () => this.toggleExchangeCard(card, cardEl));
+                    floorGroup.appendChild(cardEl);
+                }
+                handContainer.appendChild(floorGroup);
 
                 document.getElementById('exchange-count').textContent = '0';
                 document.getElementById('exchange-confirm').disabled = true;
                 document.getElementById('exchange-confirm').onclick = () => this.confirmExchange();
                 this.setupGirudaChangeUI();
-                const masterEl = document.getElementById(`player-${this.gameState.contract.master}`);
+
+                const masterEl = document.getElementById(`player-${masterIndex}`);
                 if (masterEl) masterEl.querySelector('.player-hand').style.visibility = 'hidden';
 
                 document.getElementById('modal-overlay').classList.remove('hidden');
                 document.getElementById('exchange-modal').classList.remove('hidden');
             }
+
 
             setupGirudaChangeUI() {
                 const currentGiruda = this.gameState.contract.giruda;
