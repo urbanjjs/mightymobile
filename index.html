@@ -1821,75 +1821,156 @@ body.mobile-mode .game-info span {
     padding: 2px 6px;
 }
 
+/* ★ 데스크톱 전용 영역 숨기기 */
 body.mobile-mode .top-row,
 body.mobile-mode .middle-row {
     display: none !important;
 }
 
-body.mobile-mode #mobile-ai-bar {
-    display: flex !important;
+/* ★★★ 모바일 AI 2x2 그리드 ★★★ */
+body.mobile-mode #mobile-ai-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
     gap: 4px;
-    padding: 3px 6px;
-    justify-content: center;
-    flex-wrap: wrap;
+    padding: 4px 6px;
 }
 
-.mobile-ai-box {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: bold;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    white-space: nowrap;
+.mobile-ai-cell {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 6px;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    min-height: 60px;
+    border: 2px solid transparent;
+    transition: all 0.3s;
 }
 
-.mobile-ai-box.active-turn-box {
+.mobile-ai-cell.active-turn-cell {
     border-color: #FFD700;
-    box-shadow: 0 0 6px rgba(255,215,0,0.6);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    animation: pulse 1.5s infinite;
 }
 
-.mobile-ai-box .box-role {
-    font-size: 10px;
-    padding: 1px 4px;
+.mobile-ai-cell .cell-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+    font-size: 11px;
+}
+
+.mobile-ai-cell .cell-name {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.mobile-ai-cell .cell-role {
+    font-size: 9px;
+    padding: 1px 5px;
     border-radius: 3px;
 }
 
-.mobile-ai-box .box-role.master { background:#FFD700;color:#000; }
-.mobile-ai-box .box-role.friend { background:#FF69B4;color:#000; }
-.mobile-ai-box .box-role.opposition { background:#555;color:#fff; }
-.mobile-ai-box .box-score { color:#aaa;font-size:10px; }
+.mobile-ai-cell .cell-role.master { background:#FFD700;color:#000; }
+.mobile-ai-cell .cell-role.friend { background:#FF69B4;color:#000; }
+.mobile-ai-cell .cell-role.opposition { background:#555;color:#fff; }
 
-body.mobile-mode #trick-area {
-    min-height: 0;
-    padding: 2px 0;
+.mobile-ai-cell .cell-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: #aaa;
 }
 
-body.mobile-mode .trick-cards {
-    width: 220px;
-    height: 120px;
+/* ★ 각 AI 박스 안의 트릭 카드 표시 영역 */
+.mobile-ai-cell .cell-trick-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 48px;
+    margin-top: 2px;
 }
 
-body.mobile-mode .trick-card {
-    width: 38px;
-    height: 53px;
+.mobile-ai-cell .cell-trick-card .card {
+    width: 34px;
+    height: 48px;
 }
 
-body.mobile-mode .trick-card .card {
-    width: 38px;
-    height: 53px;
+.mobile-ai-cell .cell-trick-card .card .card-image,
+.mobile-ai-cell .cell-trick-card .card .joker-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
-body.mobile-mode .trick-card[data-player="2"] { left: 40px; }
-body.mobile-mode .trick-card[data-player="3"] { right: 40px; }
+.mobile-ai-cell .cell-trick-card.winner .card {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
+    border-radius: 4px;
+}
 
-body.mobile-mode #trick-info {
+/* ★ 비딩 중 말풍선 표시 */
+.mobile-ai-cell .cell-bid-bubble {
+    text-align: center;
     font-size: 11px;
+    font-weight: bold;
+    color: #FFD700;
+    padding: 3px 6px;
+    margin-top: 2px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+/* ★ 모바일 중앙 유저 트릭 카드 + 점수 바 영역 */
+#mobile-center-area {
+    display: none;
+}
+
+body.mobile-mode #mobile-center-area {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    padding: 2px 6px;
+    gap: 2px;
+}
+
+#mobile-user-trick {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 52px;
+}
+
+#mobile-user-trick .card {
+    width: 38px;
+    height: 53px;
+}
+
+#mobile-user-trick .card .card-image,
+#mobile-user-trick .card .joker-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+#mobile-user-trick.winner .card {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
+    border-radius: 4px;
+}
+
+#mobile-trick-info {
+    font-size: 10px;
+    text-align: center;
+    color: #ccc;
+    background: rgba(0, 0, 0, 0.3);
     padding: 2px 8px;
-    margin-top: 3px;
+    border-radius: 4px;
+}
+
+/* ★ 데스크톱 트릭 영역은 모바일에서 숨기기 */
+body.mobile-mode #trick-area {
+    display: none !important;
 }
 
 body.mobile-mode .score-progress {
@@ -1901,6 +1982,7 @@ body.mobile-mode .score-progress {
 body.mobile-mode .score-label { font-size:10px;min-width:60px; }
 body.mobile-mode .score-bar { height:8px; }
 
+/* ★ 유저 영역 */
 body.mobile-mode .bottom-row { justify-content:center; }
 
 body.mobile-mode .player-area.user {
@@ -1968,7 +2050,6 @@ body.mobile-mode .modal {
 body.mobile-mode .modal h3 { font-size:15px;margin-bottom:8px; }
 body.mobile-mode .modal p { font-size:11px;margin-bottom:6px; }
 
-/* 모바일 비딩 모달 */
 body.mobile-mode #bidding-modal {
     top: 50%;
     transform: translate(-50%, -50%);
@@ -1993,7 +2074,6 @@ body.mobile-mode #bid-hand-preview .card {
     margin-left: -14px !important;
 }
 
-/* 모바일 친구 선언 */
 body.mobile-mode .quick-friend-selection {
     gap:6px;margin-bottom:10px;flex-wrap:wrap;
 }
@@ -2009,7 +2089,6 @@ body.mobile-mode .friend-actions { margin-top:8px;gap:8px; }
 body.mobile-mode .friend-actions button { padding:8px 16px;font-size:13px; }
 body.mobile-mode .manual-selection summary { font-size:12px;padding:6px; }
 
-/* 모바일 카드 교환 */
 body.mobile-mode #exchange-modal { min-width:0;max-width:360px; }
 body.mobile-mode .exchange-hand .card { width:38px;height:53px; }
 body.mobile-mode .exchange-info { font-size:13px; }
@@ -2018,11 +2097,9 @@ body.mobile-mode .giruda-change-header { font-size:12px; }
 body.mobile-mode .giruda-change-cost { font-size:10px; }
 body.mobile-mode .giruda-btn { padding:5px 10px;font-size:14px; }
 
-/* 모바일 조커 수트 */
 body.mobile-mode #joker-suit-buttons button { width:50px;height:50px;font-size:26px; }
 body.mobile-mode #joker-suit-buttons { gap:10px; }
 
-/* 모바일 결과 */
 body.mobile-mode #result-modal { min-width:0;max-width:340px; }
 body.mobile-mode #result-title { font-size:16px; }
 body.mobile-mode .result-summary { font-size:11px; }
@@ -2034,7 +2111,10 @@ body.mobile-mode .history-table { font-size:9px; }
 body.mobile-mode .history-table th { font-size:8px; }
 body.mobile-mode .history-table-wrapper { max-height:90px; }
 
+/* 기존 요소 숨기기 */
+#mobile-ai-grid { display: none; }
 #mobile-ai-bar { display: none; }
+
 
 </style>
 </head>
@@ -2052,8 +2132,64 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
                 <button id="settings-btn">⚙️ 설정</button>
             </div>
         </header>
-        <!-- 모바일 전용 AI 상태 바 -->
-        <div id="mobile-ai-bar"></div>
+<!-- 모바일 전용 AI 2x2 그리드 -->
+<div id="mobile-ai-grid">
+    <div class="mobile-ai-cell" data-ai="1">
+        <div class="cell-header">
+            <span class="cell-name">AI-1</span>
+            <span class="cell-role"></span>
+        </div>
+        <div class="cell-info">
+            <span class="cell-score">0점</span>
+            <span class="cell-cards">10장</span>
+        </div>
+        <div class="cell-bid-bubble"></div>
+        <div class="cell-trick-card"></div>
+    </div>
+    <div class="mobile-ai-cell" data-ai="2">
+        <div class="cell-header">
+            <span class="cell-name">AI-2</span>
+            <span class="cell-role"></span>
+        </div>
+        <div class="cell-info">
+            <span class="cell-score">0점</span>
+            <span class="cell-cards">10장</span>
+        </div>
+        <div class="cell-bid-bubble"></div>
+        <div class="cell-trick-card"></div>
+    </div>
+    <div class="mobile-ai-cell" data-ai="3">
+        <div class="cell-header">
+            <span class="cell-name">AI-3</span>
+            <span class="cell-role"></span>
+        </div>
+        <div class="cell-info">
+            <span class="cell-score">0점</span>
+            <span class="cell-cards">10장</span>
+        </div>
+        <div class="cell-bid-bubble"></div>
+        <div class="cell-trick-card"></div>
+    </div>
+    <div class="mobile-ai-cell" data-ai="4">
+        <div class="cell-header">
+            <span class="cell-name">AI-4</span>
+            <span class="cell-role"></span>
+        </div>
+        <div class="cell-info">
+            <span class="cell-score">0점</span>
+            <span class="cell-cards">10장</span>
+        </div>
+        <div class="cell-bid-bubble"></div>
+        <div class="cell-trick-card"></div>
+    </div>
+</div>
+
+<!-- 모바일 전용 유저 트릭 카드 + 정보 -->
+<div id="mobile-center-area">
+    <div id="mobile-user-trick"></div>
+    <div id="mobile-trick-info"></div>
+</div>
+
 
         <main id="game-area">
             <div class="top-row">
@@ -5483,15 +5619,17 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
                 }
             }
 
-            renderAll(options = {}) {
-                this.renderInfoBar();
-                this.renderPlayers(options);
-                this.renderTrick();
-                this.renderGirudaBackground();
-                this.renderScoreProgress();
-                this.renderMobileAIBar();
-                this.renderAILog();
-            }
+renderAll(options = {}) {
+    this.renderInfoBar();
+    this.renderPlayers(options);
+    this.renderTrick();
+    this.renderGirudaBackground();
+    this.renderScoreProgress();
+    this.renderMobileAIGrid();      // ← 변경
+    this.renderMobileUserTrick();   // ← 추가
+    this.renderAILog();
+}
+
 
 
             renderInfoBar() {
@@ -5667,6 +5805,8 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
                 } else {
                     infoEl.textContent = '';
                 }
+                this.renderMobileAIGrid();
+                this.renderMobileUserTrick();
             }
 
             clearTrick() {
@@ -5736,23 +5876,135 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
                 trickInfo.parentNode.insertBefore(div, trickInfo.nextSibling);
             }
 
-            renderMobileAIBar() {
-                const bar = document.getElementById('mobile-ai-bar');
-                if (!bar || !document.body.classList.contains('mobile-mode')) return;
-                bar.innerHTML = '';
-                for (let i = 1; i <= 4; i++) {
-                    const player = this.gameState.players[i];
-                    const box = document.createElement('div');
-                    box.className = 'mobile-ai-box';
-                    if (this.gameState.currentTurn === i) box.classList.add('active-turn-box');
-                    let roleHtml = '';
-                    if (player.role === ROLES.MASTER) roleHtml = '<span class="box-role master">주공</span>';
-                    else if (player.role === ROLES.FRIEND && this.gameState.friendRevealed) roleHtml = '<span class="box-role friend">친구</span>';
-                    else if (player.role === ROLES.OPPOSITION) roleHtml = '<span class="box-role opposition">야당</span>';
-                    box.innerHTML = `<span>${player.name}</span>${roleHtml}<span class="box-score">${player.getScore()}점</span><span class="box-score">(${player.hand.length}장)</span>`;
-                    bar.appendChild(box);
+            renderMobileAIGrid() {
+    if (!document.body.classList.contains('mobile-mode')) return;
+    const grid = document.getElementById('mobile-ai-grid');
+    if (!grid) return;
+
+    for (let i = 1; i <= 4; i++) {
+        const player = this.gameState.players[i];
+        const cell = grid.querySelector(`.mobile-ai-cell[data-ai="${i}"]`);
+        if (!cell) continue;
+
+        // 활성 턴 표시
+        cell.classList.toggle('active-turn-cell', this.gameState.currentTurn === i);
+
+        // 이름
+        cell.querySelector('.cell-name').textContent = player.name;
+
+        // 역할
+        const roleEl = cell.querySelector('.cell-role');
+        roleEl.textContent = '';
+        roleEl.className = 'cell-role';
+        if (player.role === ROLES.MASTER) {
+            roleEl.textContent = '주공';
+            roleEl.classList.add('master');
+        } else if (player.role === ROLES.FRIEND && this.gameState.friendRevealed) {
+            roleEl.textContent = '친구';
+            roleEl.classList.add('friend');
+        } else if (player.role === ROLES.OPPOSITION) {
+            roleEl.textContent = '야당';
+            roleEl.classList.add('opposition');
+        }
+
+        // 점수, 카드 수
+        cell.querySelector('.cell-score').textContent = `${player.getScore()}점`;
+        cell.querySelector('.cell-cards').textContent = `${player.hand.length}장`;
+
+        // 비딩 말풍선
+        const bidBubble = cell.querySelector('.cell-bid-bubble');
+        if (this.gameState.phase === PHASES.BIDDING) {
+            bidBubble.style.display = '';
+            const lastBid = [...this.gameState.bidding.history]
+                .reverse()
+                .find(h => h.player === i);
+            if (lastBid) {
+                if (lastBid.type === 'pass') {
+                    bidBubble.textContent = '패스';
+                    bidBubble.style.color = '#888';
+                } else {
+                    const sym = lastBid.suit === 'none' ? 'No' : SUIT_SYMBOLS[lastBid.suit];
+                    bidBubble.textContent = `${lastBid.value}${sym}`;
+                    bidBubble.style.color = '#FFD700';
+                }
+            } else {
+                bidBubble.textContent = '대기';
+                bidBubble.style.color = '#666';
+            }
+        } else {
+            bidBubble.style.display = 'none';
+        }
+
+        // 트릭 카드 표시
+        const trickCardArea = cell.querySelector('.cell-trick-card');
+        trickCardArea.innerHTML = '';
+        trickCardArea.classList.remove('winner');
+
+        if (this.gameState.phase === PHASES.PLAYING ||
+            this.gameState.phase === PHASES.TRICK_END) {
+            const play = this.gameState.trick.cards.find(p => p.player === i);
+            if (play) {
+                const cardEl = this.createCardElement(play.card, { faceUp: true });
+                trickCardArea.appendChild(cardEl);
+
+                // 현재 승자 표시
+                if (this.gameState.trick.cards.length > 0) {
+                    const { winner } = this.gameState.determineTrickWinner();
+                    if (winner === i) {
+                        trickCardArea.classList.add('winner');
+                    }
                 }
             }
+        }
+    }
+}
+
+renderMobileUserTrick() {
+    if (!document.body.classList.contains('mobile-mode')) return;
+    const userTrickArea = document.getElementById('mobile-user-trick');
+    const trickInfo = document.getElementById('mobile-trick-info');
+    if (!userTrickArea || !trickInfo) return;
+
+    userTrickArea.innerHTML = '';
+    userTrickArea.classList.remove('winner');
+
+    if (this.gameState.phase === PHASES.PLAYING ||
+        this.gameState.phase === PHASES.TRICK_END) {
+        const play = this.gameState.trick.cards.find(p => p.player === 0);
+        if (play) {
+            const cardEl = this.createCardElement(play.card, { faceUp: true });
+            userTrickArea.appendChild(cardEl);
+
+            if (this.gameState.trick.cards.length > 0) {
+                const { winner } = this.gameState.determineTrickWinner();
+                if (winner === 0) {
+                    userTrickArea.classList.add('winner');
+                }
+            }
+        }
+
+        // 트릭 정보
+        if (this.gameState.trick.cards.length > 0) {
+            const leadSuit = this.gameState.trick.leadSuit;
+            const points = this.gameState.trick.cards.reduce(
+                (sum, p) => sum + (p.card.isPointCard() ? 1 : 0), 0
+            );
+            let info = `리드: ${SUIT_NAMES[leadSuit] || '조커'} | 점수: ${points}`;
+            const { winner } = this.gameState.determineTrickWinner();
+            if (winner !== null) {
+                info += ` | ${this.gameState.players[winner].name}`;
+            }
+            if (this.gameState.trick.jokerCalled) info += ' | 🃏콜';
+            trickInfo.textContent = info;
+            trickInfo.style.display = '';
+        } else {
+            trickInfo.style.display = 'none';
+        }
+    } else {
+        trickInfo.style.display = 'none';
+    }
+}
+
 
 
             renderAILog() {
