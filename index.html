@@ -2175,6 +2175,121 @@ body.mobile-mode #end-game-btn {
 #mobile-ai-grid { display: none; }
 #mobile-ai-bar { display: none; }
 
+/* ===== 최종 요약 전체화면 오버레이 ===== */
+#final-summary-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.97);
+    z-index: 3000;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#final-summary-overlay.hidden {
+    display: none !important;
+}
+
+.final-summary-content {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px 16px 30px;
+    color: #e0e0e0;
+}
+
+.final-summary-content h2 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.final-summary-content .fs-subtitle {
+    text-align: center;
+    color: #aaa;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.final-summary-content .fs-player-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 14px;
+}
+
+.final-summary-content .fs-player-row.winner {
+    border: 2px solid #FFD700;
+    background: rgba(255, 215, 0, 0.15);
+}
+
+.final-summary-content .fs-player-name {
+    font-weight: bold;
+}
+
+.final-summary-content .fs-score.positive { color: #4CAF50; font-weight: bold; }
+.final-summary-content .fs-score.negative { color: #f44336; font-weight: bold; }
+
+.final-summary-content .fs-footer {
+    text-align: center;
+    color: #666;
+    font-size: 12px;
+    margin-top: 20px;
+}
+
+.final-summary-content .fs-reload-btn {
+    display: block;
+    margin: 16px auto 0;
+    padding: 12px 30px;
+    font-size: 15px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.final-summary-content .fs-reload-btn:hover {
+    background: #45a049;
+}
+
+/* 모바일 최종 요약 축소 */
+body.mobile-mode .final-summary-content {
+    padding: 12px 10px 20px;
+    max-width: 320px;
+}
+
+body.mobile-mode .final-summary-content h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+body.mobile-mode .final-summary-content .fs-subtitle {
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+body.mobile-mode .final-summary-content .fs-player-row {
+    padding: 6px 10px;
+    margin: 3px 0;
+    font-size: 13px;
+}
+
+body.mobile-mode .final-summary-content .fs-reload-btn {
+    padding: 10px 24px;
+    font-size: 13px;
+}
+
+body.mobile-mode .final-summary-content .fs-footer {
+    font-size: 10px;
+}
+
 
 </style>
 </head>
@@ -2410,6 +2525,7 @@ body.mobile-mode #end-game-btn {
             <p>상대방이 내야 할 수트를 선택하세요.</p>
             <div id="joker-suit-buttons"></div>
         </div>
+<div id="final-summary-overlay" class="hidden"></div>
 
         <div id="result-modal" class="hidden">
             <div class="result-scroll-wrap">
@@ -7504,57 +7620,85 @@ renderMobileUserTrick() {
             }
 
             endSession() {
-                this.showFinalSummary();
-                this.gameState.reset();
-                for (const player of this.gameState.players) player.totalScore = 0;
-                this.isProcessing = false;
-                this.pendingCard = null;
-                this.ui.clearTrick();
-                this.ui.clearActionButtons();
-                this.gameHistory = [];
-            }
+    // 결과 모달 숨기기
+    this.ui.hideResultModal();
 
-            showFinalSummary() {
-                let finalScores = [0, 0, 0, 0, 0];
-                const playerNames = this.gameState.players.map(p => p.name);
-                if (this.gameHistory.length > 0) {
-                    finalScores = this.gameHistory[this.gameHistory.length - 1].cumulativeScores || finalScores;
-                }
-                let winnerIndex = 0;
-                let maxScore = finalScores[0] || 0;
-                for (let i = 1; i < finalScores.length; i++) {
-                    if ((finalScores[i] || 0) > maxScore) { maxScore = finalScores[i] || 0; winnerIndex = i; }
-                }
+    // 모든 게임 UI 숨기기
+    document.getElementById('info-bar').style.display = 'none';
+    document.getElementById('game-area').style.display = 'none';
+    document.getElementById('action-area').style.display = 'none';
+    document.getElementById('mobile-ai-grid').style.display = 'none';
+    document.getElementById('mobile-center-area').style.display = 'none';
+    const logPanel = document.getElementById('ai-log-panel');
+    if (logPanel) logPanel.style.display = 'none';
 
-                let html = '<div style="text-align:center; padding:30px;">';
-                html += '<h2 style="margin-bottom:20px;">🎴 게임 종료</h2>';
-                html += `<p style="color:#aaa; margin-bottom:20px;">총 ${this.gameHistory.length}게임 진행 - 최종 누적 점수</p>`;
-                html += '<div style="margin-bottom:20px;">';
-                for (let i = 0; i < playerNames.length; i++) {
-                    const score = finalScores[i] || 0;
-                    const isWinner = i === winnerIndex;
-                    const scoreStyle = score >= 0 ? 'color:#4CAF50' : 'color:#f44336';
-                    const scoreText = score >= 0 ? `+${score}` : `${score}`;
-                    const winStyle = isWinner ? 'border:2px solid gold;background:rgba(255,215,0,0.2);' : 'background:rgba(255,255,255,0.1);';
-                    const crown = isWinner ? '👑 ' : '';
-                    html += `<div style="padding:8px;margin:5px 0;${winStyle}border-radius:5px;">`;
-                    html += `<span>${crown}${playerNames[i]}</span>: <span style="${scoreStyle};font-weight:bold;">${scoreText}점</span></div>`;
-                }
-                html += '</div>';
-                if (this.gameHistory.length === 0) html += '<p style="color:#f44336;">진행된 게임이 없습니다.</p>';
-                html += '<p style="color:#888;margin-top:20px;">새 게임을 시작하려면 페이지를 새로고침하세요.</p></div>';
-                document.getElementById('game-area').innerHTML = html;
+    // 최종 요약 오버레이 표시
+    this.showFinalSummary();
+}
 
-                if (this.gameHistory.length > 0) {
-                    const isHumanWinner = winnerIndex === 0;
-                    const msg = isHumanWinner
-                        ? `🏆 축하합니다! ${playerNames[winnerIndex]}님이 ${maxScore}점으로 우승하셨습니다! 🎉`
-                        : `🏆 ${playerNames[winnerIndex]}이(가) ${maxScore}점으로 우승했습니다!`;
-                    this.ui.setMessage(msg);
-                } else {
-                    this.ui.setMessage('진행된 게임이 없습니다.');
-                }
-            }
+showFinalSummary() {
+    let finalScores = [0, 0, 0, 0, 0];
+    const playerNames = this.gameState.players.map(p => p.name);
+    if (this.gameHistory.length > 0) {
+        finalScores = this.gameHistory[this.gameHistory.length - 1].cumulativeScores || finalScores;
+    }
+
+    let winnerIndex = 0;
+    let maxScore = finalScores[0] || 0;
+    for (let i = 1; i < finalScores.length; i++) {
+        if ((finalScores[i] || 0) > maxScore) {
+            maxScore = finalScores[i] || 0;
+            winnerIndex = i;
+        }
+    }
+
+    const overlay = document.getElementById('final-summary-overlay');
+
+    let html = '<div class="final-summary-content">';
+    html += '<h2>🎴 게임 종료</h2>';
+
+    if (this.gameHistory.length > 0) {
+        html += `<div class="fs-subtitle">총 ${this.gameHistory.length}게임 — 최종 누적 점수</div>`;
+
+        for (let i = 0; i < playerNames.length; i++) {
+            const score = finalScores[i] || 0;
+            const isWinner = i === winnerIndex;
+            const scoreClass = score >= 0 ? 'positive' : 'negative';
+            const scoreText = score >= 0 ? `+${score}` : `${score}`;
+            const crown = isWinner ? '👑 ' : '';
+            const rowClass = isWinner ? 'fs-player-row winner' : 'fs-player-row';
+
+            html += `<div class="${rowClass}">`;
+            html += `<span class="fs-player-name">${crown}${playerNames[i]}</span>`;
+            html += `<span class="fs-score ${scoreClass}">${scoreText}점</span>`;
+            html += `</div>`;
+        }
+
+        const isHumanWinner = winnerIndex === 0;
+        if (isHumanWinner) {
+            html += `<div style="text-align:center;color:#FFD700;font-size:14px;margin-top:12px;">🏆 축하합니다! 우승!</div>`;
+        } else {
+            html += `<div style="text-align:center;color:#aaa;font-size:13px;margin-top:12px;">${playerNames[winnerIndex]} 우승</div>`;
+        }
+    } else {
+        html += '<div class="fs-subtitle">진행된 게임이 없습니다.</div>';
+    }
+
+    html += '<button class="fs-reload-btn" onclick="location.reload()">새로 시작</button>';
+    html += '<div class="fs-footer">페이지를 새로고침하여 새 게임을 시작합니다</div>';
+    html += '</div>';
+
+    overlay.innerHTML = html;
+    overlay.classList.remove('hidden');
+
+    // 게임 상태 초기화
+    this.gameState.reset();
+    for (const player of this.gameState.players) player.totalScore = 0;
+    this.isProcessing = false;
+    this.pendingCard = null;
+    this.gameHistory = [];
+}
+
 
             delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
         }
