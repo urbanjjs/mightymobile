@@ -1140,7 +1140,7 @@
             color: #d32f2f;
         }
 
-/* 게임 결과 모달 */
+/* ===== 게임 결과 모달 (전체화면 오버레이) ===== */
 #result-modal {
     position: fixed;
     top: 0;
@@ -1148,42 +1148,36 @@
     right: 0;
     bottom: 0;
     width: 100%;
-    max-width: 100%;
-    min-width: auto;
     height: 100%;
-    margin: 0;
-    padding: 0;
-    border-radius: 0;
-    transform: none;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 1001;
+    background: rgba(0, 0, 0, 0.97);
+    z-index: 2000;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    justify-content: center;
+    align-items: flex-start;
 }
 
-#result-modal .result-inner {
+#result-modal.hidden {
+    display: none !important;
+}
+
+.result-scroll-wrap {
     width: 100%;
-    max-width: 500px;
-    padding: 12px 15px;
-    margin: auto;
+    max-width: 480px;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px 16px 25px;
 }
 
 #result-title {
     font-size: 22px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     text-align: center;
 }
 
-#result-title.win {
-    color: #4CAF50;
-}
-
-#result-title.lose {
-    color: #f44336;
-}
+#result-title.win { color: #4CAF50; }
+#result-title.lose { color: #f44336; }
 
 #result-content {
     margin-bottom: 8px;
@@ -1191,135 +1185,66 @@
 
 .result-summary {
     text-align: center;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     font-size: 13px;
-    line-height: 1.3;
     color: #ccc;
 }
 
 .result-scores {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 6px;
-    padding: 6px 8px;
-    margin-bottom: 6px;
+    padding: 6px 10px;
 }
 
 .result-header {
     display: flex;
     justify-content: space-between;
     padding: 3px 0;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.25);
     font-weight: bold;
     font-size: 10px;
-    color: #aaa;
+    color: #999;
 }
 
-.result-header span:first-child {
-    flex: 1;
-}
-
+.result-header span:first-child { flex: 1; }
 .result-header span:nth-child(2),
-.result-header span:nth-child(3) {
-    width: 45px;
-    text-align: right;
-}
+.result-header span:nth-child(3) { width: 45px; text-align: right; }
 
 .score-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    font-size: 12px;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 13px;
 }
 
-.score-row:last-child {
-    border-bottom: none;
-}
+.score-row:last-child { border-bottom: none; }
+.score-row .player-name { font-weight: bold; flex: 1; font-size: 12px; }
+.score-row .earned-points { width: 45px; text-align: right; color: #FFD700; font-weight: bold; }
+.score-row .score-change { width: 45px; text-align: right; font-weight: bold; }
+.score-row .score-change.positive { color: #4CAF50; }
+.score-row .score-change.negative { color: #f44336; }
 
-.score-row .player-name {
-    font-weight: bold;
-    flex: 1;
-    font-size: 11px;
-}
-
-.score-row .earned-points {
-    width: 45px;
-    text-align: right;
-    color: #FFD700;
-    font-weight: bold;
-}
-
-.score-row .score-change {
-    width: 45px;
-    text-align: right;
-    font-weight: bold;
-}
-
-.score-row .score-change.positive {
-    color: #4CAF50;
-}
-
-.score-row .score-change.negative {
-    color: #f44336;
-}
-
-.friend-contribution {
+.friend-contribution-line {
     margin-top: 6px;
-    padding: 4px 8px;
+    padding: 5px 10px;
     background: rgba(255, 215, 0, 0.1);
-    border-radius: 6px;
-    border: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.contribution-header {
-    font-size: 11px;
-    font-weight: bold;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    font-size: 12px;
     color: #FFD700;
-    margin-bottom: 3px;
     text-align: center;
 }
 
-.contribution-details {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.contribution-item {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    padding: 1px 5px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-}
-
-.contribution-label {
-    color: #aaa;
-    font-size: 10px;
-}
-
-.contribution-value {
-    font-weight: bold;
-    color: #fff;
-    font-size: 11px;
-}
-
-.contribution-value.special {
-    color: #FF9800;
-}
-
-/* 게임 기록 테이블 */
 .game-history {
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .history-header {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     color: #FFD700;
     margin-bottom: 4px;
@@ -1330,7 +1255,7 @@
     max-height: 100px;
     overflow-y: auto;
     border-radius: 4px;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .history-table {
@@ -1343,99 +1268,63 @@
 .history-table td {
     padding: 2px 2px;
     text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .history-table th {
-    background: rgba(0, 0, 0, 0.3);
-    color: #aaa;
+    background: rgba(0, 0, 0, 0.4);
+    color: #888;
     font-weight: normal;
     position: sticky;
     top: 0;
     font-size: 9px;
 }
 
-.history-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.history-table td.positive {
-    color: #4CAF50;
-}
-
-.history-table td.negative {
-    color: #f44336;
-}
-
-.history-table td.gov-win {
-    color: #4CAF50;
-    font-weight: bold;
-}
-
-.history-table td.opp-win {
-    color: #2196F3;
-    font-weight: bold;
-}
+.history-table td.positive { color: #4CAF50; }
+.history-table td.negative { color: #f44336; }
+.history-table td.gov-win { color: #4CAF50; font-weight: bold; }
+.history-table td.opp-win { color: #2196F3; font-weight: bold; }
 
 .history-table tfoot {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .history-table tfoot td {
     padding: 3px 2px;
-    border-top: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.history-legend {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 3px;
-    font-size: 9px;
-    color: #888;
-}
-
-.history-legend span {
-    display: flex;
-    align-items: center;
-    gap: 2px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: bold;
 }
 
 .result-buttons {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-    padding-bottom: 15px;
+    gap: 12px;
+    margin-top: 15px;
 }
 
 #new-game-btn {
-    padding: 10px 35px;
-    font-size: 15px;
+    padding: 12px 35px;
+    font-size: 16px;
     background: #4CAF50;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
 }
 
-#new-game-btn:hover {
-    background: #45a049;
-}
+#new-game-btn:hover { background: #45a049; }
 
 #end-game-btn {
-    padding: 10px 35px;
-    font-size: 15px;
-    background: #666;
+    padding: 12px 35px;
+    font-size: 16px;
+    background: #555;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
 }
 
-#end-game-btn:hover {
-    background: #555;
-}
+#end-game-btn:hover { background: #444; }
 
 
 
@@ -2522,14 +2411,17 @@ body.mobile-mode #end-game-btn {
             <div id="joker-suit-buttons"></div>
         </div>
 
-        <div id="result-modal" class="modal hidden">
-            <h3 id="result-title">게임 결과</h3>
-            <div id="result-content"></div>
-            <div class="result-buttons">
-                <button id="new-game-btn">계속 하기</button>
-                <button id="end-game-btn">끝내기</button>
+        <div id="result-modal" class="hidden">
+            <div class="result-scroll-wrap">
+                <h3 id="result-title">게임 결과</h3>
+                <div id="result-content"></div>
+                <div class="result-buttons">
+                    <button id="new-game-btn">계속 하기</button>
+                    <button id="end-game-btn">끝내기</button>
+                </div>
             </div>
         </div>
+
 
         <div id="settings-modal" class="modal hidden">
             <h3>설정</h3>
@@ -6827,7 +6719,7 @@ renderMobileUserTrick() {
             }
 
             // ===== 결과 모달 =====
-                showResultModal(result, gameHistory = []) {
+        showResultModal(result, gameHistory = []) {
         const title = document.getElementById('result-title');
         const content = document.getElementById('result-content');
         const userResult = result.results.find(r => r.player === 0);
@@ -6841,9 +6733,9 @@ renderMobileUserTrick() {
         const winnerText = result.winner === 'government' ? '여당 승리' : '야당 승리';
         const backrunText = result.isBackrun ? ' (백런!)' : '';
 
-        let html = '<div class="result-inner">';
-        html += `<div class="result-summary">${winnerText}${backrunText} — 여당 ${govScore}점 / 공약 ${bidValue}점</div>`;
+        let html = `<div class="result-summary">${winnerText}${backrunText} — 여당 ${govScore}/${bidValue}</div>`;
 
+        // 점수표
         html += '<div class="result-scores">';
         html += '<div class="result-header"><span>플레이어</span><span>획득</span><span>변동</span></div>';
         for (const r of result.results) {
@@ -6854,71 +6746,61 @@ renderMobileUserTrick() {
             const roleIcon = player.role === ROLES.MASTER ? '★' : (player.role === ROLES.FRIEND ? '◆' : '');
             html += `<div class="score-row">
                 <span class="player-name">${roleIcon}${player.name}</span>
-                <span class="earned-points">${earnedPoints}점</span>
+                <span class="earned-points">${earnedPoints}</span>
                 <span class="score-change ${changeClass}">${changeText}</span>
             </div>`;
         }
         html += '</div>';
 
-        // 친구 공헌 (축약)
+        // 친구 공헌 (한 줄로 축약)
         const contract = this.gameState.contract;
-        const friendContrib = this.gameState.friendContribution;
-        if (!contract.isNoFriend && !contract.isSolino && contract.friend !== null && friendContrib.tricksWon > 0) {
-            const friendPlayer = this.gameState.players[contract.friend];
-            const friendName = friendPlayer ? friendPlayer.name : '친구';
-            const specialCards = [];
-            if (friendContrib.mightyUsed) specialCards.push('마이티');
-            if (friendContrib.jokerUsed) specialCards.push('조커');
-            const specialText = specialCards.length > 0 ? ` | ${specialCards.join(',')}` : '';
-            html += `<div class="friend-contribution">
-                <div class="contribution-header">🤝 ${friendName} 공헌: ${friendContrib.tricksWon}트릭 ${friendContrib.pointsSecured}점${specialText}</div>
-            </div>`;
+        const fc = this.gameState.friendContribution;
+        if (!contract.isNoFriend && !contract.isSolino && contract.friend !== null && fc.tricksWon > 0) {
+            const fn = this.gameState.players[contract.friend]?.name || '친구';
+            const sp = [fc.mightyUsed && '마이티', fc.jokerUsed && '조커'].filter(Boolean).join(',');
+            html += `<div class="friend-contribution-line">🤝 ${fn}: ${fc.tricksWon}트릭 ${fc.pointsSecured}점${sp ? ' | ' + sp : ''}</div>`;
         }
 
         // 게임 기록 (최근 5게임만)
         if (gameHistory && gameHistory.length > 0) {
-            const recentGames = gameHistory.slice(-5);
-            html += '<div class="game-history"><div class="history-header">📊 최근 기록</div>';
+            const recent = gameHistory.slice(-5);
+            html += '<div class="game-history"><div class="history-header">📊 기록</div>';
             html += '<div class="history-table-wrapper"><table class="history-table">';
-            html += '<thead><tr><th>#</th><th>공약</th><th>결과</th>';
-            for (let i = 0; i < 5; i++) { html += `<th>${i === 0 ? '나' : `A${i}`}</th>`; }
+            html += '<thead><tr><th>#</th><th>공약</th><th></th>';
+            for (let i = 0; i < 5; i++) html += `<th>${i === 0 ? '나' : 'A' + i}</th>`;
             html += '</tr></thead><tbody>';
-            for (const game of recentGames) {
-                const girudaSymbol = game.giruda ? SUIT_SYMBOLS[game.giruda] : 'No';
-                const gWinText = game.winner === 'government' ? '여' : '야';
-                const gWinClass = game.winner === 'government' ? 'gov-win' : 'opp-win';
-                html += `<tr><td>${game.gameNumber}</td><td>${game.bidValue}${girudaSymbol}</td><td class="${gWinClass}">${gWinText}${game.isBackrun ? '백' : ''}</td>`;
+            for (const g of recent) {
+                const gs = g.giruda ? SUIT_SYMBOLS[g.giruda] : 'N';
+                const wc = g.winner === 'government' ? 'gov-win' : 'opp-win';
+                const wt = g.winner === 'government' ? '여' : '야';
+                html += `<tr><td>${g.gameNumber}</td><td>${g.bidValue}${gs}</td><td class="${wc}">${wt}</td>`;
                 for (let i = 0; i < 5; i++) {
-                    const change = game.results.find(r => r.player === i)?.change || 0;
-                    const cls = change >= 0 ? 'positive' : 'negative';
-                    const txt = change >= 0 ? `+${change}` : `${change}`;
-                    const role = game.master === i ? '★' : (game.friend === i ? '☆' : '');
-                    html += `<td class="${cls}">${role}${txt}</td>`;
+                    const c = g.results.find(r => r.player === i)?.change || 0;
+                    const cl = c >= 0 ? 'positive' : 'negative';
+                    const t = c >= 0 ? '+' + c : '' + c;
+                    const rl = g.master === i ? '★' : (g.friend === i ? '☆' : '');
+                    html += `<td class="${cl}">${rl}${t}</td>`;
                 }
                 html += '</tr>';
             }
             html += '</tbody><tfoot><tr><td colspan="3"><b>합계</b></td>';
             const last = gameHistory[gameHistory.length - 1];
             for (let i = 0; i < 5; i++) {
-                const total = last.cumulativeScores[i];
-                const cls = total >= 0 ? 'positive' : 'negative';
-                const txt = total >= 0 ? `+${total}` : `${total}`;
-                html += `<td class="${cls}"><b>${txt}</b></td>`;
+                const tot = last.cumulativeScores[i];
+                const cl = tot >= 0 ? 'positive' : 'negative';
+                html += `<td class="${cl}"><b>${tot >= 0 ? '+' + tot : tot}</b></td>`;
             }
             html += '</tr></tfoot></table></div></div>';
         }
 
-        html += '</div>'; // result-inner 닫기
-
         content.innerHTML = html;
-        document.getElementById('modal-overlay').classList.remove('hidden');
         document.getElementById('result-modal').classList.remove('hidden');
     }
 
     hideResultModal() {
-        document.getElementById('modal-overlay').classList.add('hidden');
         document.getElementById('result-modal').classList.add('hidden');
     }
+
 
 
             showSettingsModal() {
