@@ -1799,6 +1799,36 @@
 /* ============================================ */
 /* ===== 모바일 전용 스타일 ===== */
 /* ============================================ */
+
+/* ★ 모바일 2x2 그리드 배경 기루다 심볼 */
+body.mobile-mode #mobile-ai-grid {
+    position: relative;
+}
+
+#mobile-giruda-bg {
+    display: none;
+}
+
+body.mobile-mode #mobile-giruda-bg {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 120px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.12;
+    line-height: 1;
+}
+
+body.mobile-mode .mobile-ai-cell {
+    position: relative;
+    z-index: 1;
+}
+
+
 body.mobile-mode .controls {
     display: none !important;
 }
@@ -1907,7 +1937,23 @@ body.mobile-mode #mobile-ai-grid {
 .mobile-ai-cell .cell-trick-card.winner .card {
     box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
     border-radius: 4px;
+    border: 2px solid #FFD700;
+    animation: mobileWinnerGlow 1s infinite;
 }
+
+#mobile-user-trick.winner .card {
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
+    border-radius: 4px;
+    border: 2px solid #FFD700;
+    animation: mobileWinnerGlow 1s infinite;
+}
+
+@keyframes mobileWinnerGlow {
+    0%   { box-shadow: 0 0 6px rgba(255, 215, 0, 0.5);  border-color: #FFD700; }
+    50%  { box-shadow: 0 0 20px rgba(255, 215, 0, 1);    border-color: #fff; }
+    100% { box-shadow: 0 0 6px rgba(255, 215, 0, 0.5);  border-color: #FFD700; }
+}
+
 
 /* ★ 비딩 중 말풍선 표시 */
 .mobile-ai-cell .cell-bid-bubble {
@@ -2186,6 +2232,7 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
         <div class="cell-bid-bubble"></div>
         <div class="cell-trick-card"></div>
     </div>
+    <div id="mobile-giruda-bg"></div>
 </div>
 
 
@@ -5623,6 +5670,34 @@ body.mobile-mode .history-table-wrapper { max-height:90px; }
                     btn.textContent = '🔧 테스트모드 OFF';
                 }
             }
+            renderMobileGirudaBg() {
+    const el = document.getElementById('mobile-giruda-bg');
+    if (!el || !document.body.classList.contains('mobile-mode')) return;
+
+    const contract = this.gameState.contract;
+    if (!contract.bidValue ||
+        this.gameState.phase === PHASES.WAITING ||
+        this.gameState.phase === PHASES.BIDDING) {
+        el.style.display = 'none';
+        return;
+    }
+
+    el.style.display = 'block';
+
+    if (contract.isNoGiruda) {
+        el.textContent = 'No';
+        el.style.color = 'rgba(158, 158, 158, 0.25)';
+        el.style.fontSize = '80px';
+    } else if (contract.giruda) {
+        el.textContent = SUIT_SYMBOLS[contract.giruda];
+        const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
+        el.style.color = isRed ? 'rgba(211, 47, 47, 0.2)' : 'rgba(255, 255, 255, 0.15)';
+        el.style.fontSize = '120px';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
 
 renderAll(options = {}) {
     this.renderInfoBar();
@@ -5632,6 +5707,7 @@ renderAll(options = {}) {
     this.renderScoreProgress();
     this.renderMobileAIGrid();      // ← 변경
     this.renderMobileUserTrick();   // ← 추가
+    this.renderMobileGirudaBg(); 
     this.renderAILog();
 }
 
