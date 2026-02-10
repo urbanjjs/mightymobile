@@ -1754,7 +1754,7 @@ body.mobile-mode #mobile-giruda-bg {
     font-weight: bold;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.12;
+    opacity: 0.35;
     line-height: 1;
 }
 
@@ -5871,12 +5871,12 @@ body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
 
                 if (contract.isNoGiruda) {
                     el.textContent = 'No';
-                    el.style.color = 'rgba(158, 158, 158, 0.25)';
+                    el.style.color = 'rgba(158, 158, 158, 0.4)';
                     el.style.fontSize = '80px';
                 } else if (contract.giruda) {
                     el.textContent = SUIT_SYMBOLS[contract.giruda];
                     const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
-                    el.style.color = isRed ? 'rgba(211, 47, 47, 0.2)' : 'rgba(255, 255, 255, 0.15)';
+                    el.style.color = isRed ? 'rgba(211, 47, 47, 0.4)' : 'rgba(255, 255, 255, 0.35)';
                     el.style.fontSize = '120px';
                 } else {
                     el.style.display = 'none';
@@ -6134,11 +6134,13 @@ renderAll(options = {}) {
     let girudaColor = '';
     if (contract.isNoGiruda) {
         girudaText = 'No';
-        girudaColor = 'rgba(158, 158, 158, 0.15)';
+        girudaColor = 'rgba(158, 158, 158, 0.35)';
+
     } else if (contract.giruda) {
         girudaText = SUIT_SYMBOLS[contract.giruda];
         const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
-        girudaColor = isRed ? 'rgba(211, 47, 47, 0.12)' : 'rgba(255, 255, 255, 0.1)';
+        girudaColor = isRed ? 'rgba(211, 47, 47, 0.35)' : 'rgba(255, 255, 255, 0.3)';
+
     } else {
         return;
     }
