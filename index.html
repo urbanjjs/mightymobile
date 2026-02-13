@@ -7311,10 +7311,10 @@ renderMobileUserTrick() {
         const contract = this.gameState.contract;
         const fc = this.gameState.friendContribution;
         if (!contract.isNoFriend && !contract.isSolino && contract.friend !== null && fc.tricksWon > 0) {
-            const fn = this.gameState.players[contract.friend]?.name || '친구';
-            const sp = [fc.mightyUsed && '마이티', fc.jokerUsed && '조커'].filter(Boolean).join(',');
-            html += `<div class="friend-contribution-line">🤝 ${fn}: ${fc.tricksWon}트릭 ${fc.pointsSecured}점${sp ? ' | ' + sp : ''}</div>`;
-        }
+    const fn = this.gameState.players[contract.friend]?.name || '친구';
+    const sp = [fc.mightyUsed && '마이티', fc.jokerUsed && '조커'].filter(Boolean).join(',');
+    html += `<div class="friend-contribution-line">🤝 친구공헌 : ${fn} — ${fc.tricksWon}트릭 ${fc.pointsSecured}점${sp ? ' | ' + sp : ''}</div>`;
+}
 
         // 게임 기록 (최근 5게임만)
         if (gameHistory && gameHistory.length > 0) {
