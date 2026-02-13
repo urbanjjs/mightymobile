@@ -37,9 +37,13 @@
             background: var(--bg-gradient);
             min-height: 100vh;
             color: var(--text-color);
-            overflow: hidden;
-            /* Prevent scrolling */
+            overflow: auto;
         }
+
+body.mobile-mode {
+    overflow: hidden;
+}
+
 
         #app {
             display: flex;
@@ -172,7 +176,7 @@
         .player-hand {
             display: flex;
             flex-wrap: nowrap;
-            min-height: 55px;
+            min-height: 120px;
             justify-content: center;
             padding-left: 15px;
         }
@@ -210,13 +214,14 @@
 
         .player-area.top-left,
         .player-area.top-right {
-            width: 280px;
+            width: 520px;
         }
 
         .player-area.top-left .player-hand .card,
         .player-area.top-right .player-hand .card {
-            margin-left: -25px;
+            margin-left: -45px;
         }
+
 
         .player-area.top-left .player-hand .card:first-child,
         .player-area.top-right .player-hand .card:first-child {
@@ -232,19 +237,19 @@
 
         .player-area.left,
         .player-area.right {
-            width: 260px;
+            width: 520px;
             padding: 4px 8px;
         }
 
         .player-area.left .player-hand,
         .player-area.right .player-hand {
-            min-height: 55px;
+            min-height: 120px;
             padding-left: 15px;
         }
 
         .player-area.left .player-hand .card,
         .player-area.right .player-hand .card {
-            margin-left: -25px;
+            margin-left: -45px;
         }
 
         .player-area.left .player-hand .card:first-child,
@@ -269,12 +274,12 @@
         }
 
         .player-area.user {
-            width: 750px;
+            width: 1000px;
             padding: 3px 8px;
         }
 
         .player-area.user .player-hand {
-            min-height: 75px;
+            min-height: 120px;
             padding-left: 10px;
         }
 
@@ -288,8 +293,8 @@
 
         /* ===== 카드 스타일 ===== */
         .card {
-            width: 50px;
-            height: 70px;
+            width: 86px;
+            height: 116px;
             border-radius: 4px;
             cursor: default;
             transition: all 0.2s;
@@ -356,8 +361,8 @@
         }
 
         .player-area.user .card {
-            width: 55px;
-            height: 77px;
+            width: 86px;
+            height: 116px;
         }
 
 
@@ -395,16 +400,17 @@
 
         .trick-cards {
             position: relative;
-            width: 280px;
-            height: 180px;
+            width: 550px;
+            height: 350px;
         }
 
-        .trick-card {
-            position: absolute;
-            width: 50px;
-            height: 70px;
-            transition: all 0.3s ease;
-        }
+
+       .trick-card {
+    position: absolute;
+    width: 86px;
+    height: 116px;
+    transition: all 0.3s ease;
+}
 
         .trick-card[data-player="0"] {
             bottom: 0;
@@ -420,12 +426,12 @@
 
         .trick-card[data-player="2"] {
             top: 0;
-            left: 60px;
+            left: 130px;
         }
 
         .trick-card[data-player="3"] {
             top: 0;
-            right: 60px;
+            right: 130px;
         }
 
         .trick-card[data-player="4"] {
@@ -433,6 +439,7 @@
             right: 0;
             transform: translateY(-50%);
         }
+
 
         .trick-card .card {
             width: 100%;
@@ -645,7 +652,7 @@
         /* 비딩 모달 */
         #bidding-modal {
             min-width: 320px;
-            max-width: 400px;
+            max-width: 750px;
             padding: 15px 20px;
             top: 30%;
         }
@@ -1162,17 +1169,16 @@
 
 .result-scroll-wrap {
     width: 100%;
-    max-width: 480px;
+    max-width: 700px;
     max-height: 100vh;
     max-height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 15px 16px 25px;
+    padding: 30px 32px 40px;
 }
-
 #result-title {
-    font-size: 22px;
-    margin-bottom: 8px;
+    font-size: 36px;
+    margin-bottom: 16px;
     text-align: center;
 }
 
@@ -1185,54 +1191,55 @@
 
 .result-summary {
     text-align: center;
-    margin-bottom: 8px;
-    font-size: 13px;
+    margin-bottom: 16px;
+    font-size: 18px;
     color: #ccc;
 }
 
 .result-scores {
     background: rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    padding: 6px 10px;
+    border-radius: 8px;
+    padding: 12px 20px;
 }
 
 .result-header {
     display: flex;
     justify-content: space-between;
-    padding: 3px 0;
+    padding: 6px 0;
     border-bottom: 2px solid rgba(255, 255, 255, 0.25);
     font-weight: bold;
-    font-size: 10px;
+    font-size: 16px;
     color: #999;
 }
 
 .result-header span:first-child { flex: 1; }
 .result-header span:nth-child(2),
-.result-header span:nth-child(3) { width: 45px; text-align: right; }
+.result-header span:nth-child(3) { width: 70px; text-align: right; }
 
 .score-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 3px 0;
+    padding: 8px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    font-size: 13px;
+    font-size: 20px;
 }
 
 .score-row:last-child { border-bottom: none; }
-.score-row .player-name { font-weight: bold; flex: 1; font-size: 12px; }
-.score-row .earned-points { width: 45px; text-align: right; color: #FFD700; font-weight: bold; }
-.score-row .score-change { width: 45px; text-align: right; font-weight: bold; }
+.score-row .player-name { font-weight: bold; flex: 1; font-size: 20px; }
+.score-row .earned-points { width: 70px; text-align: right; color: #FFD700; font-weight: bold; }
+.score-row .score-change { width: 70px; text-align: right; font-weight: bold; }
+
 .score-row .score-change.positive { color: #4CAF50; }
 .score-row .score-change.negative { color: #f44336; }
 
 .friend-contribution-line {
-    margin-top: 6px;
-    padding: 5px 10px;
+    margin-top: 12px;
+    padding: 10px 16px;
     background: rgba(255, 215, 0, 0.1);
     border-radius: 5px;
     border: 1px solid rgba(255, 215, 0, 0.2);
-    font-size: 12px;
+    font-size: 16px;
     color: #FFD700;
     text-align: center;
 }
@@ -1244,29 +1251,29 @@
 }
 
 .history-header {
-    font-size: 12px;
+    font-size: 18px;
     font-weight: bold;
     color: #FFD700;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
     text-align: center;
 }
 
 .history-table-wrapper {
-    max-height: 100px;
+    max-height: 200px;
     overflow-y: auto;
-    border-radius: 4px;
+    border-radius: 6px;
     background: rgba(0, 0, 0, 0.3);
 }
 
 .history-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 10px;
+    font-size: 15px;
 }
 
 .history-table th,
 .history-table td {
-    padding: 2px 2px;
+    padding: 6px 6px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -1277,7 +1284,7 @@
     font-weight: normal;
     position: sticky;
     top: 0;
-    font-size: 9px;
+    font-size: 14px;
 }
 
 .history-table td.positive { color: #4CAF50; }
@@ -1303,8 +1310,8 @@
 }
 
 #new-game-btn {
-    padding: 12px 35px;
-    font-size: 16px;
+    padding: 16px 50px;
+    font-size: 20px;
     background: #4CAF50;
     color: white;
     border: none;
@@ -1315,8 +1322,8 @@
 #new-game-btn:hover { background: #45a049; }
 
 #end-game-btn {
-    padding: 12px 35px;
-    font-size: 16px;
+    padding: 16px 50px;
+    font-size: 20px;
     background: #555;
     color: white;
     border: none;
@@ -1620,18 +1627,19 @@ body.mobile-mode .exchange-section-label {
             }
 
             .player-area.user .card {
-                width: 55px;
-                height: 77px;
+                width: 86px;
+                height: 116px;
             }
 
             .player-hand .card {
-                margin-left: -25px;
+                margin-left: -45px;
             }
 
             .player-area.left .player-hand .card,
             .player-area.right .player-hand .card {
-                margin-left: -25px;
+                margin-left: -45px;
             }
+
 
             .player-area.user .player-hand .card {
                 margin-left: 0;
@@ -1658,23 +1666,24 @@ body.mobile-mode .exchange-section-label {
             }
 
             .card {
-                width: 45px;
-                height: 63px;
+                width: 86px;
+                height: 116px;
             }
 
             .player-area.user .card {
-                width: 50px;
-                height: 70px;
+                width: 86px;
+                height: 116px;
             }
 
             .player-hand .card {
-                margin-left: -22px;
+                margin-left: -45px;
             }
 
             .player-area.left .player-hand .card,
             .player-area.right .player-hand .card {
-                margin-left: -22px;
+                margin-left: -45px;
             }
+
 
             .player-area.user .player-hand .card {
                 margin-left: 0;
@@ -1696,17 +1705,19 @@ body.mobile-mode .exchange-section-label {
             }
 
             .trick-card {
-                width: 55px;
-                height: 77px;
-            }
+                position: absolute;
+                width: 86px;
+                height: 116px;
+
 
             .trick-card[data-player="2"] {
-                left: 60px;
+                left: 100px;
             }
 
             .trick-card[data-player="3"] {
-                right: 60px;
+                right: 100px;
             }
+
 
             #ai-log-panel {
                 width: 260px;
@@ -1912,8 +1923,12 @@ body.mobile-mode #mobile-ai-grid {
 
 /* ★ 모바일 중앙 유저 트릭 카드 + 점수 바 영역 */
 #mobile-center-area {
-    display: none;
+    display: none !important;
 }
+body.mobile-mode #mobile-center-area {
+    display: flex !important;
+}
+
 
 body.mobile-mode #mobile-center-area {
     display: flex !important;
@@ -2229,7 +2244,9 @@ body.mobile-mode #end-game-btn {
 
 
 /* 기존 요소 숨기기 */
-#mobile-ai-grid { display: none; }
+#mobile-ai-grid { display: none !important; }
+body.mobile-mode #mobile-ai-grid { display: grid !important; }
+
 #mobile-ai-bar { display: none; }
 
 /* ===== 최종 요약 전체화면 오버레이 ===== */
@@ -2349,8 +2366,12 @@ body.mobile-mode .final-summary-content .fs-footer {
 
 /* ===== 모바일 점수 진행 바 ===== */
 #mobile-score-progress {
-    display: none;
+    display: none !important;
 }
+body.mobile-mode #mobile-score-progress {
+    display: flex !important;
+}
+
 
 body.mobile-mode #mobile-score-progress {
     display: flex;
@@ -2419,7 +2440,7 @@ body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
             </div>
         </header>
 <!-- 모바일 전용 AI 2x2 그리드 -->
-<div id="mobile-ai-grid">
+<div id="mobile-ai-grid" style="display:none">
     <div class="mobile-ai-cell" data-ai="2">
         <div class="cell-header">
             <span class="cell-name">AI-2</span>
@@ -4583,13 +4604,14 @@ compareCards(cardA, cardB, leadSuit) {
 
                 if (isGovernment) {
                     if (isFriend && isMasterLead && isOppositionWinning) {
-                        if (pointsInTrick >= 1) return true;
-                        const hasOppRemaining = trickAnalysis.hasOppositionRemaining;
-                        if (!hasOppRemaining) return true;
-                        if (round >= 4) return true;
-                        const masterPlay = this.gameState.trick.cards.find(p => p.player === this.gameState.contract.master);
-                        if (masterPlay && masterPlay.card.isPointCard()) return true;
+                        if (pointsInTrick >= 3) return true;
+                        if (pointsInTrick >= 2 && round >= 6) return true;
+                        if (pointsInTrick >= 2 && !trickAnalysis.hasOppositionRemaining) return true;
+                        if (pointsInTrick >= 1 && round >= 8) return true;
+                        if (round >= 9) return true;
+                        return false;
                     }
+
 
                     if (isOppositionWinning && pointsInTrick >= 1) return true;
                     const pointsNeeded = this.gameState.contract.bidValue - this.gameState.governmentScore;
@@ -5008,12 +5030,17 @@ compareCards(cardA, cardB, leadSuit) {
                 // ── 8. 마이티 리드 (친구는 최후의 수단으로만) ──
                 // 마지막 2라운드이거나, 다른 카드가 모두 비점수 낮은 카드뿐일 때만
                 if (hasMighty) {
-                    if (round >= 9) {
-                        reasoning.push('친구 마이티 리드 (9-10라운드 - 최후 사용)');
-                        return mighty;
-                    }
                     if (playableCards.length === 1 && playableCards[0].equals(mighty)) {
                         reasoning.push('친구 마이티 리드 (유일한 카드)');
+                        return mighty;
+                    }
+                    // 마이티 외에 낼 카드가 있으면 마이티는 리드하지 않음
+                    const nonMightyPlayable = playableCards.filter(c => !c.equals(mighty));
+                    if (nonMightyPlayable.length > 0) {
+                        reasoning.push('마이티 보존 - 다른 카드로 리드');
+                        // 마이티를 리드하지 않고 아래 9번으로 넘김
+                    } else if (round >= 9) {
+                        reasoning.push('친구 마이티 리드 (최후 라운드 + 다른 카드 없음)');
                         return mighty;
                     }
                 }
@@ -5422,64 +5449,87 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
         }
 
         // ── 주공이 이기고 있을 때 ──
-        if (currentWinner === masterIndex) {
+        // ── 주공이 이기고 있을 때 ──
+if (currentWinner === masterIndex) {
 
-            // Case 1: 야당이 모두 완료 → 오버간 불필요, 최저 카드
-            if (!hasOppositionRemaining) {
-                reasoning.push('주공 승리 + 야당 완료 - 최저 카드');
+    // Case 1: 야당이 모두 완료 → 안전하게 점수 실어주기
+    if (!hasOppositionRemaining) {
+        reasoning.push('주공 승리 + 야당 완료 - 점수 실어주기');
 
-                const safeNonBossNonPoint = safeCards.filter(c =>
-                    !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
-                );
-                if (safeNonBossNonPoint.length > 0) return this.selectLowestCard(safeNonBossNonPoint);
+        // 비보스 점수 카드 실어주기
+        const nonBossPoint = safeCards.filter(c =>
+            !this.gameState.getCardAnalysis(c).isBoss && c.isPointCard()
+        );
+        if (nonBossPoint.length > 0) return this.selectHighestCard(nonBossPoint);
 
-                const safeNonBoss = safeCards.filter(c =>
-                    !this.gameState.getCardAnalysis(c).isBoss
-                );
-                if (safeNonBoss.length > 0) return this.selectLowestCard(safeNonBoss);
+        // 점수 카드 없으면 낮은 카드
+        const safeNonBossNonPoint = safeCards.filter(c =>
+            !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
+        );
+        if (safeNonBossNonPoint.length > 0) return this.selectLowestCard(safeNonBossNonPoint);
 
-                if (safeCards.length > 0) return this.selectLowestCard(safeCards);
-                return this.selectLowestCard(playableCards);
-            }
+        if (safeCards.length > 0) return this.selectLowestCard(safeCards);
+        return this.selectLowestCard(playableCards);
+    }
 
-            // Case 2: 주공 승리 확실 (보스카드/마이티/조커) + 야당 남아있음
-            if (isStrong) {
-                reasoning.push('주공 승리 확실 - 마이티/조커 보존, 최저 카드');
+    // Case 2: 주공 승리 확실 (보스카드/마이티/조커) + 야당 남아있음
+    if (isStrong) {
+        reasoning.push('주공 승리 확실 - 비보스 점수 실어주기');
 
-                if (safeCards.length > 0) {
-                    const safeNonBossNonPoint = safeCards.filter(c =>
-                        !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
-                    );
-                    if (safeNonBossNonPoint.length > 0) return this.selectLowestCard(safeNonBossNonPoint);
+        // 확실한 승리이므로 비보스 점수 카드 실어주기
+        const nonBossPoint = safeCards.filter(c =>
+            !this.gameState.getCardAnalysis(c).isBoss && c.isPointCard()
+        );
+        if (nonBossPoint.length > 0) return this.selectHighestCard(nonBossPoint);
 
-                    const safeNonBoss = safeCards.filter(c =>
-                        !this.gameState.getCardAnalysis(c).isBoss
-                    );
-                    if (safeNonBoss.length > 0) return this.selectLowestCard(safeNonBoss);
+        // 점수 카드 없으면 낮은 카드
+        const safeNonBossNonPoint = safeCards.filter(c =>
+            !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
+        );
+        if (safeNonBossNonPoint.length > 0) return this.selectLowestCard(safeNonBossNonPoint);
 
-                    return this.selectLowestCard(safeCards);
+        if (safeCards.length > 0) return this.selectLowestCard(safeCards);
+        return this.selectLowestCard(playableCards);
+    }
+
+    // Case 3: 주공이 약한 카드로 이기고 있고 야당 남아있음
+    // → 야당이 역전할 가능성 높음 → 적극적으로 오버간하여 확보
+    if (hasOppositionRemaining) {
+        reasoning.push('주공 약한 승리 + 야당 남음 - 적극 오버간');
+
+        // 보스카드로 확실하게 이기기 (마이티/조커 제외)
+        const bossWin = cardsToWin.filter(c =>
+            !c.isJoker && !c.equals(mighty) && this.gameState.getCardAnalysis(c).isBoss
+        );
+        if (bossWin.length > 0) {
+            reasoning.push('보스카드로 확실한 오버간');
+            return this.selectLowestCard(bossWin);
+        }
+
+        // 보스카드 없으면 일반 카드로 오버간
+        if (canWin && cardsToWin.length > 0) {
+            const cheapWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
+            if (cheapWin.length > 0) {
+                // 기루다 컷이 가능하면 기루다 컷
+                const girudaCut = cheapWin.filter(c => giruda && c.suit === giruda && leadSuit !== giruda);
+                if (girudaCut.length > 0) {
+                    reasoning.push('기루다 컷으로 오버간');
+                    return this.selectLowestCard(girudaCut);
                 }
-                return this.selectLowestCard(playableCards);
-            }
-
-            // Case 3: 주공이 비보스카드로 이기고 있고 야당 남아있음
-            if (hasOppositionRemaining) {
-                if (canWin && cardsToWin.length > 0) {
-                    const cheapWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty) && !c.isPointCard());
-                    if (cheapWin.length > 0) {
-                        reasoning.push('친구 저렴한 오버간 (야당 역전 방지)');
-                        return this.selectLowestCard(cheapWin);
-                    }
-                }
-                reasoning.push('주공 승리 유지 기대 - 낮은 카드 (마이티/조커 보존)');
-                if (safeCards.length > 0) {
-                    const nonPoint = safeCards.filter(c => !c.isPointCard());
-                    if (nonPoint.length > 0) return this.selectLowestCard(nonPoint);
-                    return this.selectLowestCard(safeCards);
-                }
-                return this.selectLowestCard(playableCards);
+                reasoning.push('일반 오버간');
+                return this.selectLowestCard(cheapWin);
             }
         }
+
+        // 이길 수 없으면 비점수 낮은 카드 (점수 손실 방지)
+        reasoning.push('오버간 불가 - 비점수 낮은 카드');
+        const nonPoint = safeCards.filter(c => !c.isPointCard());
+        if (nonPoint.length > 0) return this.selectLowestCard(nonPoint);
+        if (safeCards.length > 0) return this.selectLowestCard(safeCards);
+        return this.selectLowestCard(playableCards);
+    }
+}
+
 
         // ── 여당 승리 공통: 보스카드 보존, 낮은 카드 ──
         reasoning.push('여당 승리 - 보스카드 보존');
@@ -5500,10 +5550,11 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
         const currentWinnerIdx = trickAnalysis.currentWinner;
         const currentWinPlay = this.gameState.trick.cards.find(p => p.player === currentWinnerIdx);
         const currentWinCard = currentWinPlay?.card;
+        const pointsNeeded = this.gameState.contract.bidValue - this.gameState.governmentScore;
 
         // ── 주공이 리드했는데 야당이 역전한 상황 ──
         if (isMasterLead) {
-            reasoning.push('주공 리드 - 야당 역전 → 무조건 탈환 시도');
+            reasoning.push('주공 리드 - 야당 역전 → 탈환 시도');
             const mightyInTrick = this.gameState.trick.cards.some(p => p.card.equals(mighty));
 
             // 1순위: 일반 카드로 탈환
@@ -5515,16 +5566,29 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
                 }
             }
 
-            // 2순위: 마이티로 탈환
-            if (hasCard(hand, mighty)) {
-                reasoning.push('마이티로 주공 지원');
-                return mighty;
+            // 2순위: 조커로 탈환 (마이티보다 조커를 먼저 소모)
+            if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
+                if (pointsInTrick >= 1 || round >= 7) {
+                    reasoning.push('조커로 주공 지원 (마이티 보존)');
+                    return joker;
+                }
             }
 
-            // 3순위: 조커로 탈환
-            if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
-                reasoning.push('조커로 주공 지원');
-                return joker;
+            // 3순위: 마이티로 탈환 (조건부)
+            if (hasCard(hand, mighty)) {
+                const shouldUseMighty = (
+                    pointsInTrick >= 3 ||
+                    (pointsInTrick >= 2 && round >= 6) ||
+                    (pointsInTrick >= 1 && round >= 8) ||
+                    (pointsNeeded > 0 && round >= 9) ||
+                    (pointsInTrick >= 2 && !hasOppositionRemaining)
+                );
+                if (shouldUseMighty) {
+                    reasoning.push(`마이티로 주공 지원 (${pointsInTrick}점, R${round})`);
+                    return mighty;
+                } else {
+                    reasoning.push(`마이티 보존 (${pointsInTrick}점 - 가치 부족)`);
+                }
             }
 
             // 탈환 불가
@@ -5541,7 +5605,7 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
 
         if (isJokerWinning) {
             if (hasCard(hand, mighty)) {
-                if (pointsInTrick >= 1 || !hasOppositionRemaining) {
+                if (pointsInTrick >= 2 || (pointsInTrick >= 1 && round >= 6) || !hasOppositionRemaining) {
                     reasoning.push('마이티로 조커 탈환');
                     return mighty;
                 }
@@ -5550,24 +5614,37 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
             return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
         }
 
-        // 마이티 사용 판단
-        if (this.shouldPlayMighty(hand, trickAnalysis, teamContext, false, round, trackingSummary)) {
-            reasoning.push('마이티로 탈환');
-            return mighty;
-        }
-
-        // 조커 사용 판단
+        // 조커 사용 판단 (마이티보다 먼저 검토)
         const mightyInTrick = this.gameState.trick.cards.some(p => p.card.equals(mighty));
         if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
-            const jd = this.shouldPlayJoker(hand, trickAnalysis, teamContext, false, round, trackingSummary);
-            if (jd.shouldPlay) { reasoning.push('조커로 탈환'); return joker; }
+            if (pointsInTrick >= 2 || (pointsInTrick >= 1 && round >= 6)) {
+                reasoning.push('조커로 탈환 (마이티 보존)');
+                return joker;
+            }
+        }
+
+        // 마이티 사용 판단 (강화된 조건)
+        if (hasCard(hand, mighty)) {
+            const shouldUseMighty = (
+                pointsInTrick >= 3 ||
+                (pointsInTrick >= 2 && round >= 7) ||
+                (pointsInTrick >= 1 && round >= 9) ||
+                (pointsNeeded > 0 && round >= 9 && pointsInTrick >= 1)
+            );
+            if (shouldUseMighty) {
+                reasoning.push(`마이티로 탈환 (${pointsInTrick}점, R${round})`);
+                return mighty;
+            }
         }
 
         // 일반 카드로 탈환
         if (canWin && cardsToWin.length > 0) {
-            if (pointsInTrick >= 1 || !hasOppositionRemaining) {
-                reasoning.push('탈환');
-                return this.selectLowestCard(cardsToWin);
+            const normalWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
+            if (normalWin.length > 0) {
+                if (pointsInTrick >= 1 || !hasOppositionRemaining) {
+                    reasoning.push('일반 카드로 탈환');
+                    return this.selectLowestCard(normalWin);
+                }
             }
             // 주공이 남아있으면 위임
             const isMasterRemaining = trickAnalysis.remainingPlayers.includes(masterIndex);
@@ -5575,7 +5652,7 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
                 reasoning.push('주공에게 위임');
                 return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
             }
-            return this.selectLowestCard(cardsToWin);
+            if (normalWin.length > 0) return this.selectLowestCard(normalWin);
         }
 
         // 주공이 남아있으면 위임
@@ -5588,6 +5665,7 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
         reasoning.push('탈환 불가 - 손실 최소화');
         return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
     }
+
 
     // ══════════════════════════════════════
     // ★★★ 미확정 상황 ★★★
@@ -6089,6 +6167,12 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
 
 
 renderAll(options = {}) {
+    if (!document.body.classList.contains('mobile-mode')) {
+        const mg = document.getElementById('mobile-ai-grid');
+        if (mg) mg.style.display = 'none';
+        const mc = document.getElementById('mobile-center-area');
+        if (mc) mc.style.display = 'none';
+    }
     this.renderInfoBar();
     this.renderPlayers(options);
     this.renderTrick();
@@ -6363,9 +6447,13 @@ renderAll(options = {}) {
             }
 
             renderMobileAIGrid() {
-    if (!document.body.classList.contains('mobile-mode')) return;
-    const grid = document.getElementById('mobile-ai-grid');
-    if (!grid) return;
+                const grid = document.getElementById('mobile-ai-grid');
+                if (!grid) return;
+                if (!document.body.classList.contains('mobile-mode')) {
+                    grid.style.display = 'none';
+                    return;
+                }
+                grid.style.display = '';
 
     for (let i = 1; i <= 4; i++) {
         const player = this.gameState.players[i];
@@ -6567,14 +6655,20 @@ renderMobileUserTrick() {
 
                 const myPlayer = this.gameState.players[0];
                 const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
+                const isMobile = document.body.classList.contains('mobile-mode');
+                const cardW = isMobile ? 43 : 86;
+                const cardH = isMobile ? 58 : 116;
+                const cardMargin = isMobile ? -20 : -40;
+
                 for (const card of mySortedHand) {
                     const cardEl = this.createCardElement(card, { faceUp: true });
-                    cardEl.style.cssText = 'width:40px;height:56px;margin-left:-20px;flex-shrink:0;';
+                    cardEl.style.cssText = `width:${cardW}px;height:${cardH}px;margin-left:${cardMargin}px;flex-shrink:0;`;
                     const img = cardEl.querySelector('img');
                     if (img) { img.style.width = '100%'; img.style.height = '100%'; }
                     handPreview.appendChild(cardEl);
                 }
                 if (handPreview.firstChild) handPreview.firstChild.style.marginLeft = '0';
+
                 const currentBidDisplay = document.querySelector('#bidding-modal .current-bid');
                 currentBidDisplay.parentNode.insertBefore(handPreview, currentBidDisplay);
                     
