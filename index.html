@@ -1871,15 +1871,15 @@ body.mobile-mode #mobile-ai-grid {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 61px;
+    min-height: 67px;
     margin-top: 2px;
 }
 
 
 
 .mobile-ai-cell .cell-trick-card .card {
-    width: 46px;
-    height: 61px;
+    width: 52px;
+    height: 67px;
 }
 
 
@@ -1946,13 +1946,13 @@ body.mobile-mode #mobile-center-area {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 61px;
+    min-height: 67px;
 }
 
 
 #mobile-user-trick .card {
-    width: 46px;
-    height: 61px;
+    width: 52px;
+    height: 67px;
 }
 
 
@@ -2009,8 +2009,8 @@ body.mobile-mode .player-area.user .player-hand {
 }
 
 body.mobile-mode .player-area.user .card {
-    width: 46px;
-    height: 61px;
+    width: 52px;
+    height: 67px;
     flex-shrink: 0;
 }
 
@@ -2156,7 +2156,7 @@ body.mobile-mode .friend-actions button { padding:8px 16px;font-size:13px; }
 body.mobile-mode .manual-selection summary { font-size:12px;padding:6px; }
 
 body.mobile-mode #exchange-modal { min-width:0;max-width:360px; }
-body.mobile-mode .exchange-hand .card { width:46px;height:61px; }
+body.mobile-mode .exchange-hand .card { width:52px;height:67px; }
 
 body.mobile-mode .exchange-info { font-size:12px; margin-top:2px; margin-bottom:2px; }
 
@@ -6725,8 +6725,8 @@ renderMobileUserTrick() {
                 const myPlayer = this.gameState.players[0];
                 const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
                 const isMobile = document.body.classList.contains('mobile-mode');
-                const cardW = isMobile ? 43 : 86;
-                const cardH = isMobile ? 58 : 116;
+                const cardW = isMobile ? 52 : 86;
+                const cardH = isMobile ? 67 : 116;
                 const cardMargin = isMobile ? -20 : -40;
 
                 for (const card of mySortedHand) {
