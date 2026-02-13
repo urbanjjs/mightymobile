@@ -1855,12 +1855,16 @@ body.mobile-mode #mobile-ai-grid {
 .mobile-ai-cell .cell-role.opposition { background:#555;color:#fff; }
 
 .mobile-ai-cell .cell-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 10px;
-    color: #aaa;
+    display: none;
 }
+
+.mobile-ai-cell .cell-header .cell-score {
+    font-size: 10px;
+    color: #FFD700;
+    font-weight: bold;
+    margin: 0 auto 0 6px;
+}
+
 
 /* ★ 각 AI 박스 안의 트릭 카드 표시 영역 */
 .mobile-ai-cell .cell-trick-card {
@@ -2463,51 +2467,40 @@ body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
     <div class="mobile-ai-cell" data-ai="2">
         <div class="cell-header">
             <span class="cell-name">AI-2</span>
-            <span class="cell-role"></span>
-        </div>
-        <div class="cell-info">
             <span class="cell-score">0점</span>
-            <span class="cell-cards">10장</span>
+            <span class="cell-role"></span>
         </div>
         <div class="cell-bid-bubble"></div>
         <div class="cell-trick-card"></div>
     </div>
     <div class="mobile-ai-cell" data-ai="3">
-        <div class="cell-header">
-            <span class="cell-name">AI-3</span>
-            <span class="cell-role"></span>
-        </div>
-        <div class="cell-info">
-            <span class="cell-score">0점</span>
-            <span class="cell-cards">10장</span>
-        </div>
-        <div class="cell-bid-bubble"></div>
-        <div class="cell-trick-card"></div>
+    <div class="cell-header">
+        <span class="cell-name">AI-3</span>
+        <span class="cell-score">0점</span>
+        <span class="cell-role"></span>
     </div>
-    <div class="mobile-ai-cell" data-ai="1">
-        <div class="cell-header">
-            <span class="cell-name">AI-1</span>
-            <span class="cell-role"></span>
-        </div>
-        <div class="cell-info">
-            <span class="cell-score">0점</span>
-            <span class="cell-cards">10장</span>
-        </div>
-        <div class="cell-bid-bubble"></div>
-        <div class="cell-trick-card"></div>
+    <div class="cell-bid-bubble"></div>
+    <div class="cell-trick-card"></div>
+</div>
+<div class="mobile-ai-cell" data-ai="1">
+    <div class="cell-header">
+        <span class="cell-name">AI-1</span>
+        <span class="cell-score">0점</span>
+        <span class="cell-role"></span>
     </div>
-    <div class="mobile-ai-cell" data-ai="4">
-        <div class="cell-header">
-            <span class="cell-name">AI-4</span>
-            <span class="cell-role"></span>
-        </div>
-        <div class="cell-info">
-            <span class="cell-score">0점</span>
-            <span class="cell-cards">10장</span>
-        </div>
-        <div class="cell-bid-bubble"></div>
-        <div class="cell-trick-card"></div>
+    <div class="cell-bid-bubble"></div>
+    <div class="cell-trick-card"></div>
+</div>
+<div class="mobile-ai-cell" data-ai="4">
+    <div class="cell-header">
+        <span class="cell-name">AI-4</span>
+        <span class="cell-score">0점</span>
+        <span class="cell-role"></span>
     </div>
+    <div class="cell-bid-bubble"></div>
+    <div class="cell-trick-card"></div>
+</div>
+
     <div id="mobile-giruda-bg"></div>
 </div>
 
@@ -6502,7 +6495,6 @@ renderAll(options = {}) {
 
         // 점수, 카드 수
         cell.querySelector('.cell-score').textContent = `${player.getScore()}점`;
-        cell.querySelector('.cell-cards').textContent = `${player.hand.length}장`;
 
         // 비딩 말풍선
         const bidBubble = cell.querySelector('.cell-bid-bubble');
