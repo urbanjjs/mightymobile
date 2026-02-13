@@ -7616,7 +7616,40 @@ playFinalDefeatSound() {
     setTimeout(() => this.playTone(200, 'sine', 0.8, 0.3), 900);
 }
 
+playGameWinSound() {
+    if (!this.enabled) return;
+    // 승리 팡파르
+    this.playTone(523, 'sine', 0.2, 0.6);
+    setTimeout(() => this.playTone(659, 'sine', 0.2, 0.6), 150);
+    setTimeout(() => this.playTone(784, 'sine', 0.3, 0.6), 300);
+    setTimeout(() => {
+        this.playTone(1047, 'sine', 0.5, 0.7);
+        this.playTone(784, 'sine', 0.5, 0.4);
+        this.playTone(523, 'sine', 0.5, 0.3);
+    }, 500);
+    setTimeout(() => {
+        this.playTone(784, 'sine', 0.2, 0.5);
+        this.playTone(1047, 'sine', 0.2, 0.5);
+    }, 900);
+    setTimeout(() => {
+        this.playTone(1319, 'sine', 0.8, 0.6);
+        this.playTone(1047, 'sine', 0.8, 0.4);
+        this.playTone(784, 'sine', 0.8, 0.3);
+    }, 1100);
+}
 
+playGameLoseSound() {
+    if (!this.enabled) return;
+    // 패배 하강음
+    this.playTone(400, 'sine', 0.5, 0.5);
+    setTimeout(() => this.playTone(350, 'triangle', 0.5, 0.5), 400);
+    setTimeout(() => this.playTone(280, 'sine', 0.5, 0.4), 800);
+    setTimeout(() => {
+        this.playTone(200, 'sine', 0.8, 0.4);
+        this.playTone(150, 'triangle', 0.8, 0.3);
+    }, 1200);
+    setTimeout(() => this.playTone(100, 'sine', 1.0, 0.2), 1800);
+}
         }
 
         const soundManager = new SoundManager();
@@ -7820,6 +7853,10 @@ playFinalDefeatSound() {
                 0% { opacity: 1; transform: scale(0.5); }
                 50% { opacity: 0.8; transform: scale(2); }
                 100% { opacity: 0; transform: scale(3); }
+            }
+            @keyframes resultFlash {
+                0% { opacity: 1; }
+                100% { opacity: 0; }
             }
 
 
@@ -8217,8 +8254,72 @@ spawnFirework(cx, cy) {
     document.body.appendChild(flash);
     setTimeout(() => flash.remove(), 500);
 }
+    playGameResultEffect(isWin) {
+    if (isWin) {
+        // 승리 효과
+        soundManager.playGameWinSound();
 
+        // 화면 골드 플래시
+        const flash = document.createElement('div');
+        flash.style.cssText = `
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(255,215,0,0.3) 0%, rgba(255,215,0,0) 70%);
+            z-index: 9998; pointer-events: none;
+            animation: resultFlash 1s ease-out forwards;
+        `;
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 1200);
+
+        // 컨페티 3파
+        this.spawnConfetti(30);
+        setTimeout(() => this.spawnConfetti(25), 600);
+        setTimeout(() => this.spawnConfetti(20), 1200);
+
+        // 폭죽 2발
+        setTimeout(() => {
+            this.spawnFirework(window.innerWidth * 0.3, window.innerHeight * 0.3);
+        }, 400);
+        setTimeout(() => {
+            this.spawnFirework(window.innerWidth * 0.7, window.innerHeight * 0.3);
+        }, 800);
+
+        // 중앙 팝업
+        setTimeout(() => {
+            this.showPopup('🎉 승리!', '#FFD700');
+        }, 200);
+
+    } else {
+        // 패배 효과
+        soundManager.playGameLoseSound();
+
+        // 화면 어두운 플래시
+        const flash = document.createElement('div');
+        flash.style.cssText = `
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(244,67,54,0.2) 0%, rgba(0,0,0,0.3) 70%);
+            z-index: 9998; pointer-events: none;
+            animation: resultFlash 1.5s ease-out forwards;
+        `;
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 1600);
+
+        // 가벼운 흔들림
+        this.shakeScreen();
+
+        // 중앙 팝업
+        setTimeout(() => {
+            this.showPopup('😢 패배...', '#f44336');
+        }, 300);
+
+        // 어두운 파티클
+        setTimeout(() => {
+            this.spawnParticles(null, ['💔', '😢', '💧', '🌧️'], 10);
+        }, 500);
+    }
 }
+}
+
+
 
         // ========================================
         // ===== main.js =====
@@ -8832,7 +8933,7 @@ spawnFirework(cx, cy) {
                 }
             }
 
-            async endGame() {
+           async endGame() {
                 this.gameState.phase = PHASES.GAME_END;
                 const result = this.gameState.calculateFinalScores();
                 for (const r of result.results) this.gameState.players[r.player].totalScore += r.change;
@@ -8852,8 +8953,9 @@ spawnFirework(cx, cy) {
                 this.ui.renderAll();
 
                 const userWon = result.results.find(r => r.player === 0).change > 0;
-                if (userWon) soundManager.playWin(); // Sound
+                this.effectManager.playGameResultEffect(userWon);
 
+                await this.delay(500);
                 this.ui.showResultModal(result, this.gameHistory);
             }
 
