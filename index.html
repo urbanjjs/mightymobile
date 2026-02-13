@@ -1754,9 +1754,11 @@ body.mobile-mode #mobile-giruda-bg {
     font-weight: bold;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.35;
+    opacity: 0.7;
     line-height: 1;
+    text-shadow: 0 0 20px currentColor;
 }
+
 
 body.mobile-mode .mobile-ai-cell {
     position: relative;
@@ -2004,7 +2006,28 @@ body.mobile-mode .player-area.user .player-hand .card:first-child {
 
 
 body.mobile-mode .player-area.user .player-name { font-size:11px; }
-body.mobile-mode .player-area.user .player-score { font-size:10px;margin-top:1px; }
+body.mobile-mode .player-area.user .player-score { font-size:10px;margin-top:0;margin-bottom:1px; }
+
+body.mobile-mode .player-area.user .player-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    border-bottom: none !important;
+}
+
+body.mobile-mode .player-area.user .player-score {
+    order: -1;
+}
+
+body.mobile-mode .player-area.user .player-header + .player-hand {
+    margin-top: 0;
+}
+
+body.mobile-mode .player-area.user .player-name {
+    display: none;
+}
+
 
 body.mobile-mode .card .special-label {
     font-size: 7px;
@@ -6006,13 +6029,14 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
 
                 if (contract.isNoGiruda) {
                     el.textContent = 'No';
-                    el.style.color = 'rgba(158, 158, 158, 0.4)';
+                    el.style.color = 'rgba(158, 158, 158, 0.7)';
                     el.style.fontSize = '80px';
                 } else if (contract.giruda) {
                     el.textContent = SUIT_SYMBOLS[contract.giruda];
                     const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
-                    el.style.color = isRed ? 'rgba(211, 47, 47, 0.4)' : 'rgba(255, 255, 255, 0.35)';
+                    el.style.color = isRed ? 'rgba(211, 47, 47, 0.7)' : 'rgba(255, 255, 255, 0.6)';
                     el.style.fontSize = '120px';
+
                 } else {
                     el.style.display = 'none';
                 }
