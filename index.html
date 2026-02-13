@@ -7521,6 +7521,90 @@ playCoinSound() {
     setTimeout(() => this.playTone(1500, 'sine', 0.1, 0.3), 80);
     setTimeout(() => this.playTone(1800, 'sine', 0.15, 0.2), 160);
 }
+playFinalVictoryFanfare() {
+    if (!this.enabled) return;
+    // 웅장한 팡파르 - 3화음 연속
+    // 1마디: 상승 팡파르
+    this.playTone(262, 'sine', 0.3, 0.7);     // C4
+    this.playTone(262, 'triangle', 0.3, 0.5);
+    setTimeout(() => {
+        this.playTone(330, 'sine', 0.3, 0.7);  // E4
+        this.playTone(330, 'triangle', 0.3, 0.5);
+    }, 200);
+    setTimeout(() => {
+        this.playTone(392, 'sine', 0.3, 0.7);  // G4
+        this.playTone(392, 'triangle', 0.3, 0.5);
+    }, 400);
+    // 2마디: 높은 음으로 점프
+    setTimeout(() => {
+        this.playTone(523, 'sine', 0.5, 0.8);  // C5
+        this.playTone(523, 'triangle', 0.5, 0.6);
+        this.playTone(659, 'sine', 0.5, 0.5);  // E5
+    }, 700);
+    // 3마디: 클라이맥스
+    setTimeout(() => {
+        this.playTone(784, 'sine', 0.8, 0.9);  // G5
+        this.playTone(784, 'triangle', 0.8, 0.6);
+        this.playTone(523, 'sine', 0.8, 0.5);  // C5 화음
+        this.playTone(659, 'sine', 0.8, 0.4);  // E5 화음
+    }, 1200);
+}
+
+playFinalVictoryDrumroll() {
+    if (!this.enabled) return;
+    // 드럼롤 효과
+    const baseFreq = 100;
+    for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+            const vol = 0.2 + (i / 20) * 0.5;
+            const freq = baseFreq + (i * 3);
+            this.playTone(freq, 'triangle', 0.08, vol);
+            this.playTone(freq * 1.5, 'sine', 0.05, vol * 0.3);
+        }, i * 50);
+    }
+    // 마지막 심벌즈 크래시
+    setTimeout(() => {
+        this.playTone(800, 'sawtooth', 0.15, 0.6);
+        this.playTone(1200, 'sine', 0.3, 0.4);
+        this.playTone(1600, 'sine', 0.2, 0.3);
+        this.playTone(2000, 'sine', 0.15, 0.2);
+    }, 1000);
+}
+
+playFinalVictoryChime() {
+    if (!this.enabled) return;
+    // 승리 차임벨
+    const notes = [523, 659, 784, 1047, 784, 1047, 1319, 1047, 1319, 1568];
+    notes.forEach((freq, i) => {
+        setTimeout(() => {
+            this.playTone(freq, 'sine', 0.25, 0.5 - (i * 0.03));
+            this.playTone(freq * 0.5, 'triangle', 0.2, 0.2);
+        }, i * 120);
+    });
+}
+
+playFinalExplosion() {
+    if (!this.enabled) return;
+    // 폭발음
+    this.playTone(60, 'sawtooth', 0.3, 0.8);
+    this.playTone(80, 'square', 0.2, 0.6);
+    this.playTone(120, 'triangle', 0.25, 0.5);
+    setTimeout(() => {
+        this.playTone(200, 'sine', 0.2, 0.4);
+        this.playTone(400, 'sine', 0.15, 0.3);
+        this.playTone(800, 'sine', 0.1, 0.2);
+    }, 150);
+}
+
+playFinalDefeatSound() {
+    if (!this.enabled) return;
+    // 패배 사운드 (낮고 느린 하강음)
+    this.playTone(400, 'sine', 0.4, 0.5);
+    setTimeout(() => this.playTone(350, 'sine', 0.4, 0.4), 300);
+    setTimeout(() => this.playTone(300, 'sine', 0.4, 0.4), 600);
+    setTimeout(() => this.playTone(200, 'sine', 0.8, 0.3), 900);
+}
+
 
         }
 
@@ -7649,6 +7733,85 @@ playCoinSound() {
             #mobile-user-trick.impact .card {
                 animation: impactZoom 0.5s ease !important;
             }
+            /* 최종 승리 축하 효과 */
+            .final-confetti {
+                position: fixed;
+                font-size: 30px;
+                pointer-events: none;
+                z-index: 10001;
+                animation: confettiFall var(--duration) ease-in forwards;
+            }
+
+            @keyframes confettiFall {
+                0% {
+                    opacity: 1;
+                    transform: translate(0, 0) rotate(0deg) scale(1);
+                }
+                50% {
+                    opacity: 1;
+                    transform: translate(var(--drift), 45vh) rotate(var(--spin)) scale(0.9);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translate(var(--drift2), 100vh) rotate(var(--spin2)) scale(0.5);
+                }
+            }
+
+            .final-firework {
+                position: fixed;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 10001;
+                animation: fireworkBurst 1.2s ease-out forwards;
+            }
+
+            @keyframes fireworkBurst {
+                0% {
+                    opacity: 1;
+                    transform: translate(0, 0) scale(1);
+                }
+                50% {
+                    opacity: 1;
+                    transform: translate(var(--fx), var(--fy)) scale(1.2);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translate(var(--fx2), var(--fy2)) scale(0);
+                }
+            }
+
+            .final-glow-text {
+                animation: glowPulse 1.5s ease-in-out infinite;
+            }
+
+            @keyframes glowPulse {
+                0%, 100% {
+                    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+                }
+                50% {
+                    text-shadow: 0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor;
+                }
+            }
+
+            .final-bounce {
+                animation: finalBounce 0.6s ease;
+            }
+
+            @keyframes finalBounce {
+                0% { transform: scale(0.3); opacity: 0; }
+                50% { transform: scale(1.15); opacity: 1; }
+                70% { transform: scale(0.9); }
+                100% { transform: scale(1); opacity: 1; }
+            }
+            @keyframes fireworkFlash {
+                0% { opacity: 1; transform: scale(0.5); }
+                50% { opacity: 0.8; transform: scale(2); }
+                100% { opacity: 0; transform: scale(3); }
+            }
+
+
         `;
         document.head.appendChild(style);
     }
@@ -7872,6 +8035,178 @@ playCoinSound() {
 
         setTimeout(() => container.remove(), 2000);
     }
+    // 최종 승리 축하 효과
+playCelebration(isHumanWinner) {
+    if (isHumanWinner) {
+        this.playFullCelebration();
+    } else {
+        this.playMildCelebration();
+    }
+}
+
+playFullCelebration() {
+    // ★ Phase 1 (0~500ms): 드럼롤 + 긴장감
+    soundManager.playFinalVictoryDrumroll();
+
+    // ★ Phase 2 (1000ms): 첫 폭발 + 폭죽
+    setTimeout(() => {
+        soundManager.playFinalExplosion();
+        this.shakeScreen();
+        this.spawnFirework(window.innerWidth * 0.5, window.innerHeight * 0.3);
+    }, 1000);
+
+    // ★ Phase 3 (1500ms): 팡파르 시작 + 컨페티 1파 + 좌우 폭죽
+    setTimeout(() => {
+        soundManager.playFinalVictoryFanfare();
+        this.spawnConfetti(50);
+        this.spawnFirework(window.innerWidth * 0.2, window.innerHeight * 0.35);
+        this.spawnFirework(window.innerWidth * 0.8, window.innerHeight * 0.3);
+    }, 1500);
+
+    // ★ Phase 4 (2200ms): 컨페티 2파 + 추가 폭죽
+    setTimeout(() => {
+        this.spawnConfetti(50);
+        this.spawnFirework(window.innerWidth * 0.35, window.innerHeight * 0.25);
+        this.spawnFirework(window.innerWidth * 0.65, window.innerHeight * 0.2);
+        soundManager.playFinalExplosion();
+    }, 2200);
+
+    // ★ Phase 5 (2800ms): 클라이맥스 - 대형 폭죽 + 차임벨
+    setTimeout(() => {
+        soundManager.playFinalVictoryChime();
+        this.shakeScreen();
+        this.spawnFirework(window.innerWidth * 0.5, window.innerHeight * 0.25);
+        this.spawnFirework(window.innerWidth * 0.3, window.innerHeight * 0.4);
+        this.spawnFirework(window.innerWidth * 0.7, window.innerHeight * 0.4);
+        this.spawnConfetti(60);
+    }, 2800);
+
+    // ★ Phase 6 (3500ms): 여운 - 마지막 컨페티
+    setTimeout(() => {
+        this.spawnConfetti(40);
+        soundManager.playFinalExplosion();
+        this.spawnFirework(window.innerWidth * 0.4, window.innerHeight * 0.3);
+        this.spawnFirework(window.innerWidth * 0.6, window.innerHeight * 0.35);
+    }, 3500);
+
+    // ★ Phase 7 (4200ms): 마무리 팡파르
+    setTimeout(() => {
+        soundManager.playFinalVictoryFanfare();
+        this.spawnConfetti(30);
+    }, 4200);
+
+    // ★ Phase 8 (5000ms): 최종 마무리
+    setTimeout(() => {
+        this.spawnConfetti(20);
+        soundManager.playWin();
+    }, 5000);
+}
+
+playMildCelebration() {
+    soundManager.playFinalDefeatSound();
+    this.spawnConfetti(15);
+    setTimeout(() => {
+        this.spawnFirework(window.innerWidth * 0.5, window.innerHeight * 0.3);
+        this.spawnConfetti(10);
+    }, 800);
+}
+
+spawnConfetti(count) {
+    const emojis = ['🎉', '🎊', '✨', '⭐', '💫', '🌟', '🎆', '🎇', '💎', '👑', '🏆', '🥇', '❤️', '💛', '💚', '💙', '💜'];
+    const colors = ['#FFD700', '#FF6B6B', '#4CAF50', '#2196F3', '#FF9800', '#E91E63', '#9C27B0', '#00BCD4'];
+
+    for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'final-confetti';
+
+        // 50% 이모지, 50% 컬러 사각형
+        if (Math.random() > 0.5) {
+            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            el.style.fontSize = (15 + Math.random() * 25) + 'px';
+        } else {
+            el.style.width = (8 + Math.random() * 12) + 'px';
+            el.style.height = (8 + Math.random() * 12) + 'px';
+            el.style.background = colors[Math.floor(Math.random() * colors.length)];
+            el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        }
+
+        const startX = Math.random() * window.innerWidth;
+        el.style.left = startX + 'px';
+        el.style.top = (-20 - Math.random() * 100) + 'px';
+
+        const drift = (Math.random() - 0.5) * 200;
+        const drift2 = drift + (Math.random() - 0.5) * 100;
+        const spin = (Math.random() - 0.5) * 720;
+        const spin2 = spin + (Math.random() - 0.5) * 360;
+        const duration = 2 + Math.random() * 2;
+
+        el.style.setProperty('--drift', drift + 'px');
+        el.style.setProperty('--drift2', drift2 + 'px');
+        el.style.setProperty('--spin', spin + 'deg');
+        el.style.setProperty('--spin2', spin2 + 'deg');
+        el.style.setProperty('--duration', duration + 's');
+        el.style.animationDelay = (Math.random() * 0.5) + 's';
+
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), (duration + 1) * 1000);
+    }
+}
+
+spawnFirework(cx, cy) {
+    const colors = ['#FFD700', '#FF6B6B', '#4CAF50', '#2196F3', '#FF9800', '#E91E63', '#9C27B0', '#FF4081', '#00E676', '#FFEB3B'];
+    const particleCount = 30 + Math.floor(Math.random() * 20);
+    const baseColor = colors[Math.floor(Math.random() * colors.length)];
+
+    for (let i = 0; i < particleCount; i++) {
+        const el = document.createElement('div');
+        el.className = 'final-firework';
+
+        const color = Math.random() > 0.3 ? baseColor : colors[Math.floor(Math.random() * colors.length)];
+        el.style.background = color;
+        el.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`;
+
+        const size = 4 + Math.random() * 6;
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+
+        el.style.left = cx + 'px';
+        el.style.top = cy + 'px';
+
+        const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.3;
+        const dist = 60 + Math.random() * 120;
+        const fx = Math.cos(angle) * dist;
+        const fy = Math.sin(angle) * dist;
+        const fx2 = fx + (Math.random() - 0.5) * 40;
+        const fy2 = fy + 30 + Math.random() * 50; // 중력 효과
+
+        el.style.setProperty('--fx', fx + 'px');
+        el.style.setProperty('--fy', fy + 'px');
+        el.style.setProperty('--fx2', fx2 + 'px');
+        el.style.setProperty('--fy2', fy2 + 'px');
+        el.style.animationDelay = (Math.random() * 0.1) + 's';
+
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2000);
+    }
+
+    // 폭죽 중앙 플래시
+    const flash = document.createElement('div');
+    flash.style.cssText = `
+        position: fixed;
+        left: ${cx - 30}px;
+        top: ${cy - 30}px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+        pointer-events: none;
+        z-index: 10001;
+        animation: fireworkFlash 0.4s ease-out forwards;
+    `;
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 500);
+}
+
 }
 
         // ========================================
@@ -8670,6 +9005,12 @@ showFinalSummary() {
 
     overlay.innerHTML = html;
     overlay.classList.remove('hidden');
+
+    // 축하 효과 실행
+    const isHumanWinner = winnerIndex === 0;
+    setTimeout(() => {
+        this.effectManager.playCelebration(isHumanWinner);
+    }, 300);
 
     // 게임 상태 초기화
     this.gameState.reset();
