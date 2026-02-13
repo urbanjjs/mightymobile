@@ -2281,7 +2281,7 @@ body.mobile-mode #mobile-ai-grid { display: grid !important; }
     z-index: 3000;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -2292,63 +2292,64 @@ body.mobile-mode #mobile-ai-grid { display: grid !important; }
 
 .final-summary-content {
     width: 100%;
-    max-width: 400px;
-    padding: 20px 16px 30px;
+    max-width: 600px;
+    padding: 40px 32px 50px;
     color: #e0e0e0;
 }
 
 .final-summary-content h2 {
     text-align: center;
-    font-size: 22px;
-    margin-bottom: 8px;
+    font-size: 36px;
+    margin-bottom: 16px;
 }
 
 .final-summary-content .fs-subtitle {
     text-align: center;
     color: #aaa;
-    font-size: 13px;
-    margin-bottom: 16px;
+    font-size: 18px;
+    margin-bottom: 24px;
 }
 
 .final-summary-content .fs-player-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
-    margin: 4px 0;
-    border-radius: 6px;
+    padding: 14px 20px;
+    margin: 6px 0;
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.08);
-    font-size: 14px;
+    font-size: 22px;
 }
 
 .final-summary-content .fs-player-row.winner {
-    border: 2px solid #FFD700;
+    border: 3px solid #FFD700;
     background: rgba(255, 215, 0, 0.15);
 }
 
 .final-summary-content .fs-player-name {
     font-weight: bold;
+    font-size: 22px;
 }
 
-.final-summary-content .fs-score.positive { color: #4CAF50; font-weight: bold; }
-.final-summary-content .fs-score.negative { color: #f44336; font-weight: bold; }
+.final-summary-content .fs-score.positive { color: #4CAF50; font-weight: bold; font-size: 22px; }
+.final-summary-content .fs-score.negative { color: #f44336; font-weight: bold; font-size: 22px; }
 
 .final-summary-content .fs-footer {
     text-align: center;
     color: #666;
-    font-size: 12px;
-    margin-top: 20px;
+    font-size: 16px;
+    margin-top: 30px;
 }
 
 .final-summary-content .fs-reload-btn {
     display: block;
-    margin: 16px auto 0;
-    padding: 12px 30px;
-    font-size: 15px;
+    margin: 24px auto 0;
+    padding: 16px 50px;
+    font-size: 20px;
     background: #4CAF50;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
 }
 
@@ -8482,21 +8483,18 @@ playCoinSound() {
             }
 
             endSession() {
-    // 결과 모달 숨기기
-    this.ui.hideResultModal();
-
-    // 모든 게임 UI 숨기기
-    document.getElementById('info-bar').style.display = 'none';
-    document.getElementById('game-area').style.display = 'none';
-    document.getElementById('action-area').style.display = 'none';
-    document.getElementById('mobile-ai-grid').style.display = 'none';
-    document.getElementById('mobile-center-area').style.display = 'none';
-    const logPanel = document.getElementById('ai-log-panel');
-    if (logPanel) logPanel.style.display = 'none';
-
-    // 최종 요약 오버레이 표시
-    this.showFinalSummary();
-}
+                this.ui.hideResultModal();
+                document.getElementById('info-bar').style.display = 'none';
+                document.getElementById('game-area').style.display = 'none';
+                document.getElementById('action-area').style.display = 'none';
+                document.getElementById('mobile-ai-grid').style.display = 'none';
+                document.getElementById('mobile-center-area').style.display = 'none';
+                const logPanel = document.getElementById('ai-log-panel');
+                if (logPanel) logPanel.style.display = 'none';
+                const modalOverlay = document.getElementById('modal-overlay');
+                if (modalOverlay) modalOverlay.classList.add('hidden');
+                this.showFinalSummary();
+            }
 
 showFinalSummary() {
     let finalScores = [0, 0, 0, 0, 0];
