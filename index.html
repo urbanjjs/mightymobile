@@ -2005,28 +2005,39 @@ body.mobile-mode .player-area.user .player-hand .card:first-child {
 }
 
 
-body.mobile-mode .player-area.user .player-name { font-size:11px; }
-body.mobile-mode .player-area.user .player-score { font-size:10px;margin-top:0;margin-bottom:1px; }
-
 body.mobile-mode .player-area.user .player-header {
-    flex-direction: column !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
     align-items: center !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-    border-bottom: none !important;
-}
-
-body.mobile-mode .player-area.user .player-score {
-    order: -1;
-}
-
-body.mobile-mode .player-area.user .player-header + .player-hand {
-    margin-top: 0;
+    padding-bottom: 1px !important;
+    margin-bottom: 1px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.1) !important;
 }
 
 body.mobile-mode .player-area.user .player-name {
-    display: none;
+    display: none !important;
 }
+
+body.mobile-mode .player-area.user .player-score {
+    font-size: 11px;
+    margin-top: 0;
+    text-align: left;
+    order: -1;
+}
+
+body.mobile-mode .player-area.user .player-role {
+    font-size: 10px;
+    margin-left: auto;
+}
+
+body.mobile-mode .player-area.user .player-hand {
+    margin-top: 0;
+}
+
+body.mobile-mode .player-area.user > .player-score {
+    display: none !important;
+}
+
 
 
 body.mobile-mode .card .special-label {
@@ -5927,6 +5938,7 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
             constructor(gameState, settings) {
                 this.gameState = gameState;
                 this.settings = settings;
+                this.isMobile = document.body.classList.contains('mobile-mode');
                 this.selectedCards = [];
                 this.selectedBid = { value: null, suit: null };
                 this.selectedFriend = { suit: null, rank: null };
@@ -6132,6 +6144,18 @@ renderAll(options = {}) {
                 else if (player.role === ROLES.OPPOSITION) { roleElement.classList.add('opposition'); }
 
                 scoreElement.textContent = player.getScore();
+                // 모바일 유저: 헤더에 점수 인라인 표시
+                if (this.isMobile && playerIndex === 0) {
+                    const header = element.querySelector('.player-header');
+                    let inlineScore = header.querySelector('.inline-score');
+                    if (!inlineScore) {
+                        inlineScore = document.createElement('span');
+                        inlineScore.className = 'inline-score';
+                        inlineScore.style.cssText = 'font-size:11px;color:#FFD700;';
+                        header.insertBefore(inlineScore, header.firstChild);
+                    }
+                    inlineScore.textContent = `점수: ${player.getScore()}점`;
+                }
                 handElement.innerHTML = '';
 
                 let playableCards = [];
