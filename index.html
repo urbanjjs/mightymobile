@@ -1998,6 +1998,7 @@ body.mobile-mode .player-area.user {
     width: 100%;
     max-width: 100vw;
     padding: 2px 4px;
+    padding-bottom: 40px;
 }
 
 body.mobile-mode .player-area.user .player-hand {
@@ -2070,6 +2071,10 @@ body.mobile-mode #action-area {
     padding: 4px 6px;
     min-height: 30px;
     gap: 3px;
+    order: -1;
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
 }
 
 body.mobile-mode #action-message { font-size:12px; }
