@@ -4787,12 +4787,13 @@ compareCards(cardA, cardB, leadSuit) {
                 const isJokerStillOut = !this.gameState.jokerUsed;
                 if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut) {
                     const iHaveJoker = hand.some(c => c.isJoker);
-                    if (!iHaveJoker && round >= 5) {
+                    // 사연 응답으로 친구가 조커를 가지고 있다고 알려진 경우 조커콜 금지
+                    const friendHasJoker = this.gameState.sayeonResponse === '넌사';
+                    if (!iHaveJoker && !friendHasJoker && round >= 5) {
                         reasoning.push('조커콜 - 야당 조커 견제');
                         return jokerCall;
                     }
                 }
-
                 // ── 수트 절제(Void) 전략 ──
                 if (giruda) {
                     const girudaCardsInHand = getCardsOfSuit(hand, giruda);
@@ -5014,14 +5015,25 @@ compareCards(cardA, cardB, leadSuit) {
 
                 // ── 6. 조커콜 전략 ──
                 const hasJokerCallCard = jokerCall && hand.some(c => c.equals(jokerCall));
-                const isJokerStillOut = !this.gameState.jokerUsed;
-                if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut) {
-                    const iHaveJoker = hand.some(c => c.isJoker);
-                    if (!iHaveJoker && round >= 5) {
-                        reasoning.push('조커콜 - 야당 조커 견제');
-                        return jokerCall;
-                    }
-                }
+const isJokerStillOut = !this.gameState.jokerUsed;
+if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut) {
+    const iHaveJoker = hand.some(c => c.isJoker);
+    // 사연을 안 물었으면 주공이 조커 보유 → 여당 조커이므로 조커콜 금지
+    const sayeon = this.gameState.sayeonResponse;
+    const masterHasJoker = (sayeon === null && this.gameState.settings?.useSayeon !== false);
+    // 사연 응답이 '넌사'면 친구(나)가 조커 보유 → 조커콜 금지
+    const friendHasJoker = (sayeon === '넌사');
+    if (!iHaveJoker && !masterHasJoker && !friendHasJoker && round >= 5) {
+        reasoning.push('조커콜 - 야당 조커 견제');
+        return jokerCall;
+    }
+    if (masterHasJoker) {
+        reasoning.push('조커콜 금지 - 사연 미실시, 주공이 조커 보유 추정');
+    }
+    if (friendHasJoker) {
+        reasoning.push('조커콜 금지 - 사연 응답으로 친구 조커 보유 확인');
+    }
+}
 
                 // ── 7. 조커 리드 (보스카드/기루다/void 전략이 모두 없을 때) ──
                 if (hasJoker && round >= 2 && round <= 8) {
@@ -5126,21 +5138,37 @@ compareCards(cardA, cardB, leadSuit) {
                 const isJokerStillOut = !this.gameState.jokerUsed;
                 const iHaveJoker = hand.some(c => c.isJoker);
 
-                if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut && !iHaveJoker) {
-                    const mightyPlayed = this.gameState.mightyUsed;
-                    if (mightyPlayed) {
-                        reasoning.push('조커콜 - 마이티 출현 후, 여당 조커 빼내기');
-                        return jokerCall;
-                    }
-                    if (isGovernmentClose && round >= 5) {
-                        reasoning.push('조커콜 - 여당 공약 임박');
-                        return jokerCall;
-                    }
-                    if (round >= 7) {
-                        reasoning.push('조커콜 - 후반부');
-                        return jokerCall;
-                    }
-                }
+                // 변경 후
+if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut && !iHaveJoker) {
+    // 사연 정보로 여당 조커 보유 여부 추정
+    const sayeon = this.gameState.sayeonResponse;
+    const sayeonUsed = this.gameState.settings?.useSayeon !== false;
+    // 사연을 안 물었으면 주공이 조커 보유 추정
+    const masterLikelyHasJoker = (sayeon === null && sayeonUsed);
+    // 사연 응답이 '넌사'면 친구가 조커 보유
+    const friendLikelyHasJoker = (sayeon === '넌사');
+    // 여당이 조커를 가지고 있다면 조커콜로 빼내는 것이 유리
+    const govHasJoker = masterLikelyHasJoker || friendLikelyHasJoker;
+
+    const mightyPlayed = this.gameState.mightyUsed;
+    if (mightyPlayed) {
+        reasoning.push('조커콜 - 마이티 출현 후, 여당 조커 빼내기');
+        return jokerCall;
+    }
+    if (govHasJoker && round >= 4) {
+        reasoning.push('조커콜 - 사연 정보로 여당 조커 보유 확인, 빼내기');
+        return jokerCall;
+    }
+    if (isGovernmentClose && round >= 5) {
+        reasoning.push('조커콜 - 여당 공약 임박');
+        return jokerCall;
+    }
+    if (round >= 7) {
+        reasoning.push('조커콜 - 후반부');
+        return jokerCall;
+    }
+}
+
                 // ★★★ 마이티 소진 전략 ★★★
                 if (!this.gameState.mightyUsed) {
                     const mighty = this.gameState.contract.mighty;
