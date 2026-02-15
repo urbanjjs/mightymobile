@@ -4935,28 +4935,49 @@ compareCards(cardA, cardB, leadSuit) {
                 }
 
                 // ── 3. 기루다 소진 전략 (초~중반) ──
-                // 야당의 기루다를 소진시켜 주공의 기루다 우위 확보
-                if (giruda && round >= 2 && round <= 7) {
-                    const myGirudaCards = getCardsOfSuit(hand, giruda).filter(c => !c.equals(mighty));
-                    const remainingGiruda = this.gameState.getRemainingCardsOfSuit(giruda);
-                    const otherGirudaCount = remainingGiruda.filter(c =>
-                        !myGirudaCards.some(mc => mc.equals(c)) && !c.equals(mighty)
-                    ).length;
+// 초반에는 적극적으로 기루다를 리드하여 야당 기루다를 소진시킴
+if (giruda && round <= 7) {
+    const myGirudaCards = getCardsOfSuit(hand, giruda).filter(c => !c.equals(mighty));
+    const remainingGiruda = this.gameState.getRemainingCardsOfSuit(giruda);
+    const otherGirudaCount = remainingGiruda.filter(c =>
+        !myGirudaCards.some(mc => mc.equals(c)) && !c.equals(mighty)
+    ).length;
 
-                    if (myGirudaCards.length > 0 && otherGirudaCount > 0) {
-                        // 높은 기루다부터 리드
-                        const highGiruda = myGirudaCards.filter(c => RANK_VALUES[c.rank] >= 10);
-                        if (highGiruda.length > 0) {
-                            reasoning.push(`기루다 소진 - 높은 기루다 리드 (야당 기루다 ${otherGirudaCount}장 남음)`);
-                            return this.selectHighestCard(highGiruda);
-                        }
-                        // 높은 카드 없으면 낮은 기루다 (주공이 보스카드 가지고 있을 수 있음)
-                        if (myGirudaCards.length >= 2) {
-                            reasoning.push(`기루다 소진 - 낮은 기루다 리드 (기루다 ${myGirudaCards.length}장 보유)`);
-                            return this.selectLowestCard(myGirudaCards);
-                        }
-                    }
-                }
+    if (myGirudaCards.length > 0 && otherGirudaCount > 0) {
+        // 초반(1~4라운드): 기루다 적극 리드
+        if (round <= 4) {
+            // 보스카드 기루다 우선
+            const girudaBoss = myGirudaCards.find(c => this.gameState.getCardAnalysis(c).isBoss);
+            if (girudaBoss) {
+                reasoning.push(`초반 기루다 소진 - 보스카드 ${girudaBoss.toString()} 리드`);
+                return girudaBoss;
+            }
+            // 높은 기루다 리드
+            const highGiruda = myGirudaCards.filter(c => RANK_VALUES[c.rank] >= 10);
+            if (highGiruda.length > 0) {
+                reasoning.push(`초반 기루다 소진 - 높은 기루다 리드 (야당 기루다 ${otherGirudaCount}장 남음)`);
+                return this.selectHighestCard(highGiruda);
+            }
+            // 높은 카드 없어도 기루다 리드 (야당 기루다 소진이 중요)
+            reasoning.push(`초반 기루다 소진 - 기루다 리드 (야당 기루다 ${otherGirudaCount}장 남음)`);
+            return this.selectLowestCard(myGirudaCards);
+        }
+
+        // 중반(5~7라운드): 야당 기루다가 남아있으면 계속 리드
+        if (otherGirudaCount >= 2) {
+            const highGiruda = myGirudaCards.filter(c => RANK_VALUES[c.rank] >= 10);
+            if (highGiruda.length > 0) {
+                reasoning.push(`중반 기루다 소진 - 높은 기루다 리드 (야당 기루다 ${otherGirudaCount}장)`);
+                return this.selectHighestCard(highGiruda);
+            }
+            if (myGirudaCards.length >= 1) {
+                reasoning.push(`중반 기루다 소진 - 기루다 리드 (야당 기루다 ${otherGirudaCount}장)`);
+                return this.selectLowestCard(myGirudaCards);
+            }
+        }
+    }
+
+}
 
                 // ── 4. 주공 void 수트 리드 (기루다 컷 유도) ──
                 if (masterVoidSuits.size > 0 && giruda) {
@@ -5044,17 +5065,15 @@ if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut) {
 }
 
                 // ── 7. 조커 리드 (보스카드/기루다/void 전략이 모두 없을 때) ──
-                if (hasJoker && round >= 2 && round <= 8) {
-                    // 마이티가 아직 살아있고 내가 안 가지고 있으면 조심
+                if (hasJoker && round >= 2 && round <= 9) {
                     const mightyStillInPlay = this.gameState.isMightyStillInPlay();
                     const canSafeJoker = !mightyStillInPlay || hasMighty;
                     if (canSafeJoker) {
-                        reasoning.push('조커 리드 (보스카드/기루다 전략 없음, 마이티 안전)');
+                        reasoning.push('조커 리드 (마이티 안전)');
                         return joker;
                     }
-                    // 후반부에는 위험 감수
-                    if (round >= 6) {
-                        reasoning.push('조커 리드 (후반부 - 마이티 위험 감수)');
+                    if (round >= 4) {
+                        reasoning.push('조커 리드 (중반 이후 - 마이티 위험 감수)');
                         return joker;
                     }
                 }
@@ -5310,44 +5329,45 @@ masterFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
         }
     }
 
-    // ── 조커콜 상황 ──
-    if (this.gameState.trick.jokerCalled) {
-        reasoning.push('조커콜 상황');
+    // ── 조커콜 상황 ── 부분을 찾아서 이렇게 변경
+if (this.gameState.trick.jokerCalled) {
+    reasoning.push('조커콜 상황');
 
-        // 조커콜로 여당 조커가 강제 출전한 경우 → 이 트릭은 여당에게 손실
-        // 마이티를 낭비하지 않고 최소 손실로 처리
-        const govJokerForced = this.gameState.trick.cards.some(p => {
-            if (!p.card.isJoker) return false;
-            const jokerPlayer = this.gameState.players[p.player];
-            return jokerPlayer.role === ROLES.MASTER || jokerPlayer.role === ROLES.FRIEND;
+    const govJokerForced = this.gameState.trick.cards.some(p => {
+        if (!p.card.isJoker) return false;
+        const jokerPlayer = this.gameState.players[p.player];
+        return jokerPlayer.role === ROLES.MASTER || jokerPlayer.role === ROLES.FRIEND;
     });
 
     if (govJokerForced) {
-        // 여당 조커가 이미 무효화됨 → 마이티 보존, 최소 손실
-        reasoning.push('여당 조커 강제 출전 - 마이티 보존, 손실 최소화');
+        // 여당 조커가 강제 출전 → 마이티 절대 보존, 손실 최소화
+        reasoning.push('여당 조커 강제 출전 - 마이티 절대 보존');
         return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
     }
 
-    // 야당 조커가 강제 출전한 경우 → 점수가 있으면 확보
-    if (pointsInTrick >= 2 && hasCard(hand, mighty)) {
-        reasoning.push('야당 조커 무효화 + 고점수 - 마이티로 확보');
-        return mighty;
+    // 야당 조커가 강제 출전한 경우
+    // 마이티는 최후반부 + 고점수일 때만 사용
+    if (hasCard(hand, mighty)) {
+        if (pointsInTrick >= 4 || (pointsInTrick >= 3 && round >= 8)) {
+            reasoning.push('야당 조커 무효화 + 매우 높은 점수 - 마이티 사용');
+            return mighty;
+        }
+        reasoning.push('조커콜 트릭 - 마이티 보존 (점수 부족)');
     }
 
+    // 일반 카드로 탈환 시도
     if (canWin && cardsToWin.length > 0) {
         const normalWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
-        if (normalWin.length > 0) {
-            if (pointsInTrick >= 1) {
-                reasoning.push('조커콜 트릭 - 일반 카드로 확보');
-                return this.selectLowestCard(normalWin);
-            }
+        if (normalWin.length > 0 && pointsInTrick >= 1) {
+            reasoning.push('조커콜 트릭 - 일반 카드로 확보');
+            return this.selectLowestCard(normalWin);
         }
     }
 
-    // 점수 없으면 낮은 카드
     reasoning.push('조커콜 트릭 - 낮은 카드');
     return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
 }
+
 
 
     // ── 여당이 이기고 있음 ──
@@ -5473,15 +5493,44 @@ friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSu
     }
 
     // ── 조커콜 상황 ──
-    if (this.gameState.trick.jokerCalled) {
-        reasoning.push('조커콜 상황');
-        if (hasCard(hand, mighty)) { reasoning.push('마이티로 승리'); return mighty; }
-        if (canWin && cardsToWin.length > 0) {
-            const normalWin = cardsToWin.filter(c => !c.isJoker);
-            if (normalWin.length > 0) { reasoning.push('트릭 확보'); return this.selectLowestCard(normalWin); }
-        }
+    // ── 조커콜 상황 ── 부분을 찾아서 이렇게 변경
+if (this.gameState.trick.jokerCalled) {
+    reasoning.push('조커콜 상황');
+
+    const govJokerForced = this.gameState.trick.cards.some(p => {
+        if (!p.card.isJoker) return false;
+        const jokerPlayer = this.gameState.players[p.player];
+        return jokerPlayer.role === ROLES.MASTER || jokerPlayer.role === ROLES.FRIEND;
+    });
+
+    if (govJokerForced) {
+        // 여당 조커가 이미 강제 출전 → 마이티 절대 보존
+        reasoning.push('여당 조커 강제 출전 - 마이티 절대 보존');
         return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
     }
+
+    // 야당 조커가 강제 출전한 경우
+    // 마이티는 극히 제한적으로만 사용
+    if (hasCard(hand, mighty)) {
+        if (pointsInTrick >= 4 || (pointsInTrick >= 3 && round >= 9)) {
+            reasoning.push('야당 조커 무효화 + 극히 높은 점수 - 마이티 사용');
+            return mighty;
+        }
+        reasoning.push('조커콜 트릭 - 마이티 보존');
+    }
+
+    // 일반 카드로 탈환
+    if (canWin && cardsToWin.length > 0) {
+        const normalWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
+        if (normalWin.length > 0) {
+            reasoning.push('일반 카드로 트릭 확보');
+            return this.selectLowestCard(normalWin);
+        }
+    }
+
+    return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
+}
+
 
     // ── 주공 조커 리드 시 점수 실어주기 ──
     const leadCard = this.gameState.trick.cards[0]?.card;
@@ -5574,7 +5623,30 @@ if (currentWinner === masterIndex) {
     if (hasOppositionRemaining) {
         reasoning.push('주공 약한 승리 + 야당 남음 - 적극 오버간');
 
-        // 보스카드로 확실하게 이기기 (마이티/조커 제외)
+        // ★ 주공 승리 카드가 보스카드인지 확인
+        const isMasterWinStrong = winningCard && (
+            winningCard.equals(mighty) ||
+            (winningCard.isJoker && round >= 2 && round <= 9) ||
+            this.gameState.getCardAnalysis(winningCard).isBoss ||
+            (giruda && winningCard.suit === giruda && leadSuit !== giruda)
+        );
+
+        // 주공이 강한 카드로 이기고 있으면 점수 실어주기
+        if (isMasterWinStrong) {
+            reasoning.push('주공 강한 승리 - 비보스 점수 실어주기');
+            const nonBossPoint = safeCards.filter(c =>
+                !this.gameState.getCardAnalysis(c).isBoss && c.isPointCard()
+            );
+            if (nonBossPoint.length > 0) return this.selectHighestCard(nonBossPoint);
+            const safeNonBoss = safeCards.filter(c => !this.gameState.getCardAnalysis(c).isBoss);
+            if (safeNonBoss.length > 0) return this.selectLowestCard(safeNonBoss);
+            if (safeCards.length > 0) return this.selectLowestCard(safeCards);
+            return this.selectLowestCard(playableCards);
+        }
+
+        // ★ 주공이 약한 카드로 이기고 있음 → 야당 역전 가능성 높음
+
+        // 보스카드로 확실한 오버간
         const bossWin = cardsToWin.filter(c =>
             !c.isJoker && !c.equals(mighty) && this.gameState.getCardAnalysis(c).isBoss
         );
@@ -5583,28 +5655,43 @@ if (currentWinner === masterIndex) {
             return this.selectLowestCard(bossWin);
         }
 
-        // 보스카드 없으면 일반 카드로 오버간
+        // 기루다 보스카드 컷 가능하면 기루다 컷
         if (canWin && cardsToWin.length > 0) {
             const cheapWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
-            if (cheapWin.length > 0) {
-                // 기루다 컷이 가능하면 기루다 컷
-                const girudaCut = cheapWin.filter(c => giruda && c.suit === giruda && leadSuit !== giruda);
-                if (girudaCut.length > 0) {
-                    reasoning.push('기루다 컷으로 오버간');
-                    return this.selectLowestCard(girudaCut);
+            const girudaCut = cheapWin.filter(c => giruda && c.suit === giruda && leadSuit !== giruda);
+            if (girudaCut.length > 0) {
+                const girudaBossCut = girudaCut.filter(c => this.gameState.getCardAnalysis(c).isBoss);
+                if (girudaBossCut.length > 0) {
+                    reasoning.push('기루다 보스카드 컷');
+                    return this.selectLowestCard(girudaBossCut);
                 }
-                reasoning.push('일반 오버간');
-                return this.selectLowestCard(cheapWin);
             }
         }
 
-        // 이길 수 없으면 비점수 낮은 카드 (점수 손실 방지)
+        // ★ 보스카드도 기루다 보스컷도 없으면 마이티 사용
+        if (hasCard(hand, mighty)) {
+            const pointsNeeded = this.gameState.contract.bidValue - this.gameState.governmentScore;
+            const shouldUseMighty = (
+                pointsInTrick >= 1 ||
+                round >= 4 ||
+                (pointsNeeded > 0 && round >= 3) ||
+                cardsToWin.filter(c => !c.isJoker && !c.equals(mighty) &&
+                    this.gameState.getCardAnalysis(c).isBoss).length === 0
+            );
+            if (shouldUseMighty) {
+                reasoning.push(`마이티로 오버간 (주공 약한 승리 방어, ${pointsInTrick}점, R${round})`);
+                return mighty;
+            }
+        }
+
+        // 오버간 불가 - 비점수 낮은 카드
         reasoning.push('오버간 불가 - 비점수 낮은 카드');
         const nonPoint = safeCards.filter(c => !c.isPointCard());
         if (nonPoint.length > 0) return this.selectLowestCard(nonPoint);
         if (safeCards.length > 0) return this.selectLowestCard(safeCards);
         return this.selectLowestCard(playableCards);
     }
+
 }
 
 
@@ -5630,48 +5717,79 @@ if (currentWinner === masterIndex) {
         const pointsNeeded = this.gameState.contract.bidValue - this.gameState.governmentScore;
 
         // ── 주공이 리드했는데 야당이 역전한 상황 ──
-        if (isMasterLead) {
-            reasoning.push('주공 리드 - 야당 역전 → 탈환 시도');
-            const mightyInTrick = this.gameState.trick.cards.some(p => p.card.equals(mighty));
+        // ── 주공 리드 - 야당 역전 → 탈환 시도 ── 부분을 찾아서 교체
+if (isMasterLead) {
+    reasoning.push('주공 리드 - 야당 역전 → 탈환 시도');
+    const mightyInTrick = this.gameState.trick.cards.some(p => p.card.equals(mighty));
 
-            // 1순위: 일반 카드로 탈환
-            if (canWin && cardsToWin.length > 0) {
-                const cheapWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
-                if (cheapWin.length > 0) {
-                    reasoning.push('일반 카드로 탈환');
-                    return this.selectLowestCard(cheapWin);
-                }
-            }
-
-            // 2순위: 조커로 탈환 (마이티보다 조커를 먼저 소모)
-            if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
-                if (pointsInTrick >= 1 || round >= 7) {
-                    reasoning.push('조커로 주공 지원 (마이티 보존)');
-                    return joker;
-                }
-            }
-
-            // 3순위: 마이티로 탈환 (조건부)
-            if (hasCard(hand, mighty)) {
-                const shouldUseMighty = (
-                    pointsInTrick >= 3 ||
-                    (pointsInTrick >= 2 && round >= 6) ||
-                    (pointsInTrick >= 1 && round >= 8) ||
-                    (pointsNeeded > 0 && round >= 9) ||
-                    (pointsInTrick >= 2 && !hasOppositionRemaining)
-                );
-                if (shouldUseMighty) {
-                    reasoning.push(`마이티로 주공 지원 (${pointsInTrick}점, R${round})`);
-                    return mighty;
-                } else {
-                    reasoning.push(`마이티 보존 (${pointsInTrick}점 - 가치 부족)`);
-                }
-            }
-
-            // 탈환 불가
-            reasoning.push('탈환 불가 - 손실 최소화');
-            return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
+    // ★ 초구 특수 처리
+    if (round === 1 && hasCard(hand, mighty)) {
+        if (!hasOppositionRemaining || pointsInTrick >= 1) {
+            reasoning.push('초구 - 주공 지원 마이티 (야당 역전 방지)');
+            return mighty;
         }
+    }
+
+    // 1순위: 일반 카드로 "확실한" 탈환 (보스카드 또는 야당 없음)
+    if (canWin && cardsToWin.length > 0) {
+        const cheapWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
+        if (cheapWin.length > 0) {
+            // 야당이 남아있으면 보스카드로만 탈환
+            if (hasOppositionRemaining) {
+                const bossWin = cheapWin.filter(c => this.gameState.getCardAnalysis(c).isBoss);
+                if (bossWin.length > 0) {
+                    reasoning.push('보스카드로 확실한 탈환');
+                    return this.selectLowestCard(bossWin);
+                }
+                // 기루다 컷이 가능하면 기루다 컷 (기루다는 확실한 승리)
+                const girudaCut = cheapWin.filter(c => giruda && c.suit === giruda && leadSuit !== giruda);
+                if (girudaCut.length > 0) {
+                    const girudaBossCut = girudaCut.filter(c => this.gameState.getCardAnalysis(c).isBoss);
+                    if (girudaBossCut.length > 0) {
+                        reasoning.push('기루다 보스카드 컷으로 확실한 탈환');
+                        return this.selectLowestCard(girudaBossCut);
+                    }
+                    // 기루다 컷이지만 보스카드 아님 → 역전 가능성 있으므로 마이티 검토로 넘김
+                }
+                // 보스카드도 기루다 컷도 없으면 → 마이티 검토로 넘어감
+            } else {
+                // 야당이 없으면 아무 카드로든 탈환 OK
+                reasoning.push('일반 카드로 탈환 (야당 완료)');
+                return this.selectLowestCard(cheapWin);
+            }
+        }
+    }
+
+    // 2순위: 조커로 탈환 (마이티보다 조커를 먼저 소모)
+    if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
+        if (pointsInTrick >= 1 || round >= 5 || !hasOppositionRemaining) {
+            reasoning.push('조커로 주공 지원 (마이티 보존)');
+            return joker;
+        }
+    }
+
+    // 3순위: 마이티로 탈환
+    if (hasCard(hand, mighty)) {
+        const shouldUseMighty = (
+            pointsInTrick >= 2 ||
+            (pointsInTrick >= 1 && round >= 4) ||
+            (pointsNeeded > 0 && round >= 6) ||
+            (!hasOppositionRemaining && pointsInTrick >= 1) ||
+            round >= 8 ||
+            // ★ 보스카드 없이 이길 수 없고 야당이 남아있으면 마이티 사용
+            (hasOppositionRemaining && (!canWin || cardsToWin.every(c => c.isJoker || c.equals(mighty))))
+        );
+        if (shouldUseMighty) {
+            reasoning.push(`마이티로 주공 지원 (${pointsInTrick}점, R${round})`);
+            return mighty;
+        }
+    }
+
+    reasoning.push('탈환 불가 - 손실 최소화');
+    return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
+}
+
+
 
         // ── 야당 리드에서 야당이 이기고 있는 상황 ──
         reasoning.push('야당 리드 - 야당 승리 중');
@@ -5703,10 +5821,11 @@ if (currentWinner === masterIndex) {
         // 마이티 사용 판단 (강화된 조건)
         if (hasCard(hand, mighty)) {
             const shouldUseMighty = (
-                pointsInTrick >= 3 ||
-                (pointsInTrick >= 2 && round >= 7) ||
-                (pointsInTrick >= 1 && round >= 9) ||
-                (pointsNeeded > 0 && round >= 9 && pointsInTrick >= 1)
+                pointsInTrick >= 2 ||
+                (pointsInTrick >= 1 && round >= 5) ||
+                (pointsNeeded > 0 && round >= 7) ||
+                (!hasOppositionRemaining && pointsInTrick >= 1) ||
+                round >= 8
             );
             if (shouldUseMighty) {
                 reasoning.push(`마이티로 탈환 (${pointsInTrick}점, R${round})`);
