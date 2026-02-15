@@ -1871,15 +1871,15 @@ body.mobile-mode #mobile-ai-grid {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 67px;
+    min-height: 70px;
     margin-top: 2px;
 }
 
 
 
 .mobile-ai-cell .cell-trick-card .card {
-    width: 52px;
-    height: 67px;
+    width: 55px;
+    height: 70px;
 }
 
 
@@ -1946,13 +1946,13 @@ body.mobile-mode #mobile-center-area {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 67px;
+    min-height: 70px;
 }
 
 
 #mobile-user-trick .card {
-    width: 52px;
-    height: 67px;
+    width: 55px;
+    height: 70px;
 }
 
 
@@ -2010,8 +2010,8 @@ body.mobile-mode .player-area.user .player-hand {
 }
 
 body.mobile-mode .player-area.user .card {
-    width: 52px;
-    height: 67px;
+    width: 55px;
+    height: 70px;
     flex-shrink: 0;
 }
 
@@ -5667,22 +5667,31 @@ if (currentWinner === masterIndex) {
                 }
             }
         }
+        // ★ 보스카드 없으면 조커로 오버간 (마이티보다 먼저)
+        if (joker && round >= 2 && round <= 9) {
+            const mightyInTrickCheck = this.gameState.trick.cards.some(p => p.card.equals(mighty));
+            if (!mightyInTrickCheck) {
+                reasoning.push('조커로 오버간 (보스카드 없음, 마이티 보존)');
+                return joker;
+            }
+        }
 
         // ★ 보스카드도 기루다 보스컷도 없으면 마이티 사용
         if (hasCard(hand, mighty)) {
             const pointsNeeded = this.gameState.contract.bidValue - this.gameState.governmentScore;
             const shouldUseMighty = (
-                pointsInTrick >= 1 ||
-                round >= 4 ||
-                (pointsNeeded > 0 && round >= 3) ||
-                cardsToWin.filter(c => !c.isJoker && !c.equals(mighty) &&
-                    this.gameState.getCardAnalysis(c).isBoss).length === 0
+                (pointsInTrick >= 2) ||
+                (pointsInTrick >= 1 && round >= 4) ||
+                (pointsNeeded > 0 && round >= 7 && pointsInTrick >= 1) ||
+                (round >= 9 && pointsInTrick >= 1)
             );
             if (shouldUseMighty) {
                 reasoning.push(`마이티로 오버간 (주공 약한 승리 방어, ${pointsInTrick}점, R${round})`);
                 return mighty;
             }
+            reasoning.push(`마이티 보존 (트릭 점수 ${pointsInTrick}점 - 가치 부족)`);
         }
+
 
         // 오버간 불가 - 비점수 낮은 카드
         reasoning.push('오버간 불가 - 비점수 낮은 카드');
@@ -5762,11 +5771,11 @@ if (isMasterLead) {
 
     // 2순위: 조커로 탈환 (마이티보다 조커를 먼저 소모)
     if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
-        if (pointsInTrick >= 1 || round >= 5 || !hasOppositionRemaining) {
-            reasoning.push('조커로 주공 지원 (마이티 보존)');
-            return joker;
-        }
+    if (pointsInTrick >= 1 || round >= 3 || !hasOppositionRemaining) {
+        reasoning.push('조커로 주공 지원 (마이티 보존)');
+        return joker;
     }
+}
 
     // 3순위: 마이티로 탈환
     if (hasCard(hand, mighty)) {
@@ -5812,11 +5821,12 @@ if (isMasterLead) {
         // 조커 사용 판단 (마이티보다 먼저 검토)
         const mightyInTrick = this.gameState.trick.cards.some(p => p.card.equals(mighty));
         if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
-            if (pointsInTrick >= 2 || (pointsInTrick >= 1 && round >= 6)) {
+            if (pointsInTrick >= 1 || round >= 4 || !hasOppositionRemaining) {
                 reasoning.push('조커로 탈환 (마이티 보존)');
                 return joker;
             }
         }
+
 
         // 마이티 사용 판단 (강화된 조건)
         if (hasCard(hand, mighty)) {
@@ -6300,33 +6310,44 @@ if (isMasterLead) {
                 }
             }
             renderMobileGirudaBg() {
-                const el = document.getElementById('mobile-giruda-bg');
-                if (!el || !document.body.classList.contains('mobile-mode')) return;
+    const el = document.getElementById('mobile-giruda-bg');
+    if (!el || !document.body.classList.contains('mobile-mode')) return;
 
-                const contract = this.gameState.contract;
-                if (!contract.bidValue ||
-                    this.gameState.phase === PHASES.WAITING ||
-                    this.gameState.phase === PHASES.BIDDING) {
-                    el.style.display = 'none';
-                    return;
-                }
+    const contract = this.gameState.contract;
+    if (!contract.bidValue ||
+        this.gameState.phase === PHASES.WAITING ||
+        this.gameState.phase === PHASES.BIDDING) {
+        el.style.display = 'none';
+        return;
+    }
 
-                el.style.display = 'block';
+    el.style.display = 'block';
+    el.style.textAlign = 'center';
 
-                if (contract.isNoGiruda) {
-                    el.textContent = 'No';
-                    el.style.color = 'rgba(158, 158, 158, 0.7)';
-                    el.style.fontSize = '80px';
-                } else if (contract.giruda) {
-                    el.textContent = SUIT_SYMBOLS[contract.giruda];
-                    const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
-                    el.style.color = isRed ? 'rgba(211, 47, 47, 0.7)' : 'rgba(255, 255, 255, 0.6)';
-                    el.style.fontSize = '120px';
+    let girudaText = '';
+    let girudaColor = '';
+    let mainSize = '120px';
 
-                } else {
-                    el.style.display = 'none';
-                }
-            }
+    if (contract.isNoGiruda) {
+        girudaText = 'No';
+        girudaColor = 'rgba(158, 158, 158, 0.7)';
+        mainSize = '80px';
+    } else if (contract.giruda) {
+        girudaText = SUIT_SYMBOLS[contract.giruda];
+        const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
+        girudaColor = isRed ? 'rgba(211, 47, 47, 0.7)' : 'rgba(255, 255, 255, 0.6)';
+    } else {
+        el.style.display = 'none';
+        return;
+    }
+
+    el.style.color = girudaColor;
+    el.innerHTML = `
+        <div style="font-size:${mainSize};line-height:1;">${girudaText}</div>
+        <div style="font-size:40px;line-height:1;margin-top:-5px;">${contract.bidValue}</div>
+    `;
+}
+
             renderMobileScoreProgress() {
     if (!document.body.classList.contains('mobile-mode')) return;
     const container = document.getElementById('mobile-score-progress');
@@ -6582,7 +6603,7 @@ renderAll(options = {}) {
             }
 
             // ★ 팀별 점수 진행 바
-            renderGirudaBackground() {
+renderGirudaBackground() {
     const existing = document.getElementById('giruda-bg-symbol');
     if (existing) existing.remove();
 
@@ -6598,21 +6619,23 @@ renderAll(options = {}) {
     if (contract.isNoGiruda) {
         girudaText = 'No';
         girudaColor = 'rgba(158, 158, 158, 0.35)';
-
     } else if (contract.giruda) {
         girudaText = SUIT_SYMBOLS[contract.giruda];
         const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
         girudaColor = isRed ? 'rgba(211, 47, 47, 0.35)' : 'rgba(255, 255, 255, 0.3)';
-
     } else {
         return;
     }
 
-    symbol.textContent = girudaText;
-    symbol.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:180px;color:${girudaColor};pointer-events:none;z-index:0;font-weight:bold;line-height:1;`;
+    symbol.innerHTML = `
+        <div style="font-size:180px;line-height:1;">${girudaText}</div>
+        <div style="font-size:60px;line-height:1;margin-top:-10px;">${contract.bidValue}</div>
+    `;
+    symbol.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:${girudaColor};pointer-events:none;z-index:0;font-weight:bold;text-align:center;`;
     trickArea.style.position = 'relative';
     trickArea.insertBefore(symbol, trickArea.firstChild);
 }
+
             renderScoreProgress() {
                 const existing = document.getElementById('score-progress');
                 if (existing) existing.remove();
@@ -9012,12 +9035,16 @@ spawnFirework(cx, cy) {
                 this.ui.renderTrick();
                 this.ui.setMessage(`${this.gameState.players[winner].name}이(가) ${winningCard.toString()}(으)로 승리!`);
                 await this.delay(2000);
+
+                const prevGovScore = this.gameState.governmentScore;
+                const prevOppScore = this.gameState.oppositionScore;
                 this.gameState.endTrick();
+                
                 // endTrick() 안, this.gameState.endTrick() 다음 줄에 추가
 
                 // ★ Tier 3 이벤트 체크
                 const trickPoints = this.gameState.players[winner].scoreCards.length;
-                const prevGovScore = this.gameState.governmentScore;
+                //const prevGovScore = this.gameState.governmentScore;
 
                 // 대량 점수 트릭 (이번 트릭에서 3점 이상)
                 const thisRoundPoints = this.gameState.trick.cards
@@ -9025,13 +9052,23 @@ spawnFirework(cx, cy) {
                     : 0;
                 // trick.cards는 이미 endTrick에서 처리되었으므로, 점수는 승자의 scoreCards 변화로 판단
                 // 간접적으로 판단: endTrick 전후의 governmentScore 차이
-                this.gameState.updateTeamScores();
+this.gameState.updateTeamScores();
                 const newGovScore = this.gameState.governmentScore;
+                const newOppScore = this.gameState.oppositionScore;
+                const bidValue = this.gameState.contract.bidValue;
+                const remainingRounds = GAME_CONFIG.TOTAL_ROUNDS - this.gameState.round;
+                const remainingMaxPoints = GAME_CONFIG.TOTAL_POINTS - newGovScore - newOppScore;
 
                 // 공약 달성 순간
-                const bidValue = this.gameState.contract.bidValue;
                 if (prevGovScore < bidValue && newGovScore >= bidValue) {
                     eventBus.emit('contract-achieved', { score: newGovScore, bidValue });
+                    this.ui.setMessage(`🎉 여당 공약 달성! (${newGovScore}/${bidValue})`);
+                    await this.delay(2000);
+                }
+                // 공약 실패 확정
+                else if (newGovScore < bidValue && newGovScore + remainingMaxPoints < bidValue) {
+                    this.ui.setMessage(`💀 여당 공약 실패! (${newGovScore}/${bidValue}, 남은 점수 ${remainingMaxPoints}점)`);
+                    await this.delay(2000);
                 }
 
                 this.ui.renderAll();
