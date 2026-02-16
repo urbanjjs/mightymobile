@@ -77,21 +77,23 @@ body.mobile-mode {
 }
 
 .center-round-text {
-    font-size: 16px;
+    font-size: 12px;
     color: #ccc;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     font-weight: bold;
     letter-spacing: 1px;
+    opacity: 0.8;
 }
 
 .center-friend-text {
     font-size: 18px;
-    color: #FFD700; /* 골드 색상 */
+    color: #FFD700;
     margin-top: 5px;
     font-weight: bold;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.6); /* 배경 더 진하게 */
     padding: 4px 12px;
     border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5); /* 그림자 추가로 가독성 확보 */
 }
 
 /* 기루다와 숫자를 겹치기 위한 래퍼 */
@@ -111,36 +113,43 @@ body.mobile-mode {
     transform: translate(-50%, -50%);
     font-size: 160px;
     line-height: 1;
-    opacity: 0.3; /* 배경처럼 연하게 */
+    /* [수정] 투명도 증가 (0.3 -> 0.6) 더 진하게 */
+    opacity: 0.6; 
     z-index: 1;
+    /* 테두리 효과 추가로 숫자와 구분감 주기 */
+    -webkit-text-stroke: 2px rgba(0,0,0,0.3); 
 }
 
 .overlap-number {
-    position: relative; /* 심볼 위에 올라오게 */
+    position: relative;
     font-size: 80px;
     font-weight: 900;
     color: #fff;
     z-index: 2;
-    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+    text-shadow: 0 0 15px rgba(0,0,0,0.8); /* 그림자 강화 */
 }
 
 /* 모바일 전용 조정 */
 body.mobile-mode .overlap-wrapper {
     width: 100px;
-    height: 90px;
+    height: 80px;
 }
 body.mobile-mode .overlap-symbol {
-    font-size: 100px;
+    font-size: 90px;
+    opacity: 0.5; /* 모바일은 약간 연하게 (카드 가림 방지) */
 }
 body.mobile-mode .overlap-number {
-    font-size: 50px;
+    font-size: 45px;
 }
 body.mobile-mode .center-round-text {
-    font-size: 12px;
+    /* 모바일에서는 더 작게 */
+    font-size: 10px; 
+    margin-bottom: 0;
 }
 body.mobile-mode .center-friend-text {
-    font-size: 13px;
+    font-size: 12px;
     padding: 2px 8px;
+    margin-top: 2px;
 }
 
         .game-info span {
@@ -1837,18 +1846,21 @@ body.mobile-mode #mobile-ai-grid {
 body.mobile-mode #mobile-giruda-bg {
     display: block;
     position: absolute;
-    top: 22%;
+    
+    /* [핵심 수정] 위치를 상단 35% 정도로 내려서 점수 바(상단) 아래에 위치하게 함 */
+    top: 35%; 
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 120px;
-    font-weight: bold;
+    
+    /* 기존 스타일 덮어쓰기 */
+    font-size: inherit; 
+    font-weight: normal;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.7;
-    line-height: 1;
-    text-shadow: 0 0 20px currentColor;
+    opacity: 1; /* 투명도는 내부 요소에서 제어 */
+    line-height: normal;
+    text-shadow: none;
 }
-
 
 body.mobile-mode .mobile-ai-cell {
     position: relative;
