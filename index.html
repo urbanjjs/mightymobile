@@ -7250,8 +7250,9 @@ renderMobileUserTrick() {
 
             // UI 클래스 내부의 setMessage 메서드를 찾아 교체하세요.
             // UI 클래스 내부의 setMessage 메서드를 이 코드로 교체하세요
+                       // UI 클래스 내부의 setMessage 메서드를 이 코드로 교체하세요
             setMessage(message) {
-                // 1. 무시할 메시지 필터링 (기존 로직 유지)
+                // 1. 무시할 메시지 필터링
                 const ignoredMessages = [
                     '카드를 선택하세요',
                     '선(리드) 차례',
@@ -7264,13 +7265,12 @@ renderMobileUserTrick() {
                     '친구 카드를 선언하세요'
                 ];
 
-                // 메시지가 무시 목록에 포함되면 표시하지 않음
                 const shouldIgnore = ignoredMessages.some(m => message.includes(m));
                 const actionArea = document.getElementById('action-area');
                 const messageEl = document.getElementById('action-message');
                 const buttonsContainer = document.getElementById('action-buttons');
 
-                // 2. 기존에 동작 중인 타이머가 있다면 취소 (새 메시지가 우선이므로)
+                // 2. 기존 타이머 초기화 (새 메시지가 오면 시간 리셋)
                 if (this.messageTimer) {
                     clearTimeout(this.messageTimer);
                     this.messageTimer = null;
@@ -7278,7 +7278,7 @@ renderMobileUserTrick() {
 
                 if (shouldIgnore) {
                     messageEl.innerHTML = '';
-                    // 버튼이 없으면 영역 자체를 숨김
+                    // 버튼이 없으면 숨김
                     if (!buttonsContainer.hasChildNodes()) {
                         actionArea.style.display = 'none';
                     }
@@ -7286,53 +7286,60 @@ renderMobileUserTrick() {
                 }
 
                 // 3. 메시지 표시
-                actionArea.style.display = 'flex'; // 영역 보이기
+                actionArea.style.display = 'flex';
                 messageEl.innerHTML = `<span>${message}</span>`;
 
                 // 4. 3초 후 삭제 타이머 설정
                 this.messageTimer = setTimeout(() => {
-                    messageEl.innerHTML = ''; // 텍스트 지우기
-                    
-                    // 버튼이 없을 때만 영역을 숨김 (버튼이 있으면 영역은 유지하고 글자만 지움)
-                    if (!buttonsContainer.hasChildNodes()) {
-                        actionArea.style.display = 'none';
+                    // [수정됨] ★ 버튼이 있으면 메시지를 지우지 않고 유지합니다.
+                    if (buttonsContainer && buttonsContainer.hasChildNodes()) {
+                        this.messageTimer = null;
+                        return; // 함수 종료 (메세지 삭제 안 함)
                     }
+
+                    // 버튼이 없을 때만 텍스트 삭제 및 영역 숨김
+                    messageEl.innerHTML = ''; 
+                    actionArea.style.display = 'none';
                     this.messageTimer = null;
-                }, 3000); // 3000ms = 3초
+                }, 3000);
             }
+
 
             clearMessage() { document.getElementById('action-message').innerHTML = ''; }
 
             // ===== 비딩 모달 =====
+                        // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
             showBiddingModal() {
                 this.selectedBid = { value: null, suit: null };
                 const currentBid = this.gameState.bidding.currentBid;
                 document.getElementById('current-bid-display').textContent =
                     currentBid ? `${currentBid.value}${currentBid.suit === 'none' ? 'No' : SUIT_SYMBOLS[currentBid.suit]}` : '없음';
                 
-                // ★ 비딩 모달 내 손패 표시
+                // 손패 미리보기 영역 초기화
                 const oldPreview = document.getElementById('bid-hand-preview');
                 if (oldPreview) oldPreview.remove();
+                
                 const handPreview = document.createElement('div');
                 handPreview.id = 'bid-hand-preview';
                 
-                handPreview.style.cssText = 'display:flex;justify-content:center;flex-wrap:wrap;gap:5px;margin-bottom:12px;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;';
                 const myPlayer = this.gameState.players[0];
                 const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
                 const isMobile = document.body.classList.contains('mobile-mode');
                 
-                const cardW = isMobile ? 55 : 86;
-                const cardH = isMobile ? 70 : 116;
-                const cardMargin = 0;
-                // 간격 설정 (모바일은 촘촘하게 3px, 데스크톱은 5px)
+                // [수정됨] 모바일 카드 크기를 3px씩 축소 (55x70 -> 52x67)
+                const cardW = isMobile ? 52 : 86; // 너비 55 -> 52
+                const cardH = isMobile ? 67 : 116; // 높이 70 -> 67
+                
+                // 간격 설정
                 const gapSize = isMobile ? '2px' : '5px'; 
-                // handPreview 스타일 적용 (gap 추가)
+                
                 handPreview.style.cssText = `display:flex;justify-content:center;flex-wrap:wrap;gap:${gapSize};margin-bottom:12px;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;`;
-
 
                 for (const card of mySortedHand) {
                     const cardEl = this.createCardElement(card, { faceUp: true });
+                    // 카드 크기 적용
                     cardEl.style.cssText = `width:${cardW}px;height:${cardH}px;margin-left:0;flex-shrink:0;`;
+                    
                     const img = cardEl.querySelector('img');
                     if (img) { img.style.width = '100%'; img.style.height = '100%'; }
                     handPreview.appendChild(cardEl);
@@ -7343,6 +7350,7 @@ renderMobileUserTrick() {
                 const currentBidDisplay = document.querySelector('#bidding-modal .current-bid');
                 currentBidDisplay.parentNode.insertBefore(handPreview, currentBidDisplay);
                     
+                // 비딩 숫자 버튼 생성
                 const numbersContainer = document.getElementById('bid-numbers');
                 numbersContainer.innerHTML = '';
                 for (let i = GAME_CONFIG.MIN_BID; i <= GAME_CONFIG.MAX_BID; i++) {
@@ -7352,6 +7360,7 @@ renderMobileUserTrick() {
                     numbersContainer.appendChild(btn);
                 }
 
+                // 비딩 문양 버튼 생성
                 const suitsContainer = document.getElementById('bid-suits');
                 suitsContainer.innerHTML = '';
                 const suits = [
@@ -7374,12 +7383,11 @@ renderMobileUserTrick() {
                 document.getElementById('bid-submit').onclick = () => this.submitBid();
                 document.getElementById('bid-pass').onclick = () => this.passBid();
 
-                // ★ 퀵 비딩 버튼: 이전에 비딩한 수트로 +1
+                // 퀵 비딩 버튼 (기존 로직 유지)
                 const quickContainer = document.getElementById('bid-quick-buttons');
                 if (quickContainer) quickContainer.remove();
 
                 if (currentBid) {
-                    // 내 마지막 비딩 찾기
                     const myLastBid = [...this.gameState.bidding.history]
                         .reverse()
                         .find(h => h.player === 0 && h.type === 'bid');
@@ -7389,7 +7397,6 @@ renderMobileUserTrick() {
                         quickDiv.id = 'bid-quick-buttons';
                         quickDiv.style.cssText = 'display:flex;gap:8px;justify-content:center;margin-bottom:12px;';
 
-                        // 같은 수트로 +1 버튼
                         const nextValue = currentBid.value + 1;
                         const mySuit = myLastBid.suit;
                         const mySuitSymbol = mySuit === 'none' ? 'No' : SUIT_SYMBOLS[mySuit];
@@ -7402,12 +7409,9 @@ renderMobileUserTrick() {
                                 if (this.onBidSubmit) this.onBidSubmit(nextValue, mySuit);
                                 this.hideBiddingModal();
                             });
-                            quickBtn.addEventListener('mouseenter', () => { quickBtn.style.transform = 'scale(1.05)'; });
-                            quickBtn.addEventListener('mouseleave', () => { quickBtn.style.transform = 'scale(1)'; });
                             quickDiv.appendChild(quickBtn);
                         }
 
-                        // 같은 수트 같은 숫자로 이길 수 있는 경우 (수트 우위)
                         if (this.gameState.isValidBid(currentBid.value, mySuit)) {
                             const sameBtn = document.createElement('button');
                             sameBtn.textContent = `${currentBid.value}${mySuitSymbol} 바로 비딩`;
@@ -7416,8 +7420,6 @@ renderMobileUserTrick() {
                                 if (this.onBidSubmit) this.onBidSubmit(currentBid.value, mySuit);
                                 this.hideBiddingModal();
                             });
-                            sameBtn.addEventListener('mouseenter', () => { sameBtn.style.transform = 'scale(1.05)'; });
-                            sameBtn.addEventListener('mouseleave', () => { sameBtn.style.transform = 'scale(1)'; });
                             quickDiv.appendChild(sameBtn);
                         }
 
@@ -7431,6 +7433,7 @@ renderMobileUserTrick() {
                 document.getElementById('modal-overlay').classList.remove('hidden');
                 document.getElementById('bidding-modal').classList.remove('hidden');
             }
+
 
 
             hideBiddingModal() {
@@ -8869,14 +8872,12 @@ spawnFirework(cx, cy) {
             }
 
                         // GameController 클래스 내부의 dealCards 메서드를 이 코드로 교체하세요
+                        // GameController 클래스 내부의 dealCards 메서드를 이 코드로 교체하세요
             async dealCards() {
                 this.gameState.phase = PHASES.DEALING;
                 this.ui.setMessage('카드를 배분하는 중...');
                 
-                // [수정] 게임 시작(배분) 시 셔플 소리 재생
-                // 오디오 컨텍스트가 잠겨있다면 깨우고 소리를 재생합니다.
-                await soundManager.resumeContext();
-                soundManager.playShuffleSound();
+                // [수정] 셔플 소리 재생 코드(playShuffleSound) 삭제됨
                 
                 const deck = new Deck();
                 deck.shuffle();
@@ -8888,12 +8889,13 @@ spawnFirework(cx, cy) {
                     this.gameState.players[playerIndex].sortHand();
                 }
                 
-                // 카드 나눠주는 애니메이션
+                // 카드 나눠주는 애니메이션은 유지
                 this.ui.renderAll({ animation: 'deal' }); 
                 
                 await this.delay(1500); 
                 await this.checkPoolRequest();
             }
+
 
 
 
