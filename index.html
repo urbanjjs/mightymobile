@@ -555,7 +555,7 @@ body.mobile-mode .center-friend-text {
     /* 위치: 화면 중앙에서 하단으로 이동 */
     position: fixed;
     top: auto !important; /* 상단 위치 해제 */
-    bottom: 160px;        /* 사용자 카드 영역(약 120px) 바로 위에 뜨도록 설정 */
+    bottom: 180px;        /* 사용자 카드 영역(약 120px) 바로 위에 뜨도록 설정 */
     left: 50%;
     transform: translateX(-50%); /* 가로 중앙 정렬 */
     
@@ -2309,7 +2309,7 @@ body.mobile-mode #action-area {
     /* 위치: 화면 중앙 -> 하단 (내 카드 바로 위) */
     position: fixed;
     top: auto !important;
-    bottom: 95px; /* 모바일 사용자 카드 영역(약 70~80px) 바로 위에 위치 */
+    bottom: 130px; /* 모바일 사용자 카드 영역(약 70~80px) 바로 위에 위치 */
     left: 50%;
     transform: translateX(-50%);
     
@@ -2760,6 +2760,9 @@ body.mobile-mode #mobile-score-progress .score-bar-fill.government {
 body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
     background: linear-gradient(90deg, #2196F3, #03A9F4);
 }
+
+
+
 
 </style>
 </head>
@@ -6885,42 +6888,63 @@ renderAll(options = {}) {
                 return null;
             }
 
-            // ★ 개선: 실시간 승자 표시
+            // UI 클래스 내부의 renderTrick 메서드 수정
+            // UI 클래스 내부의 renderTrick 메서드를 이 코드로 교체하세요
             renderTrick() {
                 const trickCards = this.gameState.trick.cards;
-                const isComplete = trickCards.length === GAME_CONFIG.PLAYER_COUNT;
+                
+                // 현재 트릭의 승자 계산 (승리 카드 강조 효과용)
                 const { winner, winningCard } = trickCards.length > 0
                     ? this.gameState.determineTrickWinner()
                     : { winner: null, winningCard: null };
 
+                // 0번부터 4번 플레이어까지 순회하며 카드를 그립니다.
                 for (let i = 0; i < GAME_CONFIG.PLAYER_COUNT; i++) {
-                    const trickCardEl = document.querySelector(`.trick-card[data-player="${i}"]`);
-                    trickCardEl.innerHTML = '';
-                    trickCardEl.classList.remove('winner');
+                    const container = document.querySelector(`.trick-card[data-player="${i}"]`);
+                    if (!container) continue;
+
+                    // 기존 카드 비우기
+                    container.innerHTML = '';
+                    container.classList.remove('winner');
+
+                    // 해당 플레이어가 이번 트릭에 낸 카드가 있는지 확인
                     const play = trickCards.find(p => p.player === i);
+
                     if (play) {
-                        const cardEl = this.createCardElement(play.card, { faceUp: true });
-                        trickCardEl.appendChild(cardEl);
-                        if (winner === i) trickCardEl.classList.add('winner');
+                        // 카드 엘리먼트 생성 (앞면으로)
+                        const cardEl = this.createCardElement(play.card, { 
+                            faceUp: true,
+                            isSpecial: this.isSpecialCard(play.card)
+                        });
+                        
+                        // 승자 카드 효과 추가
+                        if (winner !== null && i === winner) {
+                            container.classList.add('winner');
+                        }
+
+                        container.appendChild(cardEl);
                     }
                 }
 
+                // 하단 트릭 정보 텍스트 업데이트
                 const infoEl = document.getElementById('trick-info');
                 if (trickCards.length > 0) {
                     const leadSuit = this.gameState.trick.leadSuit;
                     const points = trickCards.reduce((sum, p) => sum + (p.card.isPointCard() ? 1 : 0), 0);
                     let infoText = `리드: ${SUIT_NAMES[leadSuit] || '조커'} | 점수: ${points}점`;
-                    if (winner !== null && !isComplete) {
-                        infoText += ` | 현재 승자: ${this.gameState.players[winner].name}`;
-                    }
+                    
                     if (this.gameState.trick.jokerCalled) infoText += ' | 🃏 조커콜!';
+                    
                     infoEl.textContent = infoText;
                 } else {
                     infoEl.textContent = '';
                 }
+
+                // 모바일 관련 화면 업데이트
                 this.renderMobileAIGrid();
                 this.renderMobileUserTrick();
             }
+
 
             clearTrick() {
                 for (let i = 0; i < GAME_CONFIG.PLAYER_COUNT; i++) {
@@ -7214,8 +7238,57 @@ renderMobileUserTrick() {
                 document.getElementById('action-message').innerHTML = '';
             }
 
+            // UI 클래스 내부의 setMessage 메서드를 찾아 교체하세요.
+            // UI 클래스 내부의 setMessage 메서드를 이 코드로 교체하세요
             setMessage(message) {
-                document.getElementById('action-message').innerHTML = `<span>${message}</span>`;
+                // 1. 무시할 메시지 필터링 (기존 로직 유지)
+                const ignoredMessages = [
+                    '카드를 선택하세요',
+                    '선(리드) 차례',
+                    '승리!', 
+                    '점수:', 
+                    '라운드',
+                    '비딩하세요',
+                    '친구 카드를 선택하세요',
+                    '버릴 카드 3장을 선택하세요',
+                    '친구 카드를 선언하세요'
+                ];
+
+                // 메시지가 무시 목록에 포함되면 표시하지 않음
+                const shouldIgnore = ignoredMessages.some(m => message.includes(m));
+                const actionArea = document.getElementById('action-area');
+                const messageEl = document.getElementById('action-message');
+                const buttonsContainer = document.getElementById('action-buttons');
+
+                // 2. 기존에 동작 중인 타이머가 있다면 취소 (새 메시지가 우선이므로)
+                if (this.messageTimer) {
+                    clearTimeout(this.messageTimer);
+                    this.messageTimer = null;
+                }
+
+                if (shouldIgnore) {
+                    messageEl.innerHTML = '';
+                    // 버튼이 없으면 영역 자체를 숨김
+                    if (!buttonsContainer.hasChildNodes()) {
+                        actionArea.style.display = 'none';
+                    }
+                    return;
+                }
+
+                // 3. 메시지 표시
+                actionArea.style.display = 'flex'; // 영역 보이기
+                messageEl.innerHTML = `<span>${message}</span>`;
+
+                // 4. 3초 후 삭제 타이머 설정
+                this.messageTimer = setTimeout(() => {
+                    messageEl.innerHTML = ''; // 텍스트 지우기
+                    
+                    // 버튼이 없을 때만 영역을 숨김 (버튼이 있으면 영역은 유지하고 글자만 지움)
+                    if (!buttonsContainer.hasChildNodes()) {
+                        actionArea.style.display = 'none';
+                    }
+                    this.messageTimer = null;
+                }, 3000); // 3000ms = 3초
             }
 
             clearMessage() { document.getElementById('action-message').innerHTML = ''; }
@@ -9295,7 +9368,6 @@ spawnFirework(cx, cy) {
                     const player = this.gameState.players[currentPlayer];
                     this.ui.renderAll();
                     if (player.isHuman) {
-                        this.ui.setMessage('카드를 선택하세요');
                         this.isProcessing = false;
                         return;
                     } else {
@@ -9385,7 +9457,6 @@ spawnFirework(cx, cy) {
                 this.gameState.phase = PHASES.TRICK_END;
                 const { winner, winningCard } = this.gameState.determineTrickWinner();
                 this.ui.renderTrick();
-                this.ui.setMessage(`${this.gameState.players[winner].name}이(가) ${winningCard.toString()}(으)로 승리!`);
                 await this.delay(2000);
 
                 const prevGovScore = this.gameState.governmentScore;
