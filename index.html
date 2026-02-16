@@ -7325,8 +7325,11 @@ renderMobileUserTrick() {
                 this.renderAILog();
             }
 
+                        // [수정] 버튼 생성: 버튼이 생기면 무조건 창을 보여줌
             setActionButtons(buttons) {
                 const container = document.getElementById('action-buttons');
+                const actionArea = document.getElementById('action-area');
+                
                 container.innerHTML = '';
                 for (const btn of buttons) {
                     const el = document.createElement('button');
@@ -7336,28 +7339,38 @@ renderMobileUserTrick() {
                     el.addEventListener('click', btn.onClick);
                     container.appendChild(el);
                 }
+                
+                // 버튼이 추가되었으므로 창을 표시
+                if (buttons.length > 0) {
+                    actionArea.style.display = 'flex';
+                }
             }
 
+
+                        // [수정] 버튼 삭제: 메세지도 비어있다면 창을 숨김
             clearActionButtons() {
-                document.getElementById('action-buttons').innerHTML = '';
-                document.getElementById('action-message').innerHTML = '';
+                const container = document.getElementById('action-buttons');
+                const actionArea = document.getElementById('action-area');
+                const messageEl = document.getElementById('action-message');
+                
+                container.innerHTML = '';
+                document.getElementById('action-message').innerHTML = ''; // 메세지도 함께 초기화하는 경우가 많음
+
+                // 메세지 텍스트도 없고 버튼도 없으면 숨김
+                if (!messageEl.textContent.trim()) {
+                    actionArea.style.display = 'none';
+                }
             }
 
             // UI 클래스 내부의 setMessage 메서드를 찾아 교체하세요.
             // UI 클래스 내부의 setMessage 메서드를 이 코드로 교체하세요
                        // UI 클래스 내부의 setMessage 메서드를 이 코드로 교체하세요
+                        // [수정] 메세지 설정: 3초 후 삭제하되, 버튼이 없으면 창 자체를 숨김
             setMessage(message) {
-                // 1. 무시할 메시지 필터링
                 const ignoredMessages = [
-                    '카드를 선택하세요',
-                    '선(리드) 차례',
-                    '승리!', 
-                    '점수:', 
-                    '라운드',
-                    '비딩하세요',
-                    '친구 카드를 선택하세요',
-                    '버릴 카드 3장을 선택하세요',
-                    '친구 카드를 선언하세요'
+                    '카드를 선택하세요', '선(리드) 차례', '승리!', '점수:', 
+                    '라운드', '비딩하세요', '친구 카드를 선택하세요', 
+                    '버릴 카드 3장을 선택하세요', '친구 카드를 선언하세요'
                 ];
 
                 const shouldIgnore = ignoredMessages.some(m => message.includes(m));
@@ -7365,7 +7378,6 @@ renderMobileUserTrick() {
                 const messageEl = document.getElementById('action-message');
                 const buttonsContainer = document.getElementById('action-buttons');
 
-                // 2. 기존 타이머 초기화 (새 메시지가 오면 시간 리셋)
                 if (this.messageTimer) {
                     clearTimeout(this.messageTimer);
                     this.messageTimer = null;
@@ -7373,31 +7385,32 @@ renderMobileUserTrick() {
 
                 if (shouldIgnore) {
                     messageEl.innerHTML = '';
-                    // 버튼이 없으면 숨김
+                    // 버튼도 없으면 즉시 숨김
                     if (!buttonsContainer.hasChildNodes()) {
                         actionArea.style.display = 'none';
                     }
                     return;
                 }
 
-                // 3. 메시지 표시
+                // 메세지가 있으므로 일단 표시
                 actionArea.style.display = 'flex';
                 messageEl.innerHTML = `<span>${message}</span>`;
 
-                // 4. 3초 후 삭제 타이머 설정
+                // 3초 후 처리
                 this.messageTimer = setTimeout(() => {
-                    // [수정됨] ★ 버튼이 있으면 메시지를 지우지 않고 유지합니다.
+                    // 버튼이 있으면 메세지를 지우지 않고 유지 (버튼 선택 유도)
                     if (buttonsContainer && buttonsContainer.hasChildNodes()) {
                         this.messageTimer = null;
-                        return; // 함수 종료 (메세지 삭제 안 함)
+                        return;
                     }
 
-                    // 버튼이 없을 때만 텍스트 삭제 및 영역 숨김
+                    // 버튼이 없을 때만 텍스트 삭제 및 창 숨김
                     messageEl.innerHTML = ''; 
                     actionArea.style.display = 'none';
                     this.messageTimer = null;
                 }, 3000);
             }
+
 
 
             clearMessage() { document.getElementById('action-message').innerHTML = ''; }
