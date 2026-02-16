@@ -139,11 +139,10 @@ body.mobile-mode .overlap-symbol {
     opacity: 0.5; /* 모바일은 약간 연하게 (카드 가림 방지) */
 }
 body.mobile-mode .overlap-number {
-    font-size: 45px;
+    font-size: 23px; /* 45px에서 절반으로 축소 */
 }
 body.mobile-mode .center-round-text {
-    /* 모바일에서는 더 작게 */
-    font-size: 10px; 
+    font-size: 15px; /* 10px에서 50% 확대 */
     margin-bottom: 0;
 }
 body.mobile-mode .center-friend-text {
@@ -1847,17 +1846,17 @@ body.mobile-mode #mobile-giruda-bg {
     display: block;
     position: absolute;
     
-    /* [핵심 수정] 위치를 상단 35% 정도로 내려서 점수 바(상단) 아래에 위치하게 함 */
-    top: 35%; 
+    /* [수정됨] 기존 35%에서 15px 더 내려가도록 계산식 적용 */
+    top: calc(35% + 15px); 
     left: 50%;
     transform: translate(-50%, -50%);
     
-    /* 기존 스타일 덮어쓰기 */
+    /* 기존 스타일 유지 */
     font-size: inherit; 
     font-weight: normal;
     pointer-events: none;
     z-index: 0;
-    opacity: 1; /* 투명도는 내부 요소에서 제어 */
+    opacity: 1; 
     line-height: normal;
     text-shadow: none;
 }
