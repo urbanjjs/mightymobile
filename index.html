@@ -7310,13 +7310,13 @@ renderMobileUserTrick() {
             // ===== 비딩 모달 =====
                         // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
                         // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
+                        // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
             showBiddingModal() {
                 this.selectedBid = { value: null, suit: null };
                 const currentBid = this.gameState.bidding.currentBid;
                 document.getElementById('current-bid-display').textContent =
                     currentBid ? `${currentBid.value}${currentBid.suit === 'none' ? 'No' : SUIT_SYMBOLS[currentBid.suit]}` : '없음';
                 
-                // 손패 미리보기 영역 초기화
                 const oldPreview = document.getElementById('bid-hand-preview');
                 if (oldPreview) oldPreview.remove();
                 
@@ -7327,25 +7327,24 @@ renderMobileUserTrick() {
                 const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
                 const isMobile = document.body.classList.contains('mobile-mode');
                 
-                // 카드 크기 설정 (모바일 52px, 데스크탑 86px)
-                const cardW = isMobile ? 52 : 86; 
-                const cardH = isMobile ? 67 : 116; 
+                // [수정됨] 모바일 카드 크기 대폭 축소 (52px -> 44px)
+                const cardW = isMobile ? 44 : 86; 
+                const cardH = isMobile ? 60 : 116; 
                 
-                // [수정됨] 레이아웃 설정
                 if (isMobile) {
-                    // 모바일: CSS Grid를 사용하여 한 줄에 5개씩 강제 정렬 (총 2줄)
+                    // [수정됨] 모바일: 간격을 2px로 좁히고, 5열 그리드 강제 적용
                     handPreview.style.cssText = `
                         display: grid;
-                        grid-template-columns: repeat(5, auto); /* 5열 배치 */
+                        grid-template-columns: repeat(5, auto);
                         justify-content: center;
-                        gap: 4px 4px; /* 세로 가로 간격 */
+                        gap: 2px 2px; /* 간격 축소 */
                         margin-bottom: 12px;
-                        padding: 8px;
+                        padding: 6px;
                         background: rgba(0,0,0,0.3);
                         border-radius: 6px;
                     `;
                 } else {
-                    // 데스크탑: 기존 Flex 방식 유지
+                    // 데스크탑
                     handPreview.style.cssText = `
                         display: flex;
                         justify-content: center;
@@ -7360,7 +7359,7 @@ renderMobileUserTrick() {
 
                 for (const card of mySortedHand) {
                     const cardEl = this.createCardElement(card, { faceUp: true });
-                    // 카드 크기 적용 및 마진 제거
+                    // 마진 0으로 강제 설정
                     cardEl.style.cssText = `width:${cardW}px;height:${cardH}px;margin:0;flex-shrink:0;`;
                     
                     const img = cardEl.querySelector('img');
@@ -7371,7 +7370,7 @@ renderMobileUserTrick() {
                 const currentBidDisplay = document.querySelector('#bidding-modal .current-bid');
                 currentBidDisplay.parentNode.insertBefore(handPreview, currentBidDisplay);
                     
-                // 비딩 숫자 버튼 생성
+                // 비딩 숫자 버튼
                 const numbersContainer = document.getElementById('bid-numbers');
                 numbersContainer.innerHTML = '';
                 for (let i = GAME_CONFIG.MIN_BID; i <= GAME_CONFIG.MAX_BID; i++) {
@@ -7381,7 +7380,7 @@ renderMobileUserTrick() {
                     numbersContainer.appendChild(btn);
                 }
 
-                // 비딩 문양 버튼 생성
+                // 비딩 문양 버튼
                 const suitsContainer = document.getElementById('bid-suits');
                 suitsContainer.innerHTML = '';
                 const suits = [
@@ -7454,6 +7453,7 @@ renderMobileUserTrick() {
                 document.getElementById('modal-overlay').classList.remove('hidden');
                 document.getElementById('bidding-modal').classList.remove('hidden');
             }
+
 
 
 
