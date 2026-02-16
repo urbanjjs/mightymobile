@@ -64,10 +64,84 @@ body.mobile-mode {
 
 
         .game-info {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+            display: none !important; /* 기존 flex에서 변경 */
         }
+
+        .center-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.center-round-text {
+    font-size: 16px;
+    color: #ccc;
+    margin-bottom: 5px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.center-friend-text {
+    font-size: 18px;
+    color: #FFD700; /* 골드 색상 */
+    margin-top: 5px;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 4px 12px;
+    border-radius: 10px;
+}
+
+/* 기루다와 숫자를 겹치기 위한 래퍼 */
+.overlap-wrapper {
+    position: relative;
+    width: 160px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlap-symbol {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 160px;
+    line-height: 1;
+    opacity: 0.3; /* 배경처럼 연하게 */
+    z-index: 1;
+}
+
+.overlap-number {
+    position: relative; /* 심볼 위에 올라오게 */
+    font-size: 80px;
+    font-weight: 900;
+    color: #fff;
+    z-index: 2;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* 모바일 전용 조정 */
+body.mobile-mode .overlap-wrapper {
+    width: 100px;
+    height: 90px;
+}
+body.mobile-mode .overlap-symbol {
+    font-size: 100px;
+}
+body.mobile-mode .overlap-number {
+    font-size: 50px;
+}
+body.mobile-mode .center-round-text {
+    font-size: 12px;
+}
+body.mobile-mode .center-friend-text {
+    font-size: 13px;
+    padding: 2px 8px;
+}
 
         .game-info span {
             background: rgba(255, 255, 255, 0.1);
@@ -1212,9 +1286,11 @@ body.mobile-mode {
     color: #999;
 }
 
-.result-header span:first-child { flex: 1; }
+/* 첫번째 컬럼(이름)은 남은 공간 차지, 나머지 3개는 고정 너비 */
+.result-header span:first-child { flex: 1; text-align: left; }
 .result-header span:nth-child(2),
-.result-header span:nth-child(3) { width: 70px; text-align: right; }
+.result-header span:nth-child(3),
+.result-header span:nth-child(4) { width: 60px; text-align: right; }
 
 .score-row {
     display: flex;
@@ -1227,8 +1303,11 @@ body.mobile-mode {
 
 .score-row:last-child { border-bottom: none; }
 .score-row .player-name { font-weight: bold; flex: 1; font-size: 20px; }
-.score-row .earned-points { width: 70px; text-align: right; color: #FFD700; font-weight: bold; }
-.score-row .score-change { width: 70px; text-align: right; font-weight: bold; }
+
+/* 각 점수 칸 너비 및 스타일 */
+.score-row .earned-points { width: 60px; text-align: right; color: #aaa; font-size: 16px; }
+.score-row .score-change { width: 60px; text-align: right; font-weight: bold; }
+.score-row .total-score { width: 60px; text-align: right; color: #FFD700; font-weight: bold; } /* 누적 점수 강조 */
 
 .score-row .score-change.positive { color: #4CAF50; }
 .score-row .score-change.negative { color: #f44336; }
@@ -1758,7 +1837,7 @@ body.mobile-mode #mobile-ai-grid {
 body.mobile-mode #mobile-giruda-bg {
     display: block;
     position: absolute;
-    top: 50%;
+    top: 22%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 120px;
@@ -2131,8 +2210,8 @@ body.mobile-mode #bid-hand-preview {
 }
 
 body.mobile-mode #bid-hand-preview .card {
-    width: 52px !important;
-    height: 67px !important;
+    width: 55px !important;
+    height: 70px !important;
     margin-left: 0 !important;
     flex-shrink: 0 !important;
 }
@@ -2213,8 +2292,9 @@ body.mobile-mode .result-header {
 }
 
 body.mobile-mode .result-header span:nth-child(2),
-body.mobile-mode .result-header span:nth-child(3) {
-    width: 55px;
+body.mobile-mode .result-header span:nth-child(3),
+body.mobile-mode .result-header span:nth-child(4) {
+    width: 50px; /* 모바일에서는 너비 축소 */
 }
 
 body.mobile-mode .score-row {
@@ -2225,8 +2305,9 @@ body.mobile-mode .score-row {
 body.mobile-mode .score-row .player-name { font-size: 16px; }
 
 body.mobile-mode .score-row .earned-points,
-body.mobile-mode .score-row .score-change {
-    width: 55px;
+body.mobile-mode .score-row .score-change,
+body.mobile-mode .score-row .total-score {
+    width: 50px;
     font-size: 16px;
 }
 
@@ -3207,6 +3288,9 @@ body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
                 this.poolRequester = null;
                 this.sayeonResponse = null;
 
+                // [추가] 공약 실패 알림 여부 플래그 초기화
+                this.contractFailureAnnounced = false; 
+                
                 this.friendContribution = {
                     tricksWon: 0,
                     pointsSecured: 0,
@@ -6309,44 +6393,62 @@ if (isMasterLead) {
                     btn.textContent = '🔧 테스트모드 OFF';
                 }
             }
+            // [수정] 모바일 중앙 배경 (라운드 + 공약겹침 + 친구)
             renderMobileGirudaBg() {
-    const el = document.getElementById('mobile-giruda-bg');
-    if (!el || !document.body.classList.contains('mobile-mode')) return;
+                const el = document.getElementById('mobile-giruda-bg');
+                if (!el || !document.body.classList.contains('mobile-mode')) return;
 
-    const contract = this.gameState.contract;
-    if (!contract.bidValue ||
-        this.gameState.phase === PHASES.WAITING ||
-        this.gameState.phase === PHASES.BIDDING) {
-        el.style.display = 'none';
-        return;
-    }
+                const contract = this.gameState.contract;
+                if (!contract.bidValue ||
+                    this.gameState.phase === PHASES.WAITING ||
+                    this.gameState.phase === PHASES.BIDDING) {
+                    el.style.display = 'none';
+                    return;
+                }
 
-    el.style.display = 'block';
-    el.style.textAlign = 'center';
+                el.style.display = 'flex'; // flex로 변경하여 정렬
+                el.className = 'center-info-container'; // CSS 클래스 재활용
 
-    let girudaText = '';
-    let girudaColor = '';
-    let mainSize = '120px';
+                // 1. 기루다 심볼 및 색상
+                let girudaText = '';
+                let girudaColor = '';
+                if (contract.isNoGiruda) {
+                    girudaText = 'N';
+                    girudaColor = 'rgba(158, 158, 158, 0.8)';
+                } else if (contract.giruda) {
+                    girudaText = SUIT_SYMBOLS[contract.giruda];
+                    const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
+                    girudaColor = isRed ? 'rgba(255, 82, 82, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+                } else {
+                    el.style.display = 'none';
+                    return;
+                }
 
-    if (contract.isNoGiruda) {
-        girudaText = 'No';
-        girudaColor = 'rgba(158, 158, 158, 0.7)';
-        mainSize = '80px';
-    } else if (contract.giruda) {
-        girudaText = SUIT_SYMBOLS[contract.giruda];
-        const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
-        girudaColor = isRed ? 'rgba(211, 47, 47, 0.7)' : 'rgba(255, 255, 255, 0.6)';
-    } else {
-        el.style.display = 'none';
-        return;
-    }
+                // 2. 친구 텍스트
+                let friendText = '친구: ?';
+                if (contract.isNoFriend) friendText = '친구: 노프렌드';
+                else if (contract.friendCard) {
+                    // 모바일은 공간이 좁으므로 짧게 표시
+                    friendText = `친구: ${contract.friendCard.toString()}`;
+                }
 
-    el.style.color = girudaColor;
-    el.innerHTML = `
-        <div style="font-size:${mainSize};line-height:1;">${girudaText}</div>
-        <div style="font-size:40px;line-height:1;margin-top:-5px;">${contract.bidValue}</div>
-    `;
-}
+                // 3. 라운드
+                const roundText = `R ${this.gameState.round || 1}`;
+
+                // 4. HTML 조립
+                el.innerHTML = `
+                    <div class="center-round-text">${roundText}</div>
+                    <div class="overlap-wrapper">
+                        <div class="overlap-symbol" style="color: ${girudaColor}">${girudaText}</div>
+                        <div class="overlap-number">${contract.bidValue}</div>
+                    </div>
+                    <div class="center-friend-text">${friendText}</div>
+                `;
+                
+                // 기존 스타일 덮어쓰기 방지를 위해 인라인 스타일 일부 제거 또는 조정 필요할 수 있으나
+                // CSS 클래스(.center-info-container)가 flex 정렬을 처리함.
+            }
+
 
             renderMobileScoreProgress() {
     if (!document.body.classList.contains('mobile-mode')) return;
@@ -6604,37 +6706,72 @@ renderAll(options = {}) {
 
             // ★ 팀별 점수 진행 바
 renderGirudaBackground() {
-    const existing = document.getElementById('giruda-bg-symbol');
-    if (existing) existing.remove();
+                const existing = document.getElementById('giruda-bg-symbol');
+                if (existing) existing.remove();
 
-    const contract = this.gameState.contract;
-    if (!contract.bidValue || this.gameState.phase === PHASES.WAITING || this.gameState.phase === PHASES.BIDDING) return;
+                const contract = this.gameState.contract;
+                // 비딩 중이거나 대기 중일 때는 표시 안 함
+                if (!contract.bidValue || this.gameState.phase === PHASES.WAITING || this.gameState.phase === PHASES.BIDDING) return;
 
-    const trickArea = document.getElementById('trick-area');
-    const symbol = document.createElement('div');
-    symbol.id = 'giruda-bg-symbol';
+                const trickArea = document.getElementById('trick-area');
+                const container = document.createElement('div');
+                container.id = 'giruda-bg-symbol';
+                container.className = 'center-info-container'; // CSS 클래스 적용
 
-    let girudaText = '';
-    let girudaColor = '';
-    if (contract.isNoGiruda) {
-        girudaText = 'No';
-        girudaColor = 'rgba(158, 158, 158, 0.35)';
-    } else if (contract.giruda) {
-        girudaText = SUIT_SYMBOLS[contract.giruda];
-        const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
-        girudaColor = isRed ? 'rgba(211, 47, 47, 0.35)' : 'rgba(255, 255, 255, 0.3)';
-    } else {
-        return;
-    }
+                // 1. 기루다 심볼 및 색상 결정
+                let girudaText = '';
+                let girudaColor = '';
+                if (contract.isNoGiruda) {
+                    girudaText = 'N'; // No Giruda
+                    girudaColor = 'rgba(158, 158, 158, 0.8)';
+                } else if (contract.giruda) {
+                    girudaText = SUIT_SYMBOLS[contract.giruda];
+                    const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
+                    girudaColor = isRed ? 'rgba(255, 82, 82, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+                } else {
+                    return;
+                }
 
-    symbol.innerHTML = `
-        <div style="font-size:180px;line-height:1;">${girudaText}</div>
-        <div style="font-size:60px;line-height:1;margin-top:-10px;">${contract.bidValue}</div>
-    `;
-    symbol.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:${girudaColor};pointer-events:none;z-index:0;font-weight:bold;text-align:center;`;
-    trickArea.style.position = 'relative';
-    trickArea.insertBefore(symbol, trickArea.firstChild);
-}
+                // 2. 친구 텍스트 결정
+                let friendText = '친구: ?';
+                if (contract.isNoFriend) friendText = '친구: 없음 (노프렌드)';
+                else if (contract.friendCard) {
+                    const cardName = contract.friendCard.toString();
+                    if (this.gameState.friendRevealed) {
+                        // 친구가 밝혀졌으면 플레이어 이름 표시 (옵션)
+                        const friendIdx = this.gameState.contract.friend;
+                        const friendName = friendIdx !== null ? this.gameState.players[friendIdx].name : '';
+                        friendText = `친구: ${cardName} (${friendName})`;
+                    } else {
+                        friendText = `친구: ${cardName}`;
+                    }
+                }
+
+                // 3. 라운드 텍스트
+                const roundText = `ROUND ${this.gameState.round || 1}/10`;
+
+                // 4. HTML 조립 (라운드 -> 겹침(심볼+숫자) -> 친구)
+                container.innerHTML = `
+                    <div class="center-round-text">${roundText}</div>
+                    <div class="overlap-wrapper">
+                        <div class="overlap-symbol" style="color: ${girudaColor}">${girudaText}</div>
+                        <div class="overlap-number">${contract.bidValue}</div>
+                    </div>
+                    <div class="center-friend-text">${friendText}</div>
+                `;
+
+                // 위치 스타일 (정중앙)
+                container.style.cssText = `
+                    position: absolute;
+                    top: 30%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 0;
+                `;
+
+                trickArea.style.position = 'relative';
+                trickArea.insertBefore(container, trickArea.firstChild);
+            }
 
             renderScoreProgress() {
                 const existing = document.getElementById('score-progress');
@@ -6869,22 +7006,29 @@ renderMobileUserTrick() {
                 if (oldPreview) oldPreview.remove();
                 const handPreview = document.createElement('div');
                 handPreview.id = 'bid-hand-preview';
-                handPreview.style.cssText = 'display:flex;justify-content:center;flex-wrap:nowrap;gap:0;margin-bottom:12px;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;';
-
+                
+                handPreview.style.cssText = 'display:flex;justify-content:center;flex-wrap:wrap;gap:5px;margin-bottom:12px;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;';
                 const myPlayer = this.gameState.players[0];
                 const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
                 const isMobile = document.body.classList.contains('mobile-mode');
-                const cardW = isMobile ? 52 : 86;
-                const cardH = isMobile ? 67 : 116;
-                const cardMargin = isMobile ? -20 : -40;
+                
+                const cardW = isMobile ? 55 : 86;
+                const cardH = isMobile ? 70 : 116;
+                const cardMargin = 0;
+                // 간격 설정 (모바일은 촘촘하게 3px, 데스크톱은 5px)
+                const gapSize = isMobile ? '2px' : '5px'; 
+                // handPreview 스타일 적용 (gap 추가)
+                handPreview.style.cssText = `display:flex;justify-content:center;flex-wrap:wrap;gap:${gapSize};margin-bottom:12px;padding:8px;background:rgba(0,0,0,0.3);border-radius:6px;`;
+
 
                 for (const card of mySortedHand) {
                     const cardEl = this.createCardElement(card, { faceUp: true });
-                    cardEl.style.cssText = `width:${cardW}px;height:${cardH}px;margin-left:${cardMargin}px;flex-shrink:0;`;
+                    cardEl.style.cssText = `width:${cardW}px;height:${cardH}px;margin-left:0;flex-shrink:0;`;
                     const img = cardEl.querySelector('img');
                     if (img) { img.style.width = '100%'; img.style.height = '100%'; }
                     handPreview.appendChild(cardEl);
                 }
+
                 if (handPreview.firstChild) handPreview.firstChild.style.marginLeft = '0';
 
                 const currentBidDisplay = document.querySelector('#bidding-modal .current-bid');
@@ -7423,87 +7567,69 @@ renderMobileUserTrick() {
             }
 
             // ===== 결과 모달 =====
-        showResultModal(result, gameHistory = []) {
-        const title = document.getElementById('result-title');
-        const content = document.getElementById('result-content');
-        const userResult = result.results.find(r => r.player === 0);
-        const userWon = userResult && userResult.change > 0;
+                    // ===== 결과 모달 =====
+                        // UI 클래스 내부
+            showResultModal(result, gameHistory = []) {
+                const title = document.getElementById('result-title');
+                const content = document.getElementById('result-content');
+                const userResult = result.results.find(r => r.player === 0);
+                const userWon = userResult && userResult.change > 0;
 
-        title.textContent = userWon ? '🎉 승리!' : '😢 패배';
-        title.className = userWon ? 'win' : 'lose';
+                title.textContent = userWon ? '🎉 승리!' : '😢 패배';
+                title.className = userWon ? 'win' : 'lose';
 
-        const govScore = this.gameState.governmentScore;
-        const bidValue = this.gameState.contract.bidValue;
-        const winnerText = result.winner === 'government' ? '여당 승리' : '야당 승리';
-        const backrunText = result.isBackrun ? ' (백런!)' : '';
+                const govScore = this.gameState.governmentScore;
+                const bidValue = this.gameState.contract.bidValue;
+                const winnerText = result.winner === 'government' ? '여당 승리' : '야당 승리';
+                const backrunText = result.isBackrun ? ' (백런!)' : '';
 
-        let html = `<div class="result-summary">${winnerText}${backrunText} — 여당 ${govScore}/${bidValue}</div>`;
+                let html = `<div class="result-summary">${winnerText}${backrunText} — 여당 ${govScore}/${bidValue}</div>`;
 
-        // 점수표
-        html += '<div class="result-scores">';
-        html += '<div class="result-header"><span>플레이어</span><span>획득</span><span>변동</span></div>';
-        for (const r of result.results) {
-            const player = this.gameState.players[r.player];
-            const earnedPoints = player.getScore();
-            const changeClass = r.change >= 0 ? 'positive' : 'negative';
-            const changeText = r.change >= 0 ? `+${r.change}` : `${r.change}`;
-            const roleIcon = player.role === ROLES.MASTER ? '★' : (player.role === ROLES.FRIEND ? '◆' : '');
-            html += `<div class="score-row">
-                <span class="player-name">${roleIcon}${player.name}</span>
-                <span class="earned-points">${earnedPoints}</span>
-                <span class="score-change ${changeClass}">${changeText}</span>
-            </div>`;
-        }
-        html += '</div>';
+                // [수정] 현재 게임 회차 계산 (방금 끝난 게임이 gameHistory에 포함되어 있음)
+                const currentGameCount = gameHistory.length > 0 ? gameHistory.length : 1;
 
-        // 친구 공헌 (한 줄로 축약)
-        const contract = this.gameState.contract;
-        const fc = this.gameState.friendContribution;
-        if (!contract.isNoFriend && !contract.isSolino && contract.friend !== null && fc.tricksWon > 0) {
-    const fn = this.gameState.players[contract.friend]?.name || '친구';
-    const sp = [fc.mightyUsed && '마이티', fc.jokerUsed && '조커'].filter(Boolean).join(',');
-    html += `<div class="friend-contribution-line">🤝 친구공헌 : ${fn} — ${fc.tricksWon}트릭 ${fc.pointsSecured}점${sp ? ' | ' + sp : ''}</div>`;
-}
-
-        // 게임 기록 (최근 5게임만)
-        if (gameHistory && gameHistory.length > 0) {
-            const recent = gameHistory.slice(-5);
-            html += '<div class="game-history"><div class="history-header">📊 기록</div>';
-            html += '<div class="history-table-wrapper"><table class="history-table">';
-            html += '<thead><tr><th>#</th><th>공약</th><th></th>';
-            for (let i = 0; i < 5; i++) html += `<th>${i === 0 ? '나' : 'A' + i}</th>`;
-            html += '</tr></thead><tbody>';
-            for (const g of recent) {
-                const gs = g.giruda ? SUIT_SYMBOLS[g.giruda] : 'N';
-                const wc = g.winner === 'government' ? 'gov-win' : 'opp-win';
-                const wt = g.winner === 'government' ? '여' : '야';
-                html += `<tr><td>${g.gameNumber}</td><td>${g.bidValue}${gs}</td><td class="${wc}">${wt}</td>`;
-                for (let i = 0; i < 5; i++) {
-                    const c = g.results.find(r => r.player === i)?.change || 0;
-                    const cl = c >= 0 ? 'positive' : 'negative';
-                    const t = c >= 0 ? '+' + c : '' + c;
-                    const rl = g.master === i ? '★' : (g.friend === i ? '☆' : '');
-                    html += `<td class="${cl}">${rl}${t}</td>`;
+                html += '<div class="result-scores">';
+                
+                // [수정] 헤더 타이틀을 동적으로 변경 (예: "1게임 누적")
+                html += `<div class="result-header"><span>플레이어</span><span>획득</span><span>변동</span><span>${currentGameCount}게임 누적</span></div>`;
+                
+                for (const r of result.results) {
+                    const player = this.gameState.players[r.player];
+                    const earnedPoints = player.getScore();
+                    const totalScore = player.totalScore;
+                    
+                    const changeClass = r.change >= 0 ? 'positive' : 'negative';
+                    const changeText = r.change >= 0 ? `+${r.change}` : `${r.change}`;
+                    const roleIcon = player.role === ROLES.MASTER ? '★' : (player.role === ROLES.FRIEND ? '◆' : '');
+                    
+                    html += `<div class="score-row">
+                        <span class="player-name">${roleIcon}${player.name}</span>
+                        <span class="earned-points">${earnedPoints}</span>
+                        <span class="score-change ${changeClass}">${changeText}</span>
+                        <span class="total-score">${totalScore}</span>
+                    </div>`;
                 }
-                html += '</tr>';
-            }
-            html += '</tbody><tfoot><tr><td colspan="3"><b>합계</b></td>';
-            const last = gameHistory[gameHistory.length - 1];
-            for (let i = 0; i < 5; i++) {
-                const tot = last.cumulativeScores[i];
-                const cl = tot >= 0 ? 'positive' : 'negative';
-                html += `<td class="${cl}"><b>${tot >= 0 ? '+' + tot : tot}</b></td>`;
-            }
-            html += '</tr></tfoot></table></div></div>';
-        }
+                html += '</div>';
 
-        content.innerHTML = html;
-        const resultModal = document.getElementById('result-modal');
-        resultModal.classList.remove('hidden');
-        resultModal.scrollTop = 0;
-        const scrollWrap = resultModal.querySelector('.result-scroll-wrap');
-        if (scrollWrap) scrollWrap.scrollTop = 0;
-    }
+                // 친구 공헌 표시
+                const contract = this.gameState.contract;
+                const fc = this.gameState.friendContribution;
+                if (!contract.isNoFriend && !contract.isSolino && contract.friend !== null && fc.tricksWon > 0) {
+                    const fn = this.gameState.players[contract.friend]?.name || '친구';
+                    const sp = [fc.mightyUsed && '마이티', fc.jokerUsed && '조커'].filter(Boolean).join(',');
+                    html += `<div class="friend-contribution-line">🤝 친구공헌 : ${fn} — ${fc.tricksWon}트릭 ${fc.pointsSecured}점${sp ? ' | ' + sp : ''}</div>`;
+                }
+
+                content.innerHTML = html;
+                
+                const resultModal = document.getElementById('result-modal');
+                resultModal.classList.remove('hidden');
+                resultModal.scrollTop = 0;
+                const scrollWrap = resultModal.querySelector('.result-scroll-wrap');
+                if (scrollWrap) scrollWrap.scrollTop = 0;
+            }
+
+
 
     hideResultModal() {
         document.getElementById('result-modal').classList.add('hidden');
@@ -9059,18 +9185,27 @@ this.gameState.updateTeamScores();
                 const remainingRounds = GAME_CONFIG.TOTAL_ROUNDS - this.gameState.round;
                 const remainingMaxPoints = GAME_CONFIG.TOTAL_POINTS - newGovScore - newOppScore;
 
-                // 공약 달성 순간
+                 // 1. 공약 달성 순간 (기존 코드)
                 if (prevGovScore < bidValue && newGovScore >= bidValue) {
                     eventBus.emit('contract-achieved', { score: newGovScore, bidValue });
                     this.ui.setMessage(`🎉 여당 공약 달성! (${newGovScore}/${bidValue})`);
                     await this.delay(2000);
                 }
-                // 공약 실패 확정
-                else if (newGovScore < bidValue && newGovScore + remainingMaxPoints < bidValue) {
-                    this.ui.setMessage(`💀 여당 공약 실패! (${newGovScore}/${bidValue}, 남은 점수 ${remainingMaxPoints}점)`);
+                // 2. [수정됨] 공약 실패 확정 순간
+                else if (!this.gameState.contractFailureAnnounced && 
+                         newGovScore < bidValue && 
+                         newGovScore + remainingMaxPoints < bidValue) {
+                    
+                    // [중요] 알림 보냄 상태로 변경 (이후에는 이 블록에 들어오지 않음)
+                    this.gameState.contractFailureAnnounced = true;
+
+                    // 화면 중앙 팝업 (이전 요청 사항 유지)
+                    this.effectManager.showPopup(`💀 여당 공약 실패!`, '#FF5722'); 
+                    
+                    this.ui.setMessage(`💀 여당 공약 실패! (${newGovScore}/${bidValue}, 잔여 ${remainingMaxPoints}점)`);
+                    
                     await this.delay(2000);
                 }
-
                 this.ui.renderAll();
 
                 if (this.gameState.round >= GAME_CONFIG.TOTAL_ROUNDS) {
