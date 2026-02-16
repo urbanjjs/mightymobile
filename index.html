@@ -7980,6 +7980,8 @@ renderMobileUserTrick() {
         // ===== SoundManager (신규) =====
         // ========================================
 
+                // SoundManager 클래스를 이 코드로 교체하세요
+                // SoundManager 클래스 전체를 이 코드로 교체하세요
         class SoundManager {
             constructor() {
                 this.context = null;
@@ -7991,17 +7993,81 @@ renderMobileUserTrick() {
             init() {
                 if (this.initialized) return;
                 try {
-                    this.context = new (window.AudioContext || window.webkitAudioContext)();
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.context = new AudioContext();
                     this.initialized = true;
+                    console.log("AudioContext Initialized");
                 } catch (e) {
                     console.warn('Web Audio API not supported');
                     this.enabled = false;
                 }
             }
 
+            // [핵심] 오디오 컨텍스트가 멈춰있으면 깨우는 함수
+            async resumeContext() {
+                if (!this.context) this.init();
+                if (this.context && this.context.state === 'suspended') {
+                    await this.context.resume();
+                }
+            }
+
+            // 카드를 촤라락 섞는 소리 (연속 재생)
+            async playShuffleSound() {
+                if (!this.enabled) return;
+                await this.resumeContext(); // 소리 내기 전 강제 실행
+
+                if (!this.context) return;
+
+                const now = this.context.currentTime;
+                // 0.05초 간격으로 15장의 카드가 넘어가는 소리 구현
+                for (let i = 0; i < 15; i++) {
+                    this.createCardNoise(now + i * 0.05);
+                }
+            }
+
+            // 단일 카드 소리 합성 (백색 소음 + 필터)
+            createCardNoise(time) {
+                if (!this.context) return;
+
+                // 1. 백색 소음 생성 (0.05초 길이)
+                const duration = 0.05;
+                const bufferSize = this.context.sampleRate * duration;
+                const buffer = this.context.createBuffer(1, bufferSize, this.context.sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    // -1 ~ 1 사이의 랜덤 노이즈
+                    data[i] = (Math.random() * 2 - 1) * 0.5; 
+                }
+
+                const noise = this.context.createBufferSource();
+                noise.buffer = buffer;
+
+                // 2. 필터 적용 (종이 스치는 소리는 고음역대가 많음)
+                const filter = this.context.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 800; // 저음을 깎아내서 바스락거리는 소리 강조
+
+                // 3. 볼륨 조절 (Envelope: 소리가 났다가 빠르게 사라짐)
+                const gain = this.context.createGain();
+                gain.gain.setValueAtTime(0.8 * this.masterVolume, time);
+                gain.gain.exponentialRampToValueAtTime(0.01, time + duration);
+
+                // 4. 연결 및 재생
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.context.destination);
+                
+                noise.start(time);
+                noise.stop(time + duration);
+            }
+
+            // 기존 톤 재생 함수 (유지)
             async playTone(freq, type, duration, vol = 1) {
-                if (!this.enabled || !this.context) return;
-                if (this.context.state === 'suspended') await this.context.resume();
+                if (!this.enabled) return;
+                await this.resumeContext();
+                
+                if (!this.context) return;
 
                 const osc = this.context.createOscillator();
                 const gain = this.context.createGain();
@@ -8019,216 +8085,69 @@ renderMobileUserTrick() {
                 osc.stop(this.context.currentTime + duration);
             }
 
-            playCardFlip() { this.playTone(600, 'sine', 0.1, 0.3); }
+            playCardFlip() { this.createCardNoise(this.context ? this.context.currentTime : 0); }
             playCardPlay() { this.playTone(400, 'triangle', 0.15, 0.5); }
             playError() { this.playTone(150, 'sawtooth', 0.2, 0.5); }
             playTurnStart() { this.playTone(800, 'sine', 0.3, 0.2); }
-            playWin() {
-                if (!this.enabled) return;
-                this.playTone(523.25, 'sine', 0.2, 0.4); // C5
-                setTimeout(() => this.playTone(659.25, 'sine', 0.2, 0.4), 150); // E5
-                setTimeout(() => this.playTone(783.99, 'sine', 0.4, 0.4), 300); // G5
+            
+            // 효과음들 (기존 유지)
+            playWin() { this.playTone(523.25, 'sine', 0.2, 0.4); setTimeout(() => this.playTone(659.25, 'sine', 0.2, 0.4), 150); setTimeout(() => this.playTone(783.99, 'sine', 0.4, 0.4), 300); }
+            playMightySound() { this.playTone(200, 'sine', 0.15, 0.6); setTimeout(() => this.playTone(400, 'triangle', 0.2, 0.5), 100); setTimeout(() => this.playTone(600, 'sine', 0.3, 0.4), 200); setTimeout(() => this.playTone(800, 'sine', 0.4, 0.3), 350); }
+            playJokerSound() { this.playTone(300, 'sine', 0.2, 0.4); setTimeout(() => this.playTone(450, 'triangle', 0.2, 0.4), 120); setTimeout(() => this.playTone(600, 'sine', 0.3, 0.3), 240); setTimeout(() => this.playTone(900, 'sine', 0.15, 0.2), 360); }
+            playCutSound() { this.playTone(800, 'sawtooth', 0.08, 0.4); setTimeout(() => this.playTone(400, 'triangle', 0.15, 0.5), 80); setTimeout(() => this.playTone(600, 'sine', 0.2, 0.3), 200); }
+            playOverCutSound() { this.playTone(600, 'sawtooth', 0.08, 0.5); setTimeout(() => this.playTone(300, 'triangle', 0.1, 0.5), 60); setTimeout(() => this.playTone(500, 'sawtooth', 0.08, 0.5), 150); setTimeout(() => this.playTone(800, 'sine', 0.3, 0.4), 250); setTimeout(() => this.playTone(1000, 'sine', 0.2, 0.3), 400); }
+            playClashSound() { this.playTone(150, 'sawtooth', 0.15, 0.6); this.playTone(200, 'square', 0.1, 0.4); setTimeout(() => { this.playTone(523, 'sine', 0.2, 0.5); this.playTone(659, 'sine', 0.2, 0.4); }, 200); setTimeout(() => this.playTone(784, 'sine', 0.4, 0.3), 400); }
+            playJokerCallSound() { this.playTone(587, 'square', 0.15, 0.3); setTimeout(() => this.playTone(784, 'square', 0.15, 0.3), 150); setTimeout(() => this.playTone(587, 'square', 0.15, 0.3), 300); setTimeout(() => this.playTone(784, 'square', 0.3, 0.3), 450); }
+            playFriendRevealSound() { this.playTone(523, 'sine', 0.3, 0.3); setTimeout(() => this.playTone(659, 'sine', 0.3, 0.3), 150); setTimeout(() => this.playTone(784, 'sine', 0.5, 0.2), 300); }
+            playBackrunSound() { this.playTone(800, 'sawtooth', 0.3, 0.6); setTimeout(() => this.playTone(400, 'sawtooth', 0.3, 0.6), 200); setTimeout(() => this.playTone(200, 'sawtooth', 0.3, 0.6), 400); setTimeout(() => this.playTone(100, 'square', 0.5, 0.5), 600); }
+            playCoinSound() { this.playTone(1200, 'sine', 0.1, 0.3); setTimeout(() => this.playTone(1500, 'sine', 0.1, 0.3), 80); setTimeout(() => this.playTone(1800, 'sine', 0.15, 0.2), 160); }
+            playFinalVictoryFanfare() {
+                this.playTone(262, 'sine', 0.3, 0.7); this.playTone(262, 'triangle', 0.3, 0.5);
+                setTimeout(() => { this.playTone(330, 'sine', 0.3, 0.7); this.playTone(330, 'triangle', 0.3, 0.5); }, 200);
+                setTimeout(() => { this.playTone(392, 'sine', 0.3, 0.7); this.playTone(392, 'triangle', 0.3, 0.5); }, 400);
+                setTimeout(() => { this.playTone(523, 'sine', 0.5, 0.8); this.playTone(523, 'triangle', 0.5, 0.6); this.playTone(659, 'sine', 0.5, 0.5); }, 700);
+                setTimeout(() => { this.playTone(784, 'sine', 0.8, 0.9); this.playTone(784, 'triangle', 0.8, 0.6); this.playTone(523, 'sine', 0.8, 0.5); this.playTone(659, 'sine', 0.8, 0.4); }, 1200);
             }
-            playMightySound() {
-    if (!this.enabled) return;
-    // 묵직한 임팩트 + 금관 느낌
-    this.playTone(200, 'sine', 0.15, 0.6);
-    setTimeout(() => this.playTone(400, 'triangle', 0.2, 0.5), 100);
-    setTimeout(() => this.playTone(600, 'sine', 0.3, 0.4), 200);
-    setTimeout(() => this.playTone(800, 'sine', 0.4, 0.3), 350);
-}
-
-playJokerSound() {
-    if (!this.enabled) return;
-    // 미스터리한 상승음
-    this.playTone(300, 'sine', 0.2, 0.4);
-    setTimeout(() => this.playTone(450, 'triangle', 0.2, 0.4), 120);
-    setTimeout(() => this.playTone(600, 'sine', 0.3, 0.3), 240);
-    setTimeout(() => this.playTone(900, 'sine', 0.15, 0.2), 360);
-}
-
-playCutSound() {
-    if (!this.enabled) return;
-    // 칼로 베는 느낌 - 하강 후 상승
-    this.playTone(800, 'sawtooth', 0.08, 0.4);
-    setTimeout(() => this.playTone(400, 'triangle', 0.15, 0.5), 80);
-    setTimeout(() => this.playTone(600, 'sine', 0.2, 0.3), 200);
-}
-
-playOverCutSound() {
-    if (!this.enabled) return;
-    // 더 강한 컷 - 에스컬레이션
-    this.playTone(600, 'sawtooth', 0.08, 0.5);
-    setTimeout(() => this.playTone(300, 'triangle', 0.1, 0.5), 60);
-    setTimeout(() => this.playTone(500, 'sawtooth', 0.08, 0.5), 150);
-    setTimeout(() => this.playTone(800, 'sine', 0.3, 0.4), 250);
-    setTimeout(() => this.playTone(1000, 'sine', 0.2, 0.3), 400);
-}
-
-playClashSound() {
-    if (!this.enabled) return;
-    // 충돌음 - 마이티 vs 조커
-    this.playTone(150, 'sawtooth', 0.15, 0.6);
-    this.playTone(200, 'square', 0.1, 0.4);
-    setTimeout(() => {
-        this.playTone(523, 'sine', 0.2, 0.5);
-        this.playTone(659, 'sine', 0.2, 0.4);
-    }, 200);
-    setTimeout(() => this.playTone(784, 'sine', 0.4, 0.3), 400);
-}
-
-playJokerCallSound() {
-    if (!this.enabled) return;
-    // 호출음 - 뿔피리 느낌
-    this.playTone(587, 'square', 0.15, 0.3);
-    setTimeout(() => this.playTone(784, 'square', 0.15, 0.3), 150);
-    setTimeout(() => this.playTone(587, 'square', 0.15, 0.3), 300);
-    setTimeout(() => this.playTone(784, 'square', 0.3, 0.3), 450);
-}
-
-playFriendRevealSound() {
-    if (!this.enabled) return;
-    // 부드러운 벨
-    this.playTone(523, 'sine', 0.3, 0.3);
-    setTimeout(() => this.playTone(659, 'sine', 0.3, 0.3), 150);
-    setTimeout(() => this.playTone(784, 'sine', 0.5, 0.2), 300);
-}
-
-playBackrunSound() {
-    if (!this.enabled) return;
-    // 충격적인 하강음
-    this.playTone(800, 'sawtooth', 0.3, 0.6);
-    setTimeout(() => this.playTone(400, 'sawtooth', 0.3, 0.6), 200);
-    setTimeout(() => this.playTone(200, 'sawtooth', 0.3, 0.6), 400);
-    setTimeout(() => this.playTone(100, 'square', 0.5, 0.5), 600);
-}
-
-playCoinSound() {
-    if (!this.enabled) return;
-    // 동전 소리
-    this.playTone(1200, 'sine', 0.1, 0.3);
-    setTimeout(() => this.playTone(1500, 'sine', 0.1, 0.3), 80);
-    setTimeout(() => this.playTone(1800, 'sine', 0.15, 0.2), 160);
-}
-playFinalVictoryFanfare() {
-    if (!this.enabled) return;
-    // 웅장한 팡파르 - 3화음 연속
-    // 1마디: 상승 팡파르
-    this.playTone(262, 'sine', 0.3, 0.7);     // C4
-    this.playTone(262, 'triangle', 0.3, 0.5);
-    setTimeout(() => {
-        this.playTone(330, 'sine', 0.3, 0.7);  // E4
-        this.playTone(330, 'triangle', 0.3, 0.5);
-    }, 200);
-    setTimeout(() => {
-        this.playTone(392, 'sine', 0.3, 0.7);  // G4
-        this.playTone(392, 'triangle', 0.3, 0.5);
-    }, 400);
-    // 2마디: 높은 음으로 점프
-    setTimeout(() => {
-        this.playTone(523, 'sine', 0.5, 0.8);  // C5
-        this.playTone(523, 'triangle', 0.5, 0.6);
-        this.playTone(659, 'sine', 0.5, 0.5);  // E5
-    }, 700);
-    // 3마디: 클라이맥스
-    setTimeout(() => {
-        this.playTone(784, 'sine', 0.8, 0.9);  // G5
-        this.playTone(784, 'triangle', 0.8, 0.6);
-        this.playTone(523, 'sine', 0.8, 0.5);  // C5 화음
-        this.playTone(659, 'sine', 0.8, 0.4);  // E5 화음
-    }, 1200);
-}
-
-playFinalVictoryDrumroll() {
-    if (!this.enabled) return;
-    // 드럼롤 효과
-    const baseFreq = 100;
-    for (let i = 0; i < 20; i++) {
-        setTimeout(() => {
-            const vol = 0.2 + (i / 20) * 0.5;
-            const freq = baseFreq + (i * 3);
-            this.playTone(freq, 'triangle', 0.08, vol);
-            this.playTone(freq * 1.5, 'sine', 0.05, vol * 0.3);
-        }, i * 50);
-    }
-    // 마지막 심벌즈 크래시
-    setTimeout(() => {
-        this.playTone(800, 'sawtooth', 0.15, 0.6);
-        this.playTone(1200, 'sine', 0.3, 0.4);
-        this.playTone(1600, 'sine', 0.2, 0.3);
-        this.playTone(2000, 'sine', 0.15, 0.2);
-    }, 1000);
-}
-
-playFinalVictoryChime() {
-    if (!this.enabled) return;
-    // 승리 차임벨
-    const notes = [523, 659, 784, 1047, 784, 1047, 1319, 1047, 1319, 1568];
-    notes.forEach((freq, i) => {
-        setTimeout(() => {
-            this.playTone(freq, 'sine', 0.25, 0.5 - (i * 0.03));
-            this.playTone(freq * 0.5, 'triangle', 0.2, 0.2);
-        }, i * 120);
-    });
-}
-
-playFinalExplosion() {
-    if (!this.enabled) return;
-    // 폭발음
-    this.playTone(60, 'sawtooth', 0.3, 0.8);
-    this.playTone(80, 'square', 0.2, 0.6);
-    this.playTone(120, 'triangle', 0.25, 0.5);
-    setTimeout(() => {
-        this.playTone(200, 'sine', 0.2, 0.4);
-        this.playTone(400, 'sine', 0.15, 0.3);
-        this.playTone(800, 'sine', 0.1, 0.2);
-    }, 150);
-}
-
-playFinalDefeatSound() {
-    if (!this.enabled) return;
-    // 패배 사운드 (낮고 느린 하강음)
-    this.playTone(400, 'sine', 0.4, 0.5);
-    setTimeout(() => this.playTone(350, 'sine', 0.4, 0.4), 300);
-    setTimeout(() => this.playTone(300, 'sine', 0.4, 0.4), 600);
-    setTimeout(() => this.playTone(200, 'sine', 0.8, 0.3), 900);
-}
-
-playGameWinSound() {
-    if (!this.enabled) return;
-    // 승리 팡파르
-    this.playTone(523, 'sine', 0.2, 0.6);
-    setTimeout(() => this.playTone(659, 'sine', 0.2, 0.6), 150);
-    setTimeout(() => this.playTone(784, 'sine', 0.3, 0.6), 300);
-    setTimeout(() => {
-        this.playTone(1047, 'sine', 0.5, 0.7);
-        this.playTone(784, 'sine', 0.5, 0.4);
-        this.playTone(523, 'sine', 0.5, 0.3);
-    }, 500);
-    setTimeout(() => {
-        this.playTone(784, 'sine', 0.2, 0.5);
-        this.playTone(1047, 'sine', 0.2, 0.5);
-    }, 900);
-    setTimeout(() => {
-        this.playTone(1319, 'sine', 0.8, 0.6);
-        this.playTone(1047, 'sine', 0.8, 0.4);
-        this.playTone(784, 'sine', 0.8, 0.3);
-    }, 1100);
-}
-
-playGameLoseSound() {
-    if (!this.enabled) return;
-    // 패배 하강음
-    this.playTone(400, 'sine', 0.5, 0.5);
-    setTimeout(() => this.playTone(350, 'triangle', 0.5, 0.5), 400);
-    setTimeout(() => this.playTone(280, 'sine', 0.5, 0.4), 800);
-    setTimeout(() => {
-        this.playTone(200, 'sine', 0.8, 0.4);
-        this.playTone(150, 'triangle', 0.8, 0.3);
-    }, 1200);
-    setTimeout(() => this.playTone(100, 'sine', 1.0, 0.2), 1800);
-}
+            playFinalVictoryDrumroll() {
+                const baseFreq = 100;
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const vol = 0.2 + (i / 20) * 0.5;
+                        const freq = baseFreq + (i * 3);
+                        this.playTone(freq, 'triangle', 0.08, vol);
+                        this.playTone(freq * 1.5, 'sine', 0.05, vol * 0.3);
+                    }, i * 50);
+                }
+                setTimeout(() => { this.playTone(800, 'sawtooth', 0.15, 0.6); this.playTone(1200, 'sine', 0.3, 0.4); this.playTone(1600, 'sine', 0.2, 0.3); this.playTone(2000, 'sine', 0.15, 0.2); }, 1000);
+            }
+            playFinalVictoryChime() {
+                const notes = [523, 659, 784, 1047, 784, 1047, 1319, 1047, 1319, 1568];
+                notes.forEach((freq, i) => { setTimeout(() => { this.playTone(freq, 'sine', 0.25, 0.5 - (i * 0.03)); this.playTone(freq * 0.5, 'triangle', 0.2, 0.2); }, i * 120); });
+            }
+            playFinalExplosion() {
+                this.playTone(60, 'sawtooth', 0.3, 0.8); this.playTone(80, 'square', 0.2, 0.6); this.playTone(120, 'triangle', 0.25, 0.5);
+                setTimeout(() => { this.playTone(200, 'sine', 0.2, 0.4); this.playTone(400, 'sine', 0.15, 0.3); this.playTone(800, 'sine', 0.1, 0.2); }, 150);
+            }
+            playFinalDefeatSound() {
+                this.playTone(400, 'sine', 0.4, 0.5); setTimeout(() => this.playTone(350, 'sine', 0.4, 0.4), 300);
+                setTimeout(() => this.playTone(300, 'sine', 0.4, 0.4), 600); setTimeout(() => this.playTone(200, 'sine', 0.8, 0.3), 900);
+            }
+            playGameWinSound() {
+                this.playTone(523, 'sine', 0.2, 0.6); setTimeout(() => this.playTone(659, 'sine', 0.2, 0.6), 150);
+                setTimeout(() => this.playTone(784, 'sine', 0.3, 0.6), 300);
+                setTimeout(() => { this.playTone(1047, 'sine', 0.5, 0.7); this.playTone(784, 'sine', 0.5, 0.4); this.playTone(523, 'sine', 0.5, 0.3); }, 500);
+                setTimeout(() => { this.playTone(784, 'sine', 0.2, 0.5); this.playTone(1047, 'sine', 0.2, 0.5); }, 900);
+                setTimeout(() => { this.playTone(1319, 'sine', 0.8, 0.6); this.playTone(1047, 'sine', 0.8, 0.4); this.playTone(784, 'sine', 0.8, 0.3); }, 1100);
+            }
+            playGameLoseSound() {
+                this.playTone(400, 'sine', 0.5, 0.5); setTimeout(() => this.playTone(350, 'triangle', 0.5, 0.5), 400);
+                setTimeout(() => this.playTone(280, 'sine', 0.5, 0.4), 800);
+                setTimeout(() => { this.playTone(200, 'sine', 0.8, 0.4); this.playTone(150, 'triangle', 0.8, 0.3); }, 1200);
+                setTimeout(() => this.playTone(100, 'sine', 1.0, 0.2), 1800);
+            }
         }
+
+
 
         const soundManager = new SoundManager();
 
@@ -8953,7 +8872,10 @@ spawnFirework(cx, cy) {
             async dealCards() {
                 this.gameState.phase = PHASES.DEALING;
                 this.ui.setMessage('카드를 배분하는 중...');
-                soundManager.playCardFlip(); // Sound
+                
+                // [수정] 낱장 소리(playCardFlip) 대신 '촤라락' 셔플 소리로 변경
+                soundManager.playShuffleSound(); 
+                
                 const deck = new Deck();
                 deck.shuffle();
                 this.gameState.floorCards = deck.deal(GAME_CONFIG.FLOOR_CARDS);
@@ -8963,10 +8885,11 @@ spawnFirework(cx, cy) {
                     this.gameState.players[playerIndex].receiveCards(cards);
                     this.gameState.players[playerIndex].sortHand();
                 }
-                this.ui.renderAll({ animation: 'deal' }); // Pass animation flag
-                await this.delay(1500); // Wait for animation
+                this.ui.renderAll({ animation: 'deal' }); 
+                await this.delay(1500); 
                 await this.checkPoolRequest();
             }
+
 
             async checkPoolRequest() {
                 this.gameState.phase = PHASES.DEAL_CHECK;
