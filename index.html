@@ -2772,6 +2772,34 @@ body.mobile-mode #mobile-score-progress .score-bar-fill.opposition {
     background: linear-gradient(90deg, #2196F3, #03A9F4);
 }
 
+/* [수정] 모바일 비딩창 카드 강제 축소 및 2줄 정렬 */
+body.mobile-mode #bid-hand-preview {
+    display: grid !important;
+    grid-template-columns: repeat(5, auto) !important; /* 한 줄에 5개 강제 */
+    justify-content: center !important;
+    gap: 2px 3px !important; /* 세로 가로 간격 최소화 */
+    padding: 6px !important;
+    width: fit-content !important;
+    margin: 0 auto 12px auto !important;
+    overflow: hidden !important;
+}
+
+body.mobile-mode #bid-hand-preview .card {
+    /* 기존 55px !important 때문에 적용 안 되던 것을 42px로 더 강력하게 덮어씀 */
+    width: 42px !important;  
+    height: 58px !important; 
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #777 !important; /* 카드 테두리 얇게 */
+}
+
+/* 카드 이미지도 강제로 맞춤 */
+body.mobile-mode #bid-hand-preview .card img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: fill !important;
+}
 
 
 
@@ -7311,6 +7339,7 @@ renderMobileUserTrick() {
                         // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
                         // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
                         // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
+                        // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
             showBiddingModal() {
                 this.selectedBid = { value: null, suit: null };
                 const currentBid = this.gameState.bidding.currentBid;
@@ -7327,24 +7356,8 @@ renderMobileUserTrick() {
                 const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
                 const isMobile = document.body.classList.contains('mobile-mode');
                 
-                // [수정됨] 모바일 카드 크기 대폭 축소 (52px -> 44px)
-                const cardW = isMobile ? 44 : 86; 
-                const cardH = isMobile ? 60 : 116; 
-                
-                if (isMobile) {
-                    // [수정됨] 모바일: 간격을 2px로 좁히고, 5열 그리드 강제 적용
-                    handPreview.style.cssText = `
-                        display: grid;
-                        grid-template-columns: repeat(5, auto);
-                        justify-content: center;
-                        gap: 2px 2px; /* 간격 축소 */
-                        margin-bottom: 12px;
-                        padding: 6px;
-                        background: rgba(0,0,0,0.3);
-                        border-radius: 6px;
-                    `;
-                } else {
-                    // 데스크탑
+                // 모바일이 아닐 때만 Flex 스타일 적용 (모바일은 위의 CSS가 처리함)
+                if (!isMobile) {
                     handPreview.style.cssText = `
                         display: flex;
                         justify-content: center;
@@ -7359,8 +7372,11 @@ renderMobileUserTrick() {
 
                 for (const card of mySortedHand) {
                     const cardEl = this.createCardElement(card, { faceUp: true });
-                    // 마진 0으로 강제 설정
-                    cardEl.style.cssText = `width:${cardW}px;height:${cardH}px;margin:0;flex-shrink:0;`;
+                    
+                    // 데스크탑일 때만 인라인 스타일로 크기 지정 (모바일은 CSS !important가 제어)
+                    if (!isMobile) {
+                        cardEl.style.cssText = `width:86px;height:116px;margin:0;flex-shrink:0;`;
+                    }
                     
                     const img = cardEl.querySelector('img');
                     if (img) { img.style.width = '100%'; img.style.height = '100%'; }
@@ -7453,6 +7469,7 @@ renderMobileUserTrick() {
                 document.getElementById('modal-overlay').classList.remove('hidden');
                 document.getElementById('bidding-modal').classList.remove('hidden');
             }
+
 
 
 
