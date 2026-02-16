@@ -816,7 +816,11 @@ body.mobile-mode .center-friend-text {
             min-width: 320px;
             max-width: 750px;
             padding: 15px 20px;
-            top: 30%;
+            /* 위치 변경: 중앙(30%) -> 상단(50px) */
+            top: 50px !important; 
+            
+            /* 세로 중앙 정렬 해제 (가로만 중앙 정렬 유지) */
+            transform: translateX(-50%) !important; 
         }
 
         #bidding-modal h3 {
@@ -2410,8 +2414,11 @@ body.mobile-mode .modal h3 { font-size:15px;margin-bottom:8px; }
 body.mobile-mode .modal p { font-size:11px;margin-bottom:6px; }
 
 body.mobile-mode #bidding-modal {
-    top: 50%;
-    transform: translate(-50%, -50%);
+    /* 위치 변경: 중앙(50%) -> 최상단(15px) */
+    top: 15px !important; 
+    
+    /* 세로 중앙 정렬 해제 (가로만 중앙 정렬 유지) */
+    transform: translateX(-50%) !important;
 }
 
 body.mobile-mode #bidding-modal h3 {
