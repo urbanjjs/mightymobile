@@ -85,16 +85,19 @@ body.mobile-mode {
     opacity: 0.8;
 }
 
+/* [수정] 친구 표시 텍스트 스타일: 검은 배경 제거 및 부드러운 처리 */
 .center-friend-text {
     font-size: 18px;
-    color: #FFD700;
+    color: #FFD700;       /* 금색 텍스트 */
     margin-top: 5px;
     font-weight: bold;
-    background: rgba(0, 0, 0, 0.6); /* 배경 더 진하게 */
-    padding: 4px 12px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5); /* 그림자 추가로 가독성 확보 */
+    background: transparent; /* 배경 투명하게 변경 */
+    padding: 0;              /* 패딩 제거 */
+    border-radius: 0;        /* 테두리 둥글기 제거 */
+    box-shadow: none;        /* 박스 그림자 제거 */
+    text-shadow: 0 1px 5px rgba(0,0,0,0.9); /* 글자 가독성을 위한 그림자 추가 */
 }
+
 
 /* 기루다와 숫자를 겹치기 위한 래퍼 */
 .overlap-wrapper {
@@ -6955,7 +6958,8 @@ renderAll(options = {}) {
             }
 
             // ★ 팀별 점수 진행 바
-renderGirudaBackground() {
+            // UI 클래스 내부의 renderGirudaBackground 메서드를 이 코드로 교체하세요
+            renderGirudaBackground() {
                 const existing = document.getElementById('giruda-bg-symbol');
                 if (existing) existing.remove();
 
@@ -6966,13 +6970,13 @@ renderGirudaBackground() {
                 const trickArea = document.getElementById('trick-area');
                 const container = document.createElement('div');
                 container.id = 'giruda-bg-symbol';
-                container.className = 'center-info-container'; // CSS 클래스 적용
+                container.className = 'center-info-container'; 
 
                 // 1. 기루다 심볼 및 색상 결정
                 let girudaText = '';
                 let girudaColor = '';
                 if (contract.isNoGiruda) {
-                    girudaText = 'N'; // No Giruda
+                    girudaText = 'N'; 
                     girudaColor = 'rgba(158, 158, 158, 0.8)';
                 } else if (contract.giruda) {
                     girudaText = SUIT_SYMBOLS[contract.giruda];
@@ -6988,7 +6992,6 @@ renderGirudaBackground() {
                 else if (contract.friendCard) {
                     const cardName = contract.friendCard.toString();
                     if (this.gameState.friendRevealed) {
-                        // 친구가 밝혀졌으면 플레이어 이름 표시 (옵션)
                         const friendIdx = this.gameState.contract.friend;
                         const friendName = friendIdx !== null ? this.gameState.players[friendIdx].name : '';
                         friendText = `친구: ${cardName} (${friendName})`;
@@ -6997,10 +7000,10 @@ renderGirudaBackground() {
                     }
                 }
 
-                // 3. 라운드 텍스트
-                const roundText = `ROUND ${this.gameState.round || 1}/10`;
+                // 3. 라운드 텍스트 수정 (대문자 ROUND -> Round)
+                const roundText = `Round ${this.gameState.round || 1}/10`;
 
-                // 4. HTML 조립 (라운드 -> 겹침(심볼+숫자) -> 친구)
+                // 4. HTML 조립
                 container.innerHTML = `
                     <div class="center-round-text">${roundText}</div>
                     <div class="overlap-wrapper">
@@ -7022,6 +7025,7 @@ renderGirudaBackground() {
                 trickArea.style.position = 'relative';
                 trickArea.insertBefore(container, trickArea.firstChild);
             }
+
 
             renderScoreProgress() {
                 const existing = document.getElementById('score-progress');
@@ -9452,59 +9456,61 @@ spawnFirework(cx, cy) {
                 }
             }
 
+                        // GameController 클래스 내부의 endTrick 메서드를 이 코드로 교체하세요
             async endTrick() {
                 this.isProcessing = true;
                 this.gameState.phase = PHASES.TRICK_END;
                 const { winner, winningCard } = this.gameState.determineTrickWinner();
-                this.ui.renderTrick();
+                
+                // 트릭 화면 갱신 (카드 보여주기)
+                this.ui.renderTrick(); 
+                
+                // 트릭 결과 확인을 위해 잠시 대기
                 await this.delay(2000);
 
                 const prevGovScore = this.gameState.governmentScore;
                 const prevOppScore = this.gameState.oppositionScore;
+                
+                // 트릭 종료 처리 (점수 계산 등)
                 this.gameState.endTrick();
                 
-                // endTrick() 안, this.gameState.endTrick() 다음 줄에 추가
-
-                // ★ Tier 3 이벤트 체크
-                const trickPoints = this.gameState.players[winner].scoreCards.length;
-                //const prevGovScore = this.gameState.governmentScore;
-
-                // 대량 점수 트릭 (이번 트릭에서 3점 이상)
-                const thisRoundPoints = this.gameState.trick.cards
-                    ? this.gameState.trick.cards.reduce((s, p) => s + (p.card && p.card.isPointCard() ? 1 : 0), 0)
-                    : 0;
-                // trick.cards는 이미 endTrick에서 처리되었으므로, 점수는 승자의 scoreCards 변화로 판단
-                // 간접적으로 판단: endTrick 전후의 governmentScore 차이
-this.gameState.updateTeamScores();
+                // ★ Tier 3 이벤트 체크 및 공약 달성/실패 여부 확인
+                this.gameState.updateTeamScores();
                 const newGovScore = this.gameState.governmentScore;
                 const newOppScore = this.gameState.oppositionScore;
                 const bidValue = this.gameState.contract.bidValue;
                 const remainingRounds = GAME_CONFIG.TOTAL_ROUNDS - this.gameState.round;
                 const remainingMaxPoints = GAME_CONFIG.TOTAL_POINTS - newGovScore - newOppScore;
 
-                 // 1. 공약 달성 순간 (기존 코드)
+                 // 1. 공약 달성 순간 (성공)
                 if (prevGovScore < bidValue && newGovScore >= bidValue) {
                     eventBus.emit('contract-achieved', { score: newGovScore, bidValue });
-                    this.ui.setMessage(`🎉 여당 공약 달성! (${newGovScore}/${bidValue})`);
+                    
+                    // [수정됨] 성공 메세지바 출력 안 함 (팝업만 표시됨)
+                    // this.ui.setMessage(`🎉 여당 공약 달성! (${newGovScore}/${bidValue})`);
+                    
+                    // 축하 효과 등을 위해 잠시 대기
                     await this.delay(2000);
                 }
-                // 2. [수정됨] 공약 실패 확정 순간
+                // 2. 공약 실패 확정 순간 (실패)
                 else if (!this.gameState.contractFailureAnnounced && 
                          newGovScore < bidValue && 
                          newGovScore + remainingMaxPoints < bidValue) {
                     
-                    // [중요] 알림 보냄 상태로 변경 (이후에는 이 블록에 들어오지 않음)
                     this.gameState.contractFailureAnnounced = true;
 
-                    // 화면 중앙 팝업 (이전 요청 사항 유지)
+                    // 화면 중앙 팝업 효과는 유지
                     this.effectManager.showPopup(`💀 여당 공약 실패!`, '#FF5722'); 
                     
-                    this.ui.setMessage(`💀 여당 공약 실패! (${newGovScore}/${bidValue}, 잔여 ${remainingMaxPoints}점)`);
+                    // [수정됨] 실패 메세지바 출력 안 함 (중복 제거)
+                    // this.ui.setMessage(`💀 여당 공약 실패! (${newGovScore}/${bidValue}, 잔여 ${remainingMaxPoints}점)`);
                     
                     await this.delay(2000);
                 }
+                
                 this.ui.renderAll();
 
+                // 게임 종료 또는 다음 라운드 진행
                 if (this.gameState.round >= GAME_CONFIG.TOTAL_ROUNDS) {
                     this.isProcessing = false;
                     await this.endGame();
@@ -9520,6 +9526,7 @@ this.gameState.updateTeamScores();
                     await this.processTrick();
                 }
             }
+
 
            async endGame() {
                 this.gameState.phase = PHASES.GAME_END;
