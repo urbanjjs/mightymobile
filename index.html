@@ -122,11 +122,11 @@ body.mobile-mode {
 
 .overlap-number {
     position: relative;
-    font-size: 80px;
+    font-size: 40px;  /* 80px의 절반인 40px로 변경 */
     font-weight: 900;
     color: #fff;
     z-index: 2;
-    text-shadow: 0 0 15px rgba(0,0,0,0.8); /* 그림자 강화 */
+    text-shadow: 0 0 15px rgba(0,0,0,0.8);
 }
 
 /* 모바일 전용 조정 */
@@ -543,17 +543,83 @@ body.mobile-mode .center-friend-text {
         }
 
         /* ===== 액션 영역 ===== */
-        #action-area {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            min-height: 40px;
-        }
+        /* -------------------------------------------------------- */
+/* [수정] 데스크탑 액션 영역(메시지, 사연 버튼 등) 중앙 배치 */
+/* -------------------------------------------------------- */
+
+#action-area {
+    /* 기존 flex flow 배치를 제거하고 화면 중앙 고정으로 변경 */
+    position: fixed;
+    top: 60%; /* 화면 정중앙(50%)보다 약간 아래 (사용자 카드 영역 바로 위) */
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* 팝업 스타일링 */
+    background: rgba(30, 30, 30, 0.95); /* 배경을 어둡고 진하게 */
+    padding: 20px 40px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 215, 0, 0.6); /* 금색 테두리 */
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8); /* 강한 그림자 */
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    min-width: 350px;
+    z-index: 2000; /* 카드보다 위에 뜨도록 설정 */
+}
+
+/* 메시지가 없을 때는 숨김 (선택 사항) */
+#action-area:empty {
+    display: none;
+}
+
+/* 메시지 텍스트 크기 확대 */
+#action-message {
+    color: #FFD700;
+    font-size: 22px; /* 폰트 크기 키움 */
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* 버튼 컨테이너 */
+#action-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+}
+
+/* 버튼 크기 및 스타일 강화 */
+#action-buttons button {
+    padding: 12px 30px;
+    font-size: 18px; /* 버튼 글씨 키움 */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+#action-buttons button.primary {
+    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+    color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+#action-buttons button.secondary {
+    background: linear-gradient(135deg, #757575 0%, #424242 100%);
+    color: white;
+}
+
+#action-buttons button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
 
 
         #action-message {
@@ -1829,6 +1895,44 @@ body.mobile-mode .exchange-section-label {
             }
         }
     
+/* -------------------------------------------------------- */
+/* [수정] 데스크탑 AI-1(Left), AI-4(Right) 정보 위치 하단 이동 */
+/* -------------------------------------------------------- */
+
+/* 좌우측 플레이어 영역을 Flex 컨테이너로 설정하여 순서 제어 */
+.player-area.left,
+.player-area.right {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 카드 영역을 가장 위로 올림 (순서 1) */
+.player-area.left .player-hand,
+.player-area.right .player-hand {
+    order: 1;
+    margin-bottom: 8px; /* 카드와 정보 사이 간격 */
+    padding-left: 15px; /* 기존 패딩 유지 */
+}
+
+/* 이름/역할 헤더를 중간으로 내림 (순서 2) */
+.player-area.left .player-header,
+.player-area.right .player-header {
+    order: 2;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    padding-top: 5px;
+    border-bottom: none; /* 기존 하단 선 제거 */
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* 상단 선 추가 */
+}
+
+/* 점수를 가장 아래로 내림 (순서 3) */
+.player-area.left .player-score,
+.player-area.right .player-score {
+    order: 3;
+    margin-top: 2px;
+}
+
+
 /* ============================================ */
 /* ===== 모바일 전용 스타일 ===== */
 /* ============================================ */
@@ -1954,6 +2058,35 @@ body.mobile-mode #mobile-ai-grid {
     font-weight: bold;
     margin: 0 auto 0 6px;
 }
+
+/* ------------------------------------------------ */
+/* [추가] AI-1, AI-4 (하단 열) 정보 위치 변경 */
+/* ------------------------------------------------ */
+
+/* AI-1과 AI-4는 그리드 하단에 위치하므로, 정보를 박스 하단에 표시하기 위해 순서 반전 */
+body.mobile-mode .mobile-ai-cell[data-ai="1"],
+body.mobile-mode .mobile-ai-cell[data-ai="4"] {
+    flex-direction: column-reverse; /* 위:카드, 아래:이름 순서로 변경 */
+    justify-content: space-between;
+}
+
+/* 순서가 뒤집혔으므로 마진 방향 조정 (카드와 이름 사이 간격 확보) */
+body.mobile-mode .mobile-ai-cell[data-ai="1"] .cell-header,
+body.mobile-mode .mobile-ai-cell[data-ai="4"] .cell-header {
+    margin-bottom: 0;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* 구분선 위쪽으로 이동 */
+    border-bottom: none;
+}
+
+/* 말풍선(비딩 등) 위치 미세 조정 */
+body.mobile-mode .mobile-ai-cell[data-ai="1"] .cell-bid-bubble,
+body.mobile-mode .mobile-ai-cell[data-ai="4"] .cell-bid-bubble {
+    margin-bottom: 2px;
+    margin-top: 0;
+}
+
 
 
 /* ★ 각 AI 박스 안의 트릭 카드 표시 영역 */
@@ -2158,17 +2291,73 @@ body.mobile-mode .card .special-label {
 }
 
 body.mobile-mode #action-area {
-    padding: 4px 6px;
-    min-height: 30px;
-    gap: 3px;
-    order: -1;
-    position: sticky;
-    bottom: 0;
-    z-index: 50;
+    /* 기존 sticky 하단 고정 제거하고 전체화면 중앙 고정으로 변경 */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    /* 팝업 스타일링 */
+    width: 85%;
+    max-width: 320px;
+    min-height: auto;
+    background: rgba(20, 20, 20, 0.95); /* 배경을 진하게 하여 가독성 확보 */
+    border: 2px solid rgba(255, 215, 0, 0.5); /* 금색 테두리로 강조 */
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    
+    /* 내부 정렬 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    gap: 15px;
+    
+    z-index: 9999; /* 최상단 노출 */
+    order: 0; /* flex order 초기화 */
 }
 
-body.mobile-mode #action-message { font-size:12px; }
-body.mobile-mode #action-buttons button { padding:6px 14px;font-size:12px; }
+body.mobile-mode #action-area:empty {
+    display: none;
+}
+
+body.mobile-mode #action-message {
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    text-align: center;
+    line-height: 1.4;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* 버튼 스타일 강화 (터치하기 쉽도록) */
+body.mobile-mode #action-buttons {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+body.mobile-mode #action-buttons button {
+    padding: 12px 24px; /* 터치 영역 확대 */
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    flex: 1; /* 버튼끼리 너비 균등 분배 */
+    max-width: 140px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* 긍정적 액션(사연 묻기 등) 강조 */
+body.mobile-mode #action-buttons button.primary {
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+}
+
+/* 부정적 액션(건너뛰기 등) */
+body.mobile-mode #action-buttons button.secondary {
+    background: linear-gradient(135deg, #757575 0%, #424242 100%);
+}
 
 body.mobile-mode #giruda-bg-symbol {
     font-size: 100px !important;
