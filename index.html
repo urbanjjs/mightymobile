@@ -547,78 +547,89 @@ body.mobile-mode .center-friend-text {
 /* [수정] 데스크탑 액션 영역(메시지, 사연 버튼 등) 중앙 배치 */
 /* -------------------------------------------------------- */
 
+/* -------------------------------------------------------- */
+/* [수정] 데스크탑 액션 영역: 하단 배치 및 미니멀 스타일 */
+/* -------------------------------------------------------- */
+
 #action-area {
-    /* 기존 flex flow 배치를 제거하고 화면 중앙 고정으로 변경 */
+    /* 위치: 화면 중앙에서 하단으로 이동 */
     position: fixed;
-    top: 60%; /* 화면 정중앙(50%)보다 약간 아래 (사용자 카드 영역 바로 위) */
+    top: auto !important; /* 상단 위치 해제 */
+    bottom: 160px;        /* 사용자 카드 영역(약 120px) 바로 위에 뜨도록 설정 */
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%); /* 가로 중앙 정렬 */
     
-    /* 팝업 스타일링 */
-    background: rgba(30, 30, 30, 0.95); /* 배경을 어둡고 진하게 */
-    padding: 20px 40px;
-    border-radius: 12px;
-    border: 2px solid rgba(255, 215, 0, 0.6); /* 금색 테두리 */
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8); /* 강한 그림자 */
+    /* 크기: 내용에 맞게 가변적으로 줄임 */
+    width: auto;
+    min-width: 0;         /* 최소 너비 제한 해제 */
+    max-width: 600px;     /* 너무 길어지는 것 방지 */
+    
+    /* 스타일: 슬림하고 컴팩트하게 */
+    background: rgba(0, 0, 0, 0.85); /* 더 투명하고 어두운 배경 */
+    padding: 8px 20px;    /* 패딩 축소 */
+    border-radius: 20px;  /* 둥근 캡슐 형태 */
+    border: 1px solid rgba(255, 215, 0, 0.4); /* 테두리 얇게 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* 그림자 축소 */
     
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* 메시지와 버튼 수직 정렬 */
     justify-content: center;
     align-items: center;
-    gap: 15px;
-    min-width: 350px;
-    z-index: 2000; /* 카드보다 위에 뜨도록 설정 */
+    gap: 6px;             /* 간격 최소화 */
+    
+    z-index: 100;         /* 카드보다 위, 모달보다는 아래 */
 }
 
-/* 메시지가 없을 때는 숨김 (선택 사항) */
+/* 메시지 없을 때 숨김 */
 #action-area:empty {
     display: none;
 }
 
-/* 메시지 텍스트 크기 확대 */
+/* 메시지 폰트 축소 및 가독성 확보 */
 #action-message {
-    color: #FFD700;
-    font-size: 22px; /* 폰트 크기 키움 */
-    font-weight: bold;
+    color: #fff;          /* 흰색으로 깔끔하게 */
+    font-size: 15px;      /* 22px -> 15px로 축소 */
+    font-weight: normal;  /* 두께 줄임 */
     text-align: center;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    text-shadow: none;    /* 그림자 제거로 깔끔하게 */
+    margin: 0;
+    line-height: 1.2;
 }
 
 /* 버튼 컨테이너 */
 #action-buttons {
     display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
+    gap: 8px;
     justify-content: center;
-    width: 100%;
 }
 
-/* 버튼 크기 및 스타일 강화 */
+/* 버튼 사이즈 최소화 */
 #action-buttons button {
-    padding: 12px 30px;
-    font-size: 18px; /* 버튼 글씨 키움 */
-    border: none;
-    border-radius: 6px;
+    padding: 4px 12px;    /* 패딩 대폭 축소 */
+    font-size: 13px;      /* 폰트 축소 */
+    border: 1px solid #666;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
-    min-width: 100px;
+    min-width: auto;      /* 최소 너비 해제 */
 }
 
 #action-buttons button.primary {
-    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+    background: #4CAF50;
     color: white;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    border-color: #4CAF50;
 }
 
 #action-buttons button.secondary {
-    background: linear-gradient(135deg, #757575 0%, #424242 100%);
-    color: white;
+    background: #444;
+    color: #ccc;
 }
 
 #action-buttons button:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    background-color: rgba(255,255,255,0.1);
 }
+
 
 
 
@@ -2290,74 +2301,89 @@ body.mobile-mode .card .special-label {
     right: -6px;
 }
 
+/* ------------------------------------------------ */
+/* [수정] 모바일 액션 영역: 하단 미니멀 캡슐 스타일 */
+/* ------------------------------------------------ */
+
 body.mobile-mode #action-area {
-    /* 기존 sticky 하단 고정 제거하고 전체화면 중앙 고정으로 변경 */
+    /* 위치: 화면 중앙 -> 하단 (내 카드 바로 위) */
     position: fixed;
-    top: 50%;
+    top: auto !important;
+    bottom: 95px; /* 모바일 사용자 카드 영역(약 70~80px) 바로 위에 위치 */
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
     
-    /* 팝업 스타일링 */
-    width: 85%;
-    max-width: 320px;
-    min-height: auto;
-    background: rgba(20, 20, 20, 0.95); /* 배경을 진하게 하여 가독성 확보 */
-    border: 2px solid rgba(255, 215, 0, 0.5); /* 금색 테두리로 강조 */
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    /* 크기: 내용에 따라 늘어나되 화면 꽉 차지 않게 */
+    width: auto;
+    min-width: 0;
+    max-width: 90%;
+    min-height: 0;
     
-    /* 내부 정렬 */
+    /* 스타일: 작고 방해되지 않는 디자인 */
+    background: rgba(0, 0, 0, 0.85); /* 투명도 있는 검은 배경 */
+    border: 1px solid rgba(255, 215, 0, 0.3); /* 얇은 금색 테두리 */
+    border-radius: 20px; /* 둥근 캡슐 모양 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    padding: 6px 16px; /* 패딩 최소화 */
+    
+    /* 정렬 */
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* 메시지 위, 버튼 아래 */
     justify-content: center;
     align-items: center;
-    padding: 20px;
-    gap: 15px;
+    gap: 4px;
     
-    z-index: 9999; /* 최상단 노출 */
-    order: 0; /* flex order 초기화 */
+    z-index: 2000;
+    order: 0;
 }
 
+/* 메시지 없을 때 숨김 */
 body.mobile-mode #action-area:empty {
     display: none;
 }
 
+/* 메시지 폰트 축소 */
 body.mobile-mode #action-message {
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 13px; /* 작게 조정 */
+    font-weight: normal;
     color: #fff;
     text-align: center;
-    line-height: 1.4;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    line-height: 1.2;
+    text-shadow: none;
+    margin: 0;
 }
 
-/* 버튼 스타일 강화 (터치하기 쉽도록) */
+/* 버튼 컨테이너 */
 body.mobile-mode #action-buttons {
-    width: 100%;
+    width: auto;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 6px;
 }
 
+/* 버튼 스타일 최소화 */
 body.mobile-mode #action-buttons button {
-    padding: 12px 24px; /* 터치 영역 확대 */
-    font-size: 16px;
+    padding: 3px 10px; /* 터치 가능한 최소 크기 */
+    font-size: 12px;
     font-weight: bold;
-    border-radius: 8px;
-    flex: 1; /* 버튼끼리 너비 균등 분배 */
-    max-width: 140px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    border-radius: 4px;
+    flex: initial; /* 버튼 크기 내용에 맞춤 */
+    max-width: none;
+    box-shadow: none;
+    border: 1px solid #555;
 }
 
-/* 긍정적 액션(사연 묻기 등) 강조 */
 body.mobile-mode #action-buttons button.primary {
-    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    background: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
 }
 
-/* 부정적 액션(건너뛰기 등) */
 body.mobile-mode #action-buttons button.secondary {
-    background: linear-gradient(135deg, #757575 0%, #424242 100%);
+    background: #444;
+    color: #ccc;
 }
+
 
 body.mobile-mode #giruda-bg-symbol {
     font-size: 100px !important;
