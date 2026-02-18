@@ -3475,36 +3475,35 @@ body.mobile-mode .center-friend-text {
 }
 
 /* ========================================================== */
-/* [재수정] 데스크탑 모드: 내 카드는 유지하고 AI 카드만 축소 */
+/* [통합 수정] 데스크탑 & 태블릿(아이패드): AI 카드만 60% 축소 */
+/* 모바일 모드(.mobile-mode)가 아닐 때는 무조건 적용됩니다. */
 /* ========================================================== */
 
-/* 1. 내 카드(User) 크기 원상복구 및 강제 고정 */
-/* 작아지지 않도록 !important로 원래 크기(86x116)를 못박습니다 */
+/* 1. 내 카드(User) 크기 원상복구 및 고정 (가장 중요) */
+/* 태블릿에서도 내 카드는 작아지지 않도록 86x116px 고정 */
 body:not(.mobile-mode) .player-area.user .card {
     width: 86px !important;
     height: 116px !important;
+    flex-shrink: 0 !important; /* 공간 부족해도 찌그러지지 않게 */
 }
 
-/* 2. AI 플레이어(상단, 좌우) 카드만 콕 집어서 60% 축소 */
-/* width와 height를 동시에 줄여 비율을 유지합니다 (52x70) */
-body:not(.mobile-mode) .player-area.top-left .card,
-body:not(.mobile-mode) .player-area.top-right .card,
-body:not(.mobile-mode) .player-area.left .card,
-body:not(.mobile-mode) .player-area.right .card {
+/* 2. AI 플레이어(Top, Left, Right) 카드 강제 축소 */
+/* width, height를 60% 수준(52x70)으로 고정 */
+body:not(.mobile-mode) .player-area:not(.user) .card {
     width: 52px !important;
     height: 70px !important;
+    flex-shrink: 0 !important;
 }
 
-/* 3. AI 카드 내부 이미지 비율 강제 맞춤 (길어지는 현상 방지) */
-/* 이미지가 카드 박스 크기에 딱 맞게 들어가도록 설정 */
+/* 3. AI 카드 내부 이미지 비율 유지 */
 body:not(.mobile-mode) .player-area:not(.user) .card img {
     width: 100% !important;
     height: 100% !important;
-    object-fit: fill !important; /* 빈틈없이 채우기 */
+    object-fit: fill !important; /* 이미지 꽉 채우기 */
 }
 
-/* 4. AI 카드 겹침 간격 조정 */
-/* 카드가 작아진 만큼 겹치는 간격도 줄임 (-45px -> -25px) */
+/* 4. AI 카드 겹침 간격 좁히기 */
+/* 카드가 작아졌으니 간격도 -45px에서 -25px로 줄여야 자연스러움 */
 body:not(.mobile-mode) .player-area:not(.user) .player-hand .card {
     margin-left: -25px !important;
 }
@@ -3514,10 +3513,22 @@ body:not(.mobile-mode) .player-area:not(.user) .player-hand .card:first-child {
     margin-left: 0 !important;
 }
 
-/* 5. AI 플레이어 영역 높이 줄이기 (여백 정리) */
+/* 5. AI 플레이어 영역 높이 및 여백 최적화 */
+/* 불필요하게 넓은 공간을 줄여서 태블릿 화면 효율성 증대 */
 body:not(.mobile-mode) .player-area:not(.user) .player-hand {
     min-height: 75px !important; /* 120px -> 75px */
     padding-left: 5px !important;
+    margin-bottom: 5px !important;
+}
+
+/* 6. 좌우측 플레이어(AI-1, AI-4) 태블릿 레이아웃 보정 */
+/* 태블릿에서 좌우측 플레이어 정보가 너무 퍼지지 않게 높이 제한 */
+body:not(.mobile-mode) .player-area.left,
+body:not(.mobile-mode) .player-area.right {
+    min-height: auto !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    justify-content: center;
 }
 
 
