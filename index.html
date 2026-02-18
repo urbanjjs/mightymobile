@@ -7288,7 +7288,21 @@ renderMobileUserTrick() {
         trickInfo.style.display = 'none';
     }
 }
+            // [신규] 상태 체크 함수: 텍스트나 버튼이 없으면 박스를 강제로 숨김
+            checkActionAreaVisibility() {
+                const actionArea = document.getElementById('action-area');
+                const messageEl = document.getElementById('action-message');
+                const buttonsContainer = document.getElementById('action-buttons');
 
+                const hasMessage = messageEl.textContent.trim().length > 0;
+                const hasButtons = buttonsContainer.children.length > 0;
+
+                if (!hasMessage && !hasButtons) {
+                    actionArea.style.display = 'none';
+                } else {
+                    actionArea.style.display = 'flex';
+                }
+            }
 
 
             renderAILog() {
@@ -7326,11 +7340,53 @@ renderMobileUserTrick() {
             }
 
                         // [수정] 버튼 생성: 버튼이 생기면 무조건 창을 보여줌
+                       setMessage(message) {
+                const ignoredMessages = [
+                    '카드를 선택하세요', '선(리드) 차례', '승리!', '점수:', 
+                    '라운드', '비딩하세요', '친구 카드를 선택하세요', 
+                    '버릴 카드 3장을 선택하세요', '친구 카드를 선언하세요'
+                ];
+
+                const shouldIgnore = ignoredMessages.some(m => message.includes(m));
+                const messageEl = document.getElementById('action-message');
+                const buttonsContainer = document.getElementById('action-buttons');
+
+                // 기존 타이머 취소
+                if (this.messageTimer) {
+                    clearTimeout(this.messageTimer);
+                    this.messageTimer = null;
+                }
+
+                if (shouldIgnore) {
+                    messageEl.innerHTML = '';
+                    this.checkActionAreaVisibility(); // 즉시 상태 체크
+                    return;
+                }
+
+                // 메세지 표시
+                messageEl.innerHTML = `<span>${message}</span>`;
+                this.checkActionAreaVisibility(); // 표시 상태로 전환
+
+                // 3초 후 삭제 타이머
+                this.messageTimer = setTimeout(() => {
+                    // 버튼이 있으면 메세지 유지 (삭제 안 함)
+                    if (buttonsContainer.children.length > 0) {
+                        this.messageTimer = null;
+                        return;
+                    }
+
+                    // 버튼이 없으면 텍스트 지우고 숨김 체크
+                    messageEl.innerHTML = ''; 
+                    this.checkActionAreaVisibility();
+                    this.messageTimer = null;
+                }, 3000);
+            }
+
+            // [수정] 버튼 설정
             setActionButtons(buttons) {
                 const container = document.getElementById('action-buttons');
-                const actionArea = document.getElementById('action-area');
-                
                 container.innerHTML = '';
+                
                 for (const btn of buttons) {
                     const el = document.createElement('button');
                     el.textContent = btn.text;
@@ -7340,82 +7396,28 @@ renderMobileUserTrick() {
                     container.appendChild(el);
                 }
                 
-                // 버튼이 추가되었으므로 창을 표시
-                if (buttons.length > 0) {
-                    actionArea.style.display = 'flex';
-                }
+                this.checkActionAreaVisibility(); // 버튼 추가 후 상태 체크 (박스 보이기)
             }
 
-
-                        // [수정] 버튼 삭제: 메세지도 비어있다면 창을 숨김
+            // [수정] 버튼 삭제
             clearActionButtons() {
                 const container = document.getElementById('action-buttons');
-                const actionArea = document.getElementById('action-area');
-                const messageEl = document.getElementById('action-message');
-                
                 container.innerHTML = '';
-                document.getElementById('action-message').innerHTML = ''; // 메세지도 함께 초기화하는 경우가 많음
+                
+                // 보통 버튼을 지울 때 메세지도 같이 지우는 경우가 많으므로 함께 처리
+                // 만약 메세지는 남겨야 한다면 아래 줄은 주석 처리하세요.
+                document.getElementById('action-message').innerHTML = ''; 
 
-                // 메세지 텍스트도 없고 버튼도 없으면 숨김
-                if (!messageEl.textContent.trim()) {
-                    actionArea.style.display = 'none';
-                }
+                this.checkActionAreaVisibility(); // 삭제 후 상태 체크 (박스 숨기기)
             }
 
-            // UI 클래스 내부의 setMessage 메서드를 찾아 교체하세요.
-            // UI 클래스 내부의 setMessage 메서드를 이 코드로 교체하세요
-                       // UI 클래스 내부의 setMessage 메서드를 이 코드로 교체하세요
-                        // [수정] 메세지 설정: 3초 후 삭제하되, 버튼이 없으면 창 자체를 숨김
-            setMessage(message) {
-                const ignoredMessages = [
-                    '카드를 선택하세요', '선(리드) 차례', '승리!', '점수:', 
-                    '라운드', '비딩하세요', '친구 카드를 선택하세요', 
-                    '버릴 카드 3장을 선택하세요', '친구 카드를 선언하세요'
-                ];
-
-                const shouldIgnore = ignoredMessages.some(m => message.includes(m));
-                const actionArea = document.getElementById('action-area');
-                const messageEl = document.getElementById('action-message');
-                const buttonsContainer = document.getElementById('action-buttons');
-
-                if (this.messageTimer) {
-                    clearTimeout(this.messageTimer);
-                    this.messageTimer = null;
-                }
-
-                if (shouldIgnore) {
-                    messageEl.innerHTML = '';
-                    // 버튼도 없으면 즉시 숨김
-                    if (!buttonsContainer.hasChildNodes()) {
-                        actionArea.style.display = 'none';
-                    }
-                    return;
-                }
-
-                // 메세지가 있으므로 일단 표시
-                actionArea.style.display = 'flex';
-                messageEl.innerHTML = `<span>${message}</span>`;
-
-                // 3초 후 처리
-                this.messageTimer = setTimeout(() => {
-                    // 버튼이 있으면 메세지를 지우지 않고 유지 (버튼 선택 유도)
-                    if (buttonsContainer && buttonsContainer.hasChildNodes()) {
-                        this.messageTimer = null;
-                        return;
-                    }
-
-                    // 버튼이 없을 때만 텍스트 삭제 및 창 숨김
-                    messageEl.innerHTML = ''; 
-                    actionArea.style.display = 'none';
-                    this.messageTimer = null;
-                }, 3000);
+            // [수정] 메세지 삭제 (단순 텍스트 클리어)
+            clearMessage() { 
+                document.getElementById('action-message').innerHTML = ''; 
+                this.checkActionAreaVisibility(); 
             }
-
-
-
-            clearMessage() { document.getElementById('action-message').innerHTML = ''; }
-
             // ===== 비딩 모달 =====
+                        // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
                         // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
                         // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
                         // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
@@ -7426,18 +7428,21 @@ renderMobileUserTrick() {
                 document.getElementById('current-bid-display').textContent =
                     currentBid ? `${currentBid.value}${currentBid.suit === 'none' ? 'No' : SUIT_SYMBOLS[currentBid.suit]}` : '없음';
                 
+                // 기존 프리뷰가 있다면 제거 (초기화)
                 const oldPreview = document.getElementById('bid-hand-preview');
                 if (oldPreview) oldPreview.remove();
                 
-                const handPreview = document.createElement('div');
-                handPreview.id = 'bid-hand-preview';
-                
-                const myPlayer = this.gameState.players[0];
-                const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
                 const isMobile = document.body.classList.contains('mobile-mode');
-                
-                // 모바일이 아닐 때만 Flex 스타일 적용 (모바일은 위의 CSS가 처리함)
+
+                // [수정됨] 모바일이 아닐 때만(데스크탑에서만) 손패 미리보기를 생성합니다.
                 if (!isMobile) {
+                    const handPreview = document.createElement('div');
+                    handPreview.id = 'bid-hand-preview';
+                    
+                    const myPlayer = this.gameState.players[0];
+                    const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
+                    
+                    // 데스크탑 스타일
                     handPreview.style.cssText = `
                         display: flex;
                         justify-content: center;
@@ -7448,25 +7453,21 @@ renderMobileUserTrick() {
                         background: rgba(0,0,0,0.3);
                         border-radius: 6px;
                     `;
-                }
 
-                for (const card of mySortedHand) {
-                    const cardEl = this.createCardElement(card, { faceUp: true });
-                    
-                    // 데스크탑일 때만 인라인 스타일로 크기 지정 (모바일은 CSS !important가 제어)
-                    if (!isMobile) {
+                    for (const card of mySortedHand) {
+                        const cardEl = this.createCardElement(card, { faceUp: true });
                         cardEl.style.cssText = `width:86px;height:116px;margin:0;flex-shrink:0;`;
+                        
+                        const img = cardEl.querySelector('img');
+                        if (img) { img.style.width = '100%'; img.style.height = '100%'; }
+                        handPreview.appendChild(cardEl);
                     }
-                    
-                    const img = cardEl.querySelector('img');
-                    if (img) { img.style.width = '100%'; img.style.height = '100%'; }
-                    handPreview.appendChild(cardEl);
-                }
 
-                const currentBidDisplay = document.querySelector('#bidding-modal .current-bid');
-                currentBidDisplay.parentNode.insertBefore(handPreview, currentBidDisplay);
+                    const currentBidDisplay = document.querySelector('#bidding-modal .current-bid');
+                    currentBidDisplay.parentNode.insertBefore(handPreview, currentBidDisplay);
+                }
                     
-                // 비딩 숫자 버튼
+                // 비딩 숫자 버튼 생성
                 const numbersContainer = document.getElementById('bid-numbers');
                 numbersContainer.innerHTML = '';
                 for (let i = GAME_CONFIG.MIN_BID; i <= GAME_CONFIG.MAX_BID; i++) {
@@ -7476,7 +7477,7 @@ renderMobileUserTrick() {
                     numbersContainer.appendChild(btn);
                 }
 
-                // 비딩 문양 버튼
+                // 비딩 문양 버튼 생성
                 const suitsContainer = document.getElementById('bid-suits');
                 suitsContainer.innerHTML = '';
                 const suits = [
@@ -7549,6 +7550,7 @@ renderMobileUserTrick() {
                 document.getElementById('modal-overlay').classList.remove('hidden');
                 document.getElementById('bidding-modal').classList.remove('hidden');
             }
+
 
 
 
