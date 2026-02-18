@@ -2957,29 +2957,38 @@
 /* [수정] 새 게임 시작 버튼 디자인 (예쁘게 변경) */
 .final-summary-content .fs-reload-btn {
     display: block;
-    width: 100%;
-    margin: 25px auto 0;
-    padding: 14px 0;
-    font-size: 16px;
+    width: 80%; /* 버튼 너비 적절하게 조정 */
+    margin: 30px auto 0; /* 상단 여백 조금 더 줌 */
+    
+    /* 크기 키움 */
+    padding: 18px 0; 
+    font-size: 20px; 
     font-weight: bold;
     color: white;
-    /* 그라데이션 배경 적용 */
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    
+    /* 그라데이션 및 그림자 추가 */
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); /* 진한 녹색 그라데이션 */
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4); /* 부드러운 그림자 */
+    
+    /* 애니메이션 효과 */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    letter-spacing: 1px; /* 자간 살짝 넓힘 */
 }
 
+/* Hover 효과 (마우스 올렸을 때) */
 .final-summary-content .fs-reload-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
-    background: linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%);
+    transform: translateY(-3px) scale(1.02); /* 위로 살짝 떠오르며 커짐 */
+    box-shadow: 0 10px 30px rgba(76, 175, 80, 0.6); /* 그림자 진하게 */
+    background: linear-gradient(135deg, #66BB6A 0%, #388E3C 100%); /* 색상 밝게 */
 }
 
+/* Active 효과 (클릭했을 때) */
 .final-summary-content .fs-reload-btn:active {
-    transform: translateY(0);
+    transform: translateY(1px) scale(0.98); /* 눌리는 느낌 */
+    box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
 }
 
 .final-summary-content .fs-footer {
@@ -3465,6 +3474,51 @@ body.mobile-mode .center-friend-text {
     display: none !important;
 }
 
+/* ========================================================== */
+/* [수정] 데스크탑 모드 AI 플레이어 카드 60% 축소 */
+/* ========================================================== */
+
+/* 1. AI 카드 크기 축소 (User 제외) */
+/* 원본 크기: 86px x 116px -> 60% 적용: 약 52px x 70px */
+body:not(.mobile-mode) .player-area:not(.user) .card {
+    width: 52px !important;
+    height: 70px !important;
+    border-radius: 3px; /* 둥근 모서리도 비율에 맞춰 조정 */
+}
+
+/* 2. 카드 컨테이너 높이 축소 */
+/* 카드가 작아졌으므로 불필요한 여백 제거 (기존 120px -> 80px) */
+body:not(.mobile-mode) .player-area:not(.user) .player-hand {
+    min-height: 80px !important;
+    padding-left: 10px !important; /* 왼쪽 여백도 살짝 축소 */
+}
+
+/* 3. 카드 겹침 간격(Margin) 재조정 */
+/* 카드가 작아졌으므로 겹치는 간격도 줄여야 자연스럽습니다 (기존 -45px -> -25px) */
+body:not(.mobile-mode) .player-area:not(.user) .player-hand .card {
+    margin-left: -25px !important;
+}
+
+/* 첫 번째 카드는 겹침 제외 */
+body:not(.mobile-mode) .player-area:not(.user) .player-hand .card:first-child {
+    margin-left: 0 !important;
+}
+
+/* 4. AI 플레이어 영역 전체 너비/여백 미세 조정 (선택 사항) */
+/* 카드가 작아져서 AI 영역이 너무 넓어 보일 수 있으므로 너비 제한 */
+body:not(.mobile-mode) .player-area.top-left,
+body:not(.mobile-mode) .player-area.top-right,
+body:not(.mobile-mode) .player-area.left,
+body:not(.mobile-mode) .player-area.right {
+    padding: 4px 6px !important;
+}
+
+/* 상단 AI 너비 자동 조정 */
+body:not(.mobile-mode) .player-area.top-left,
+body:not(.mobile-mode) .player-area.top-right {
+    width: auto !important;
+    min-width: 200px;
+}
 
 
     </style>
