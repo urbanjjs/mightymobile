@@ -2405,12 +2405,20 @@ body.mobile-mode .modal {
 body.mobile-mode .modal h3 { font-size:15px;margin-bottom:8px; }
 body.mobile-mode .modal p { font-size:11px;margin-bottom:6px; }
 
+/* [수정] 모바일 비딩창 위치 조정 (위에서 60px) */
 body.mobile-mode #bidding-modal {
-    /* 위치 변경: 중앙(50%) -> 최상단(15px) */
-    top: 15px !important; 
+    width: 85% !important;
+    max-width: 380px !important;
+    padding: 14px 12px !important;
     
-    /* 세로 중앙 정렬 해제 (가로만 중앙 정렬 유지) */
-    transform: translateX(-50%) !important;
+    /* 위치 수정 */
+    top: 60px !important; 
+    left: 50% !important;
+    transform: translateX(-50%) !important; /* 세로 중앙 정렬 제거, 가로만 중앙 */
+    
+    /* 스크롤 가능하도록 설정 (화면이 작을 경우 대비) */
+    max-height: calc(100vh - 80px) !important;
+    overflow-y: auto !important;
 }
 
 body.mobile-mode #bidding-modal h3 {
@@ -2834,22 +2842,44 @@ body.mobile-mode .mobile-ai-cell .cell-trick-card {
 
 /* 2. 모바일 모드 */
 body.mobile-mode #action-area {
-    width: auto !important;
-    min-width: 60% !important;   /* 최소 너비 확보 */
-    max-width: 96vw !important;  /* 모바일 화면 꽉 차게(96%) 사용 */
-    padding: 6px 12px !important; /* 패딩을 살짝 줄여 공간 확보 */
+    /* 위치: 화면 정중앙 (기존 유지) */
+    position: fixed;
+    top: 50% !important;
+    left: 50% !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
     
-    /* 플렉스 설정 유지하되 가로 공간 확보 */
+    /* 스타일 */
+    width: auto !important;
+    min-width: 60% !important;   
+    max-width: 90vw !important;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 215, 0, 0.6);
+    border-radius: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+    padding: 12px 20px !important;
+    
+    /* ★ 내용 정중앙 정렬 핵심 ★ */
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important;
+    justify-content: center !important; /* 세로 중앙 */
+    align-items: center !important;     /* 가로 중앙 */
+    gap: 8px;
+    
+    z-index: 2200;
 }
 
+/* 텍스트 요소 자체도 중앙 정렬 */
 body.mobile-mode #action-message {
-    font-size: 13px !important;
-    white-space: nowrap !important; /* ★ 핵심: 줄바꿈 금지 */
-    word-break: keep-all !important;
-    overflow: visible !important; /* 텍스트가 잘리지 않도록 */
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    
+    font-size: 16px !important;
+    font-weight: bold;
+    white-space: nowrap !important;
 }
 
 /* 버튼 컨테이너도 가로로 넓게 배치 */
