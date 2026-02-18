@@ -2900,9 +2900,10 @@
             /* [수정] 최종 결과 화면 (데스크탑 컴팩트 버전) */
 .final-summary-content {
     width: 100%;
-    /* 너비와 패딩을 줄여서 컴팩트하게 만듦 */
-    max-width: 420px; 
-    padding: 30px 25px; 
+    /* 기존 420px에서 게임 결과 모달과 동일한 700px로 변경 */
+    max-width: 700px; 
+    /* 패딩도 게임 결과창(30px 32px)과 유사하게 조정 */
+    padding: 30px 32px; 
     color: #e0e0e0;
     /* 배경 및 테두리 스타일 */
     background: rgba(30, 30, 30, 0.95);
@@ -7257,95 +7258,92 @@ body.mobile-mode .score-divider {
                     btn.textContent = '🔧 테스트모드 OFF';
                 }
             }
-            // [수정] 모바일 중앙 배경 (라운드 + 공약겹침 + 친구)
             // UI 클래스 내부의 renderMobileGirudaBg 메서드를 이 코드로 교체하세요
-            renderMobileGirudaBg() {
-                const el = document.getElementById('mobile-giruda-bg');
-                if (!el || !document.body.classList.contains('mobile-mode')) return;
+renderMobileGirudaBg() {
+    const el = document.getElementById('mobile-giruda-bg');
+    if (!el || !document.body.classList.contains('mobile-mode')) return;
 
-                const contract = this.gameState.contract;
-                if (!contract.bidValue ||
-                    this.gameState.phase === PHASES.WAITING ||
-                    this.gameState.phase === PHASES.BIDDING) {
-                    el.style.display = 'none';
-                    return;
-                }
+    const contract = this.gameState.contract;
+    // 공약이 없거나 대기/비딩 중이면 숨김
+    if (!contract.bidValue ||
+        this.gameState.phase === PHASES.WAITING ||
+        this.gameState.phase === PHASES.BIDDING) {
+        el.style.display = 'none';
+        return;
+    }
 
-                el.style.display = 'flex';
-                el.className = 'center-info-container';
+    el.style.display = 'flex';
+    el.className = 'center-info-container'; // CSS flex-direction: column 적용되어 있음
 
-                // 1. 기루다 심볼 및 색상
-                let girudaText = '';
-                let girudaColor = '';
-                if (contract.isNoGiruda) {
-                    girudaText = 'N';
-                    girudaColor = 'rgba(158, 158, 158, 0.8)';
-                } else if (contract.giruda) {
-                    girudaText = SUIT_SYMBOLS[contract.giruda];
-                    const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
-                    girudaColor = isRed ? 'rgba(255, 82, 82, 0.8)' : 'rgba(255, 255, 255, 0.8)';
-                } else {
-                    el.style.display = 'none';
-                    return;
-                }
+    // 1. 기루다 심볼 및 색상
+    let girudaText = '';
+    let girudaColor = '';
+    if (contract.isNoGiruda) {
+        girudaText = 'N';
+        girudaColor = 'rgba(158, 158, 158, 0.8)';
+    } else if (contract.giruda) {
+        girudaText = SUIT_SYMBOLS[contract.giruda];
+        const isRed = contract.giruda === SUITS.DIAMOND || contract.giruda === SUITS.HEART;
+        girudaColor = isRed ? 'rgba(255, 82, 82, 0.8)' : 'rgba(255, 255, 255, 0.8)';
+    } else {
+        el.style.display = 'none';
+        return;
+    }
 
-                // 2. 친구 텍스트
-                let friendText = '친구: ?';
-                if (contract.isNoFriend) friendText = '친구: 노프렌드';
-                else if (contract.friendCard) {
-                    friendText = `친구: ${contract.friendCard.toString()}`;
-                }
+    // 2. 친구 텍스트
+    let friendText = '친구: ?';
+    if (contract.isNoFriend) friendText = '친구: 노프렌드';
+    else if (contract.friendCard) {
+        // 친구가 밝혀졌으면 이름까지, 아니면 카드만
+        const cardName = contract.friendCard.toString();
+        if (this.gameState.friendRevealed) {
+             const friendIdx = this.gameState.contract.friend;
+             const friendName = friendIdx !== null ? this.gameState.players[friendIdx].name : '';
+             friendText = `친구: ${cardName} (${friendName})`;
+        } else {
+             friendText = `친구: ${cardName}`;
+        }
+    }
 
-                // 3. 라운드 텍스트 형식 변경 (R 1 -> Round 1/10)
-                const roundText = `Round ${this.gameState.round || 1}/10`;
+    // 3. 라운드 텍스트
+    const roundText = `Round ${this.gameState.round || 1}/10`;
 
-                // 4. HTML 조립
-                el.innerHTML = `
-                    <div class="center-round-text">${roundText}</div>
-                    <div class="overlap-wrapper">
-                        <div class="overlap-symbol" style="color: ${girudaColor}">${girudaText}</div>
-                        <div class="overlap-number">${contract.bidValue}</div>
-                    </div>
-                    <div class="center-friend-text">${friendText}</div>
-                `;
-            }
+    // 4. [추가] 점수 계산 및 HTML 생성
+    const govScore = this.gameState.governmentScore;
+    const oppScore = this.gameState.oppositionScore;
+    const bidValue = contract.bidValue;
+
+    // 5. HTML 조립 (점수판 추가)
+    el.innerHTML = `
+        <div class="center-round-text">${roundText}</div>
+        <div class="overlap-wrapper">
+            <div class="overlap-symbol" style="color: ${girudaColor}">${girudaText}</div>
+            <div class="overlap-number">${contract.bidValue}</div>
+        </div>
+        <div class="center-friend-text">${friendText}</div>
+        
+        <!-- 점수 표시 영역 (두 줄) -->
+        <div class="mobile-center-score">
+            <div class="gov-score">여당: ${govScore} / ${bidValue}</div>
+            <div class="opp-score">야당: ${oppScore}</div>
+        </div>
+    `;
+}
 
 
 
-            // [수정] 모바일용 점수판 (텍스트 방식)
-                        // UI 클래스 내부의 renderMobileScoreProgress 메서드를 이 코드로 교체하세요
-            renderMobileScoreProgress() {
-                if (!document.body.classList.contains('mobile-mode')) return;
-                const container = document.getElementById('mobile-score-progress');
-                if (!container) return;
 
-                const contract = this.gameState.contract;
-                // 아직 공약이 없거나 비딩 중이면 표시 안 함
-                if (!contract.bidValue ||
-                    this.gameState.phase === PHASES.WAITING ||
-                    this.gameState.phase === PHASES.BIDDING ||
-                    this.gameState.phase === PHASES.DEALING) {
-                    container.innerHTML = '';
-                    container.style.display = 'none';
-                    return;
-                }
+            // UI 클래스 내부의 renderMobileScoreProgress 메서드를 이 코드로 교체하세요
+renderMobileScoreProgress() {
+    // 모바일 중앙(기루다 배경)으로 통합되었으므로, 
+    // 기존 하단바 영역은 숨깁니다.
+    const container = document.getElementById('mobile-score-progress');
+    if (container) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+    }
+}
 
-                container.style.display = 'flex';
-
-                const govScore = this.gameState.governmentScore;
-                const oppScore = this.gameState.oppositionScore;
-                const bidValue = contract.bidValue;
-
-                // [수정] 텍스트를 아주 심플하게 변경 (아이콘 + 숫자)
-                // 예: 👑 13/14 | 🛡️ 2
-                container.innerHTML = `
-                    <div class="simple-score-board">
-                        <span class="score-text government">여당 ${govScore}/${bidValue}</span>
-                        <span class="score-divider">|</span>
-                        <span class="score-text opposition">야당 ${oppScore}</span>
-                    </div>
-                `;
-            }
 
 
             renderAll(options = {}) {
