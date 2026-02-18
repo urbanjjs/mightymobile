@@ -2312,52 +2312,49 @@ body.mobile-mode .card .special-label {
 /* [수정] 모바일 액션 영역: 하단 미니멀 캡슐 스타일 */
 /* ------------------------------------------------ */
 
-/* [수정] 모바일 메세지창: 상단 점수바 바로 아래로 이동 */
+/* [수정] 모바일 메세지창: 화면 정중앙 배치 */
 body.mobile-mode #action-area {
-    /* 위치: 화면 하단 -> 상단 점수바 직후 */
+    /* 위치: 화면 정중앙 */
     position: fixed;
-    /* 모바일 점수바(약 30~40px) + 여유 공간 */
-    top: 45px !important; 
-    bottom: auto !important; /* 하단 위치 해제 */
-    left: 50%;
-    transform: translateX(-50%);
+    top: 50% !important;
+    left: 50% !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
     
     /* 크기 및 스타일 */
     width: auto !important;
-    min-width: 80% !important;   
-    max-width: 96vw !important;
-    background: rgba(0, 0, 0, 0.9); /* 가독성을 위해 더 진하게 */
-    border: 1px solid rgba(255, 215, 0, 0.5);
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-    padding: 8px 16px;
+    min-width: 60% !important;   
+    max-width: 90vw !important;  /* 좌우 여백 확보 */
     
-    /* 정렬 */
-    display: flex;
-    flex-direction: column;
+    background: rgba(0, 0, 0, 0.9); /* 배경 진하게 */
+    border: 1px solid rgba(255, 215, 0, 0.6); /* 테두리 강조 */
+    border-radius: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8); /* 그림자 강화 */
+    padding: 12px 20px !important; /* 내부 여백 살짝 증가 */
+    
+    /* 내용 정렬 */
+    display: flex !important;
+    flex-direction: column !important;
     justify-content: center;
-    align-items: center;
-    gap: 6px;
+    align-items: center !important;
+    gap: 8px;
     
-    z-index: 2100; /* 가장 위에 보이도록 */
+    z-index: 2200; /* 모든 요소보다 위에 표시 */
 }
+
+/* 텍스트 스타일 보정 */
+body.mobile-mode #action-message {
+    font-size: 16px !important; /* 중앙에 오므로 글자 크기 약간 확대 */
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap !important; /* 줄바꿈 방지 */
+}
+
 
 /* 메시지 없을 때 숨김 */
 body.mobile-mode #action-area:empty {
     display: none;
 }
-
-/* 메시지 폰트 축소 */
-body.mobile-mode #action-message {
-    font-size: 13px; /* 작게 조정 */
-    font-weight: normal;
-    color: #fff;
-    text-align: center;
-    line-height: 1.2;
-    text-shadow: none;
-    margin: 0;
-}
-
 /* 버튼 컨테이너 */
 body.mobile-mode #action-buttons {
     width: auto;
@@ -2867,79 +2864,80 @@ body.mobile-mode #action-buttons {
 }
 
 
-/* [수정] 모바일 비딩창 폰트 및 UI 요소 2배 확대 */
+/* [수정] 모바일 비딩창 폰트 및 UI 요소 1.5배(50%) 확대 */
 
-/* 1. 모달 전체 크기 확장 */
+/* 1. 모달 전체 크기 */
 body.mobile-mode #bidding-modal {
-    width: 95% !important; /* 화면 가로를 거의 다 쓰도록 변경 */
-    max-width: 500px !important;
-    padding: 20px 15px !important;
+    width: 90% !important; 
+    max-width: 400px !important;
+    padding: 16px 14px !important;
 }
 
 /* 2. 헤더 (비딩) */
 body.mobile-mode #bidding-modal h3 {
-    font-size: 26px !important; /* 13px -> 26px */
-    margin-bottom: 15px !important;
+    font-size: 20px !important; /* 13px -> 20px (약 1.5배) */
+    margin-bottom: 10px !important;
 }
 
 /* 3. 현재 최고 비딩 정보 */
 body.mobile-mode .current-bid {
-    font-size: 22px !important; /* 11px -> 22px */
-    padding: 10px !important;
-    margin-bottom: 15px !important;
+    font-size: 16px !important; /* 11px -> 16.5px */
+    padding: 8px !important;
+    margin-bottom: 10px !important;
 }
 
 /* 4. 라벨 (숫자:, 기루다:) */
 body.mobile-mode .bid-controls label {
-    font-size: 20px !important; /* 10px -> 20px */
-    margin-bottom: 8px !important;
+    font-size: 15px !important; /* 10px -> 15px */
+    margin-bottom: 6px !important;
 }
 
 /* 5. 숫자 버튼들 */
 body.mobile-mode .number-buttons {
-    gap: 6px !important;
+    gap: 5px !important;
 }
 body.mobile-mode .number-buttons button {
-    font-size: 20px !important; /* 10px -> 20px */
-    padding: 10px 14px !important; /* 터치 영역 확대 */
-    min-width: 44px !important;    /* 버튼 최소 너비 확대 */
-    border-width: 2px !important;
+    font-size: 15px !important; /* 10px -> 15px */
+    padding: 8px 10px !important;
+    min-width: 34px !important;
+    border-width: 1.5px !important;
 }
 
 /* 6. 문양(수트) 버튼들 */
 body.mobile-mode .suit-buttons {
-    gap: 10px !important;
+    gap: 8px !important;
 }
 body.mobile-mode .suit-buttons button {
-    font-size: 32px !important; /* 15px -> 32px */
-    width: 60px !important;     /* 30px -> 60px */
-    height: 60px !important;
-    border-width: 2px !important;
+    font-size: 24px !important; /* 15px -> 24px (심볼이라 좀 더 크게) */
+    width: 46px !important;     
+    height: 46px !important;
+    border-width: 1.5px !important;
 }
 
 /* 7. 나의 비딩 미리보기 */
 body.mobile-mode .bid-preview {
-    font-size: 24px !important; /* 12px -> 24px */
-    padding: 10px !important;
-    margin-top: 10px !important;
+    font-size: 18px !important; /* 12px -> 18px */
+    padding: 8px !important;
+    margin-top: 8px !important;
 }
 
 /* 8. 하단 액션 버튼 (비딩하기, 패스) */
 body.mobile-mode .bid-actions {
-    gap: 15px !important;
-    margin-top: 10px !important;
+    gap: 12px !important;
+    margin-top: 12px !important;
 }
 body.mobile-mode .bid-actions button {
-    font-size: 22px !important; /* 12px -> 22px */
-    padding: 12px 30px !important; /* 버튼 큼직하게 */
-    border-radius: 8px !important;
+    font-size: 17px !important; /* 12px -> 17px */
+    padding: 10px 24px !important;
+    border-radius: 6px !important;
 }
 
 /* 9. 퀵 비딩 버튼 (바로 비딩) */
 body.mobile-mode #bid-quick-buttons button {
-    font-size: 18px !important;
-    padding: 10px 20px !important;
+    font-size: 15px !important;
+    padding: 8px 16px !important;
 }
+
 
 
 </style>
