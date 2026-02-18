@@ -2841,37 +2841,45 @@ body.mobile-mode .mobile-ai-cell .cell-trick-card {
 }
 
 /* 2. 모바일 모드 */
+/* [수정] 모바일 캡슐 메세지창: 긴 텍스트 줄바꿈 허용 */
 body.mobile-mode #action-area {
-    /* 위치: 화면 정중앙 (기존 유지) */
+    /* 위치: 화면 정중앙 */
     position: fixed;
     top: 50% !important;
     left: 50% !important;
     bottom: auto !important;
     transform: translate(-50%, -50%) !important;
     
-    /* 스타일 */
+    /* 크기 제한 설정 */
     width: auto !important;
     min-width: 60% !important;   
-    max-width: 90vw !important;
+    max-width: 90vw !important; /* 화면 너비의 90%까지만 사용 */
+    height: auto !important;    /* 높이는 내용에 따라 늘어남 */
+    
     background: rgba(0, 0, 0, 0.9);
     border: 1px solid rgba(255, 215, 0, 0.6);
-    border-radius: 25px;
+    border-radius: 20px; /* 둥근 모서리 */
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
     padding: 12px 20px !important;
     
-    /* ★ 내용 정중앙 정렬 핵심 ★ */
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important; /* 세로 중앙 */
-    align-items: center !important;     /* 가로 중앙 */
+    justify-content: center !important;
+    align-items: center !important;
     gap: 8px;
     
     z-index: 2200;
 }
 
-/* 텍스트 요소 자체도 중앙 정렬 */
+/* 텍스트 줄바꿈 및 정렬 설정 */
 body.mobile-mode #action-message {
     width: 100% !important;
+    
+    /* ★ 핵심 수정: 줄바꿈 허용 ★ */
+    white-space: normal !important; 
+    word-break: keep-all !important; /* 단어 단위로 줄바꿈 (한글 최적화) */
+    line-height: 1.4 !important;     /* 줄간격 확보 */
+    
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -2879,16 +2887,16 @@ body.mobile-mode #action-message {
     
     font-size: 16px !important;
     font-weight: bold;
-    white-space: nowrap !important;
 }
 
-/* 버튼 컨테이너도 가로로 넓게 배치 */
+/* 버튼 영역도 줄바꿈 허용 (혹시 버튼이 많을 경우 대비) */
 body.mobile-mode #action-buttons {
-    width: 100% !important;
     display: flex !important;
+    flex-wrap: wrap !important;
     justify-content: center !important;
-    flex-wrap: nowrap !important; /* 버튼도 줄바꿈 방지 */
+    gap: 6px !important;
 }
+
 
 
 /* [수정] 모바일 비딩창 폰트 및 UI 요소 1.3배(30%) 확대 (최적화) */
@@ -2966,7 +2974,16 @@ body.mobile-mode #bid-quick-buttons button {
 }
 
 
-
+/* [수정] 모바일 모달 오버레이 투명화 및 클릭 통과 (내 카드 보기용) */
+body.mobile-mode #modal-overlay {
+    background: rgba(0, 0, 0, 0.2) !important; /* 기존 0.7에서 0.2로 투명도 대폭 낮춤 (거의 투명) */
+    /* 만약 완전히 투명하게 하려면 아래 줄 주석 해제 */
+    /* background: transparent !important; */
+    
+    /* 뒷 배경(카드)이 잘 보이도록 블러 효과 제거 */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
 
 </style>
 </head>
