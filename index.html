@@ -6036,8 +6036,10 @@
                 const isJokerStillOut = !this.gameState.jokerUsed;
                 if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut) {
                     const iHaveJoker = hand.some(c => c.isJoker);
+                    // 친구카드가 조커인 경우 조커콜 절대 금지 (팀킬 방지)
+                    const isFriendJoker = friendCard && friendCard.isJoker;
                     // 사연 응답으로 친구가 조커를 가지고 있다고 알려진 경우 조커콜 금지
-                    const friendHasJoker = this.gameState.sayeonResponse === '넌사';
+                    const friendHasJoker = isFriendJoker || this.gameState.sayeonResponse === '넌사';
                     if (!iHaveJoker && !friendHasJoker && round >= 5) {
                         reasoning.push('조커콜 - 야당 조커 견제');
                         return jokerCall;
