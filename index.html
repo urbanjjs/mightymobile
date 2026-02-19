@@ -368,6 +368,33 @@
             display: flex;
             justify-content: center;
             gap: 20px;
+            position: relative;
+        }
+
+        #debug-discard-panel {
+            position: absolute;
+            left: calc(50% + 515px);
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #555;
+            border-radius: 6px;
+            padding: 8px 12px;
+        }
+
+        #debug-discard-panel .discard-title {
+            font-size: 11px;
+            color: #aaa;
+            white-space: nowrap;
+        }
+
+        #debug-discard-panel .discard-cards {
+            display: flex;
+            gap: 6px;
         }
 
         .player-area.bottom-left {
@@ -3766,6 +3793,10 @@
             </div>
 
             <div class="bottom-row">
+                <div id="debug-discard-panel">
+                    <div class="discard-title">버려진 카드</div>
+                    <div class="discard-cards"></div>
+                </div>
                 <div id="player-0" class="player-area user">
                     <div class="player-header">
                         <span class="player-name">나</span>
@@ -5556,38 +5587,95 @@
                 mustKeep.add(mighty.toString());
                 if (hand.some(c => c.isJoker)) mustKeep.add('JOKER');
 
-                const suitCounts = {};
-                for (const suit of Object.values(SUITS)) {
-                    suitCounts[suit] = getCardsOfSuit(hand, suit).length;
-                }
-
-                const getDiscardPriority = (card) => {
-                    if (mustKeep.has(card.toString())) return 1000;
-                    let priority = 0;
-                    if (card.isPointCard()) priority += 100;
-                    if (!card.isJoker && giruda && card.suit === giruda) priority += 50;
-                    if (!card.isJoker) priority += RANK_VALUES[card.rank];
-                    if (!card.isJoker) priority -= suitCounts[card.suit] * 10;
-                    return priority;
+                // 비기루다 연결 보스카드 판단
+                const RANK_ORDER = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+                const isConnectedBoss = (card) => {
+                    if (card.isJoker || card.equals(mighty)) return false;
+                    if (giruda && card.suit === giruda) return false;
+                    const cardRankIdx = RANK_ORDER.indexOf(card.rank);
+                    if (cardRankIdx === -1) return false;
+                    const remainingOfSuit = this.gameState.getRemainingCardsOfSuit(card.suit);
+                    const higherInOthersHands = remainingOfSuit.filter(c => {
+                        if (c.equals(mighty)) return false;
+                        const rankIdx = RANK_ORDER.indexOf(c.rank);
+                        return rankIdx > cardRankIdx && !hand.some(h => h.equals(c));
+                    });
+                    return higherInOthersHands.length === 0;
                 };
 
-                const sorted = [...hand].sort((a, b) => getDiscardPriority(a) - getDiscardPriority(b));
-                const toDiscard = sorted.slice(0, 3).filter(c => !mustKeep.has(c.toString()));
+                // 카드 점수 산정 (200 이상 = 보존 대상)
+                const getCardScore = (card) => {
+                    if (mustKeep.has(card.toString())) return 1000;  // 마이티/조커: 절대 보존
+                    let score = 0;
+                    if (card.isPointCard()) score += 20;                            // 점수 카드: +20
+                    if (!card.isJoker && giruda && card.suit === giruda) score += 500;  // 기루다: +500
+                    else if (!card.isJoker && isConnectedBoss(card)) score += 200;     // 연결 보스카: +200
+                    if (!card.isJoker) score += RANK_VALUES[card.rank];
+                    return score;
+                };
 
-                while (toDiscard.length < 3) {
-                    for (const card of sorted) {
-                        if (!toDiscard.some(c => c.equals(card)) && !mustKeep.has(card.toString())) {
-                            toDiscard.push(card); break;
+                // 200점 미만 = 버릴 후보, 200점 이상 = 보존 대상
+                const candidates = hand.filter(c => getCardScore(c) < 200);
+                const excluded  = hand.filter(c => getCardScore(c) >= 200);
+
+                const toDiscard = [];
+
+                if (candidates.length >= 3) {
+                    // ── 무늬 가지수 최소화 알고리즘 ──
+                    // 1) 무늬별 그룹화 & 무늬 내 카드를 점수 오름차순 정렬
+                    const suitGroups = {};
+                    for (const card of candidates) {
+                        const key = card.isJoker ? 'JOKER' : card.suit;
+                        if (!suitGroups[key]) suitGroups[key] = [];
+                        suitGroups[key].push(card);
+                    }
+                    for (const key of Object.keys(suitGroups)) {
+                        suitGroups[key].sort((a, b) => getCardScore(a) - getCardScore(b));
+                    }
+
+                    // 2) 수트를 [장수 오름차순 → 총점 오름차순]으로 정렬
+                    //    → 장수 적고 가치 낮은 수트를 먼저 소거
+                    const sortedSuits = Object.keys(suitGroups).sort((a, b) => {
+                        const countDiff = suitGroups[a].length - suitGroups[b].length;
+                        if (countDiff !== 0) return countDiff;
+                        const totalA = suitGroups[a].reduce((s, c) => s + getCardScore(c), 0);
+                        const totalB = suitGroups[b].reduce((s, c) => s + getCardScore(c), 0);
+                        return totalA - totalB;
+                    });
+
+                    // 3) 수트를 순서대로 소거하며 3장 선택
+                    let remaining = 3;
+                    for (const suit of sortedSuits) {
+                        if (remaining <= 0) break;
+                        const cards = suitGroups[suit];
+                        if (cards.length <= remaining) {
+                            // 이 수트 전체 버림 (void 달성)
+                            toDiscard.push(...cards);
+                            remaining -= cards.length;
+                        } else {
+                            // 부분 버림: 낮은 점수 카드부터 remaining장
+                            toDiscard.push(...cards.slice(0, remaining));
+                            remaining = 0;
                         }
                     }
-                    if (toDiscard.length < 3) {
-                        for (const card of sorted) {
-                            if (!toDiscard.some(c => c.equals(card))) { toDiscard.push(card); break; }
-                        }
+                } else {
+                    // ── 후보가 3장 미만: 후보 전부 + 보존 대상 중 점수 낮은 것으로 보충 ──
+                    toDiscard.push(...candidates);
+                    const excludedSorted = [...excluded]
+                        .filter(c => !mustKeep.has(c.toString()))
+                        .sort((a, b) => getCardScore(a) - getCardScore(b));
+                    for (const card of excludedSorted) {
+                        if (toDiscard.length >= 3) break;
+                        toDiscard.push(card);
+                    }
+                    // 최후 수단: mustKeep 포함
+                    for (const card of hand) {
+                        if (toDiscard.length >= 3) break;
+                        if (!toDiscard.some(c => c.equals(card))) toDiscard.push(card);
                     }
                 }
 
-                reasoning.push(`버릴 카드: ${toDiscard.map(c => c.toString()).join(', ')}`);
+                reasoning.push(`버릴 카드: ${toDiscard.slice(0, 3).map(c => c.toString()).join(', ')}`);
                 if (girudaChangeDecision.shouldChange) reasoning.unshift(girudaChangeDecision.reason);
 
                 return {
@@ -7706,6 +7794,25 @@
                     }
                     handElement.appendChild(cardEl);
                 });
+
+                // ── 데스트모드: 버려진 카드 패널 업데이트 ──
+                if (playerIndex === 0) {
+                    const discardPanel = document.getElementById('debug-discard-panel');
+                    if (discardPanel) {
+                        if (this.settings.showAICards
+                            && this.gameState.phase === PHASES.PLAYING
+                            && this.gameState.floorCards && this.gameState.floorCards.length > 0) {
+                            discardPanel.style.display = 'flex';
+                            const cardsRow = discardPanel.querySelector('.discard-cards');
+                            cardsRow.innerHTML = '';
+                            for (const card of this.gameState.floorCards) {
+                                cardsRow.appendChild(this.createCardElement(card, { faceUp: true, isSpecial: false }));
+                            }
+                        } else {
+                            discardPanel.style.display = 'none';
+                        }
+                    }
+                }
             }
 
             // [수정된 메서드]
