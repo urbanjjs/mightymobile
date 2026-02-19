@@ -3531,6 +3531,62 @@ body:not(.mobile-mode) .player-area.right {
     justify-content: center;
 }
 
+        /* ========================================================== */
+        /* [UI 개선] 데스크탑 모드: AI 플레이어 패 크기 축소 (공간 확보) */
+        /* ========================================================== */
+
+        /* 1. AI 플레이어(User 제외)의 카드 크기를 60% 수준으로 축소 (52x70px) */
+        /* body:not(.mobile-mode)는 모바일이 아닐 때(데스크탑)만 적용한다는 뜻 */
+        body:not(.mobile-mode) .player-area:not(.user) .card {
+            width: 52px !important;  /* 기존 86px -> 52px */
+            height: 70px !important; /* 기존 116px -> 70px */
+            border-radius: 3px !important;
+            flex-shrink: 0; /* 공간이 좁아도 카드 비율 유지 */
+        }
+
+        /* 2. AI 카드 이미지도 꽉 차게 비율 조정 */
+        body:not(.mobile-mode) .player-area:not(.user) .card img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: fill !important;
+        }
+
+        /* 3. 카드가 작아진 만큼 겹치는 간격도 좁힘 */
+        body:not(.mobile-mode) .player-area:not(.user) .player-hand .card {
+            margin-left: -25px !important; /* 기존 -45px -> -25px */
+        }
+
+        /* 첫 번째 카드는 마진 0 */
+        body:not(.mobile-mode) .player-area:not(.user) .player-hand .card:first-child {
+            margin-left: 0 !important;
+        }
+
+        /* 4. AI 플레이어 영역(컨테이너) 높이 및 여백 축소 */
+        body:not(.mobile-mode) .player-area:not(.user) .player-hand {
+            min-height: 80px !important; /* 기존 120px -> 80px */
+            padding-left: 5px !important;
+            margin-bottom: 2px !important;
+        }
+
+        /* 5. AI 플레이어 전체 박스 패딩 축소 */
+        body:not(.mobile-mode) .player-area:not(.user) {
+            padding: 4px 8px !important; /* 패딩 축소 */
+        }
+
+        /* 6. [중요] 유저(나)의 카드는 크기 유지 (기존 크기 강제 적용) */
+        body:not(.mobile-mode) .player-area.user .card {
+            width: 86px !important;
+            height: 116px !important;
+        }
+
+        /* 7. [중요] 중앙에 낸 카드(Trick Card)는 크기 유지 */
+        /* 위 설정이 .player-area 내부에만 적용되므로 트릭 영역은 영향받지 않지만, 확실히 하기 위해 명시 */
+        #trick-area .card {
+            width: 86px !important;
+            height: 116px !important;
+        }
+
+
 
 
     </style>
@@ -6681,20 +6737,28 @@ body:not(.mobile-mode) .player-area.right {
                             return this.selectLowestCard(playableCards);
                         }
 
-                        // Case 2: 주공 승리 확실 (보스카드/마이티/조커) + 야당 남아있음
+                        // Case 2: 주공 승리 확실 (보스카드/마이티/조커/기루다컷) + 야당 남아있음
                         if (isStrong) {
-                            reasoning.push('주공 승리 확실 - 비보스 점수 실어주기');
-                            const nonBossPoint = safeCards.filter(c =>
-                                !this.gameState.getCardAnalysis(c).isBoss && c.isPointCard()
-                            );
-                            if (nonBossPoint.length > 0) return this.selectHighestCard(nonBossPoint);
-                            const safeNonBossNonPoint = safeCards.filter(c =>
-                                !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
-                            );
-                            if (safeNonBossNonPoint.length > 0) return this.selectLowestCard(safeNonBossNonPoint);
+                            reasoning.push('주공 승리 확실 - 안전하게 털기');
+
+                            // [사용자 요청 수정] 기루다 낭비 방지 로직 추가
+                            // 기루다가 아닌 '똥패'들만 먼저 골라냅니다.
+                            const nonGirudaSafe = safeCards.filter(c => !giruda || c.suit !== giruda);
+
+                            // 1. (기루다 아닌) 점수 카드 실어주기
+                            const pointCards = nonGirudaSafe.filter(c => c.isPointCard());
+                            if (pointCards.length > 0) return this.selectHighestCard(pointCards);
+
+                            // 2. (기루다 아닌) 가장 낮은 카드 버리기
+                            if (nonGirudaSafe.length > 0) return this.selectLowestCard(nonGirudaSafe);
+
+                            // 3. 기루다밖에 없다면 어쩔 수 없이 기루다 중 가장 낮은 것 제출
+                            // (혹은 점수 기루다를 실어줄 수도 있음)
                             if (safeCards.length > 0) return this.selectLowestCard(safeCards);
+                            
                             return this.selectLowestCard(playableCards);
                         }
+
 
                         // Case 3: 주공이 약한 카드로 이기고 있고 야당 남아있음 -> 오버테이크 고려
                         if (hasOppositionRemaining) {
