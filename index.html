@@ -8065,50 +8065,15 @@
             // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
             // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
             // UI 클래스 내부의 showBiddingModal 메서드를 이 코드로 교체하세요
+                        // [수정됨] 비딩 모달 표시 (카드 미리보기 삭제 & 배경 투명화)
             showBiddingModal() {
                 this.selectedBid = { value: null, suit: null };
                 const currentBid = this.gameState.bidding.currentBid;
                 document.getElementById('current-bid-display').textContent =
                     currentBid ? `${currentBid.value}${currentBid.suit === 'none' ? 'No' : SUIT_SYMBOLS[currentBid.suit]}` : '없음';
 
-                // 기존 프리뷰가 있다면 제거 (초기화)
-                const oldPreview = document.getElementById('bid-hand-preview');
-                if (oldPreview) oldPreview.remove();
-
-                const isMobile = document.body.classList.contains('mobile-mode');
-
-                // [수정됨] 모바일이 아닐 때만(데스크탑에서만) 손패 미리보기를 생성합니다.
-                if (!isMobile) {
-                    const handPreview = document.createElement('div');
-                    handPreview.id = 'bid-hand-preview';
-
-                    const myPlayer = this.gameState.players[0];
-                    const mySortedHand = sortCards(myPlayer.hand, this.gameState.contract.giruda, this.gameState.contract.mighty);
-
-                    // 데스크탑 스타일
-                    handPreview.style.cssText = `
-                        display: flex;
-                        justify-content: center;
-                        flex-wrap: wrap;
-                        gap: 5px;
-                        margin-bottom: 12px;
-                        padding: 8px;
-                        background: rgba(0,0,0,0.3);
-                        border-radius: 6px;
-                    `;
-
-                    for (const card of mySortedHand) {
-                        const cardEl = this.createCardElement(card, { faceUp: true });
-                        cardEl.style.cssText = `width:86px;height:116px;margin:0;flex-shrink:0;`;
-
-                        const img = cardEl.querySelector('img');
-                        if (img) { img.style.width = '100%'; img.style.height = '100%'; }
-                        handPreview.appendChild(cardEl);
-                    }
-
-                    const currentBidDisplay = document.querySelector('#bidding-modal .current-bid');
-                    currentBidDisplay.parentNode.insertBefore(handPreview, currentBidDisplay);
-                }
+                // [삭제됨] 기존 카드 미리보기 생성 코드 전체 제거
+                // (bid-hand-preview 생성 및 추가 로직 삭제)
 
                 // 비딩 숫자 버튼 생성
                 const numbersContainer = document.getElementById('bid-numbers');
@@ -8190,7 +8155,13 @@
                     }
                 }
 
-                document.getElementById('modal-overlay').classList.remove('hidden');
+                // [추가] 모달 오버레이 투명하게 만들기 (내 카드 잘 보이게)
+                const overlay = document.getElementById('modal-overlay');
+                overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'; // 매우 옅은 검정 (거의 투명)
+                // overlay.style.backgroundColor = 'transparent'; // 완전히 투명하게 하려면 이 줄 사용
+                overlay.style.backdropFilter = 'none'; // 블러 효과 제거
+
+                overlay.classList.remove('hidden');
                 document.getElementById('bidding-modal').classList.remove('hidden');
             }
 
