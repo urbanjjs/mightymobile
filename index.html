@@ -6032,6 +6032,15 @@
                     }
                 }
 
+                // ── 기루다 소진 전략 (보스 기루다 없을 때 약한 기루다 리드로 야당 보스기루다 소진) ──
+                if (giruda && round >= 3) {
+                    const girudaCardsInHand = getCardsOfSuit(hand, giruda).filter(c => !c.equals(mighty));
+                    if (girudaCardsInHand.length >= 2) {
+                        reasoning.push(`기루다 소진 전략 - 약한 기루다 리드로 야당 보스기루다 소진 (R${round})`);
+                        return this.selectLowestCard(girudaCardsInHand);
+                    }
+                }
+
                 // ── 친구에게 트릭 넘기기 ──
                 let friendCardSuit = null;
                 let friendCardRank = null;
@@ -6669,8 +6678,12 @@
                 // ── 초구 마이티 프렌드 공개 (주공이 낮은 카드로 유도한 경우) ──
                 const friendCard = this.gameState.contract.friendCard;
                 if (round === 1 && isMasterLead && hasCard(hand, mighty) && friendCard && friendCard.equals(mighty)) {
-                    reasoning.push('초구 - 마이티 프렌드 응답 (주공 유도에 마이티 공개)');
-                    return mighty;
+                    const masterLeadCard = this.gameState.trick.cards[0]?.card;
+                    const masterLeadIsBoss = masterLeadCard && !masterLeadCard.isJoker && this.gameState.getCardAnalysis(masterLeadCard).isBoss;
+                    if (!masterLeadIsBoss) {
+                        reasoning.push('초구 - 마이티 프렌드 응답 (주공 낮은 카드 유도에 마이티 공개)');
+                        return mighty;
+                    }
                 }
 
                 // ══════════════════════════════════════
