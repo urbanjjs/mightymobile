@@ -6208,7 +6208,7 @@
                     }
                 }
 
-                                // ... (위쪽 로직들: 조커콜 공격, 기루다 보스, 조커 리드 등은 그대로 유지) ...
+                // ... (위쪽 로직들: 조커콜 공격, 기루다 보스, 조커 리드 등은 그대로 유지) ...
 
                 // ── 7. 마이티 리드 ──
                 if (hasMighty) {
@@ -6225,7 +6225,7 @@
                 // ─────────────────────────────────────────────────────────────
                 // [사용자 요청 수정] 최후의 폴백 단계에서도 '조커콜 팀킬' 원천 봉쇄
                 // ─────────────────────────────────────────────────────────────
-                
+
                 // 1. 주공의 패를 다시 확인
                 const masterHandForSafety = this.gameState.players[masterIndex].hand;
                 const masterHasJokerSafe = masterHandForSafety.some(c => c.isJoker);
@@ -6250,7 +6250,7 @@
                 }
 
                 // ── 8. 폴백 (안전하게 필터링된 finalCandidates 중에서 선택) ──
-                
+
                 // 8-1. 기루다도 아니고, 보스도 아니고, 점수도 없는 완전한 '똥패' 찾기
                 const pureTrashCards = finalCandidates.filter(c =>
                     (!giruda || c.suit !== giruda) &&
@@ -6666,6 +6666,13 @@
                     return this.selectLowestCard(playableCards);
                 }
 
+                // ── 초구 마이티 프렌드 공개 (주공이 낮은 카드로 유도한 경우) ──
+                const friendCard = this.gameState.contract.friendCard;
+                if (round === 1 && isMasterLead && hasCard(hand, mighty) && friendCard && friendCard.equals(mighty)) {
+                    reasoning.push('초구 - 마이티 프렌드 응답 (주공 유도에 마이티 공개)');
+                    return mighty;
+                }
+
                 // ══════════════════════════════════════
                 // ★★★ 여당이 이기고 있음 ★★★
                 // ══════════════════════════════════════
@@ -6788,7 +6795,8 @@
                                     (pointsInTrick >= 2) ||
                                     (pointsInTrick >= 1 && round >= 4) ||
                                     (pointsNeeded > 0 && round >= 7 && pointsInTrick >= 1) ||
-                                    (round >= 9 && pointsInTrick >= 1)
+                                    (round >= 9 && pointsInTrick >= 1) ||
+                                    (isMasterLead && round >= 2)
                                 );
                                 if (shouldUseMighty) {
                                     reasoning.push(`마이티로 오버간 (주공 약한 승리 방어, ${pointsInTrick}점, R${round})`);
@@ -6876,7 +6884,8 @@
                                 (pointsNeeded > 0 && round >= 6) ||
                                 (!hasOppositionRemaining && pointsInTrick >= 1) ||
                                 round >= 8 ||
-                                (hasOppositionRemaining && (!canWin || cardsToWin.every(c => c.isJoker || c.equals(mighty))))
+                                (hasOppositionRemaining && (!canWin || cardsToWin.every(c => c.isJoker || c.equals(mighty)))) ||
+                                round >= 2
                             );
                             if (shouldUseMighty) {
                                 reasoning.push(`마이티로 주공 지원 (${pointsInTrick}점, R${round})`);
