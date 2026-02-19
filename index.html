@@ -5911,8 +5911,18 @@
                     const isFriendJoker = friendCard && friendCard.isJoker;
 
                     if (hasMighty) {
-                        reasoning.push('초구 - 마이티 리드');
-                        return mighty;
+                        // 비기루다 보스카드가 있으면 마이티 대신 그것을 사용 (마이티 보존)
+                        const nonGirudaBossInHand = playableCards.filter(c => {
+                            if (c.isJoker || c.equals(mighty)) return false;
+                            if (giruda && c.suit === giruda) return false;
+                            if (jokerCall && c.equals(jokerCall)) return false;
+                            return this.gameState.getCardAnalysis(c).isBoss;
+                        });
+                        if (nonGirudaBossInHand.length === 0) {
+                            reasoning.push('초구 - 마이티 리드 (다른 보스카드 없음)');
+                            return mighty;
+                        }
+                        // 비기루다 보스카드가 있으면 fall-through → 아래 보스카드 리드 로직으로
                     }
                     if (isFriendMighty) {
                         // 비기루다 보스카드가 있으면 무조건 우선 사용
@@ -5927,10 +5937,12 @@
                             return this.selectHighestCard(nonGirudaBoss);
                         }
                         // 비기루다 보스카드 없을 때만 낮은 카드로 유도
+                        // 마이티 수트 카드를 내면 야당 보스카에 지거나 친구가 마이티를 강제로 써야 하므로 제외
                         reasoning.push('초구 - 친구가 마이티 (낮은 카드로 유도)');
-                        const nonGirudaCards = playableCards.filter(c => !c.isJoker && c.suit !== giruda && !c.isPointCard());
+                        const mightySuit = mighty ? mighty.suit : null;
+                        const nonGirudaCards = playableCards.filter(c => !c.isJoker && c.suit !== giruda && (!mightySuit || c.suit !== mightySuit) && !c.isPointCard());
                         if (nonGirudaCards.length > 0) return this.selectLowestCard(nonGirudaCards);
-                        const nonPointCards = playableCards.filter(c => !c.isJoker && !c.isPointCard());
+                        const nonPointCards = playableCards.filter(c => !c.isJoker && (!mightySuit || c.suit !== mightySuit) && !c.isPointCard());
                         if (nonPointCards.length > 0) return this.selectLowestCard(nonPointCards);
                         return this.selectLowestCard(playableCards);
                     }
@@ -5986,9 +5998,18 @@
                         .filter(c => !c.equals(mighty))
                         .filter(c => this.gameState.getCardAnalysis(c).isBoss);
                     if (girudaBossCandidates.length > 0) {
-                        const bestBoss = this.selectHighestCard(girudaBossCandidates);
-                        reasoning.push(`기루다 보스카드 ${bestBoss.toString()} 리드 (확정 승리)`);
-                        return bestBoss;
+                        // 다른 플레이어에게 기루다가 남아있을 때만 보스 기루다 리드
+                        // 없으면 기루다를 보존해 향후 컷 기회로 활용
+                        const remainingGiruda = this.gameState.getRemainingCardsOfSuit(giruda);
+                        const myGirudaCards = getCardsOfSuit(hand, giruda);
+                        const othersHaveGiruda = remainingGiruda.some(rc =>
+                            !rc.equals(mighty) && !myGirudaCards.some(mc => mc.equals(rc))
+                        );
+                        if (othersHaveGiruda) {
+                            const bestBoss = this.selectHighestCard(girudaBossCandidates);
+                            reasoning.push(`기루다 보스카드 ${bestBoss.toString()} 리드 (확정 승리)`);
+                            return bestBoss;
+                        }
                     }
                 }
 
@@ -6048,8 +6069,16 @@
                 if (giruda && round >= 3) {
                     const girudaCardsInHand = getCardsOfSuit(hand, giruda).filter(c => !c.equals(mighty));
                     if (girudaCardsInHand.length >= 2) {
-                        reasoning.push(`기루다 소진 전략 - 약한 기루다 리드로 야당 보스기루다 소진 (R${round})`);
-                        return this.selectLowestCard(girudaCardsInHand);
+                        // 다른 플레이어에게 기루다가 남아있을 때만 소진 전략 실행
+                        // 없으면 기루다를 보존해 향후 컷 기회로 활용
+                        const remainingGiruda = this.gameState.getRemainingCardsOfSuit(giruda);
+                        const othersHaveGiruda = remainingGiruda.some(rc =>
+                            !rc.equals(mighty) && !girudaCardsInHand.some(mc => mc.equals(rc))
+                        );
+                        if (othersHaveGiruda) {
+                            reasoning.push(`기루다 소진 전략 - 약한 기루다 리드로 야당 보스기루다 소진 (R${round})`);
+                            return this.selectLowestCard(girudaCardsInHand);
+                        }
                     }
                 }
 
@@ -6063,7 +6092,7 @@
                     return this.gameState.getCardAnalysis(c).isBoss;
                 });
 
-                if (!hasBossCard && friendCard && !friendCard.isJoker && friendCardSuit) {
+                if (!hasBossCard && friendCard && !friendCard.isJoker && !friendCard.equals(mighty) && friendCardSuit) {
                     const sameSuitCards = getCardsOfSuit(hand, friendCardSuit);
                     if (sameSuitCards.length > 0) {
                         const lowerCards = sameSuitCards.filter(c => RANK_VALUES[c.rank] < RANK_VALUES[friendCardRank]);
@@ -6162,6 +6191,21 @@
                     if (girudaBoss) {
                         reasoning.push(`기루다 보스카드 리드: ${girudaBoss.toString()} (확정 승리)`);
                         return girudaBoss;
+                    }
+                }
+
+                // ── 1.5. 기루다 다수 보유 조기 소진 (비기루다 보스카드보다 우선) ──
+                if (giruda && round <= 6) {
+                    const myGirudaCards = getCardsOfSuit(hand, giruda).filter(c => !c.equals(mighty));
+                    if (myGirudaCards.length >= 2) {
+                        const remainingGiruda = this.gameState.getRemainingCardsOfSuit(giruda);
+                        const otherGirudaCount = remainingGiruda.filter(c =>
+                            !myGirudaCards.some(mc => mc.equals(c)) && !c.equals(mighty)
+                        ).length;
+                        if (otherGirudaCount >= 2) {
+                            reasoning.push(`기루다 다수 보유 조기 소진 - 야당 기루다 ${otherGirudaCount}장 남음 (R${round})`);
+                            return this.selectLowestCard(myGirudaCards);
+                        }
                     }
                 }
 
@@ -6530,17 +6574,23 @@
                 if (isGovernmentWinning) {
                     reasoning.push('주공 팔로우 - 아군 승리 중');
 
+                    // 기루다 보존: 같은 등급 내에서 비기루다 카드 우선 선택
+                    const preferNonGiruda = (cards) => {
+                        const nonGiruda = cards.filter(c => !giruda || c.suit !== giruda);
+                        return this.selectLowestCard(nonGiruda.length > 0 ? nonGiruda : cards);
+                    };
+
                     const nonBossNonPoint = normalCards.filter(c =>
                         !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
                     );
-                    if (nonBossNonPoint.length > 0) return this.selectLowestCard(nonBossNonPoint);
+                    if (nonBossNonPoint.length > 0) return preferNonGiruda(nonBossNonPoint);
 
                     const nonBossPoint = normalCards.filter(c =>
                         !this.gameState.getCardAnalysis(c).isBoss && c.isPointCard()
                     );
-                    if (nonBossPoint.length > 0) return this.selectLowestCard(nonBossPoint);
+                    if (nonBossPoint.length > 0) return preferNonGiruda(nonBossPoint);
 
-                    if (normalCards.length > 0) return this.selectLowestCard(normalCards);
+                    if (normalCards.length > 0) return preferNonGiruda(normalCards);
                     return this.selectLowestCard(playableCards);
                 }
 
@@ -6563,6 +6613,19 @@
                         }
                         reasoning.push('조커 승리 - 탈환 불가, 손실 최소화');
                         return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
+                    }
+
+                    // 친구 보스기루다 위임 - 마이티 보존
+                    if (hasGovernmentRemaining && hasCard(hand, mighty)) {
+                        const contractFriendCard = this.gameState.contract.friendCard;
+                        if (contractFriendCard && !contractFriendCard.isJoker && giruda && contractFriendCard.suit === giruda) {
+                            const isFriendCardBoss = this.gameState.getCardAnalysis(contractFriendCard).isBoss;
+                            const isMightyCurrentlyWinning = currentWinningCard && currentWinningCard.equals(mighty);
+                            if (isFriendCardBoss && !isMightyCurrentlyWinning) {
+                                reasoning.push('친구 보스기루다에게 위임 - 마이티 보존');
+                                return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
+                            }
+                        }
                     }
 
                     // 마이티 사용 판단
