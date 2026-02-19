@@ -6531,6 +6531,7 @@ body:not(.mobile-mode) .player-area.right {
             }
 
             // ===== 친구 팔로우 전략 =====
+                        // ===== 친구 팔로우 전략 =====
             friendFollowStrategy_gov(hand, trickAnalysis, teamContext, reasoning, trackingSummary = null) {
                 const { playableCards, isGovernmentWinning, isOppositionWinning,
                     canWin, cardsToWin, pointsInTrick, hasOppositionRemaining, hasGovernmentRemaining } = trickAnalysis;
@@ -6542,13 +6543,13 @@ body:not(.mobile-mode) .player-area.right {
                 const masterIndex = this.gameState.contract.master;
 
                 const normalCards = playableCards.filter(c => !c.isJoker && !c.equals(mighty));
+                // safeCards: 마이티와 조커를 제외한 낼 수 있는 카드들
                 const safeCards = playableCards.filter(c => !c.isJoker && !c.equals(mighty));
 
                 const leadPlayerIdx = this.gameState.trick.leadPlayer;
                 const isMasterLead = (leadPlayerIdx === masterIndex);
 
                 reasoning.push('친구 팔로우 전략');
-
 
                 // ── 9라운드 조커 긴급 사용 ──
                 if (round === 9 && joker) {
@@ -6575,7 +6576,6 @@ body:not(.mobile-mode) .player-area.right {
                 }
 
                 // ── 조커콜 상황 ──
-                // ── 조커콜 상황 ── 부분을 찾아서 이렇게 변경
                 if (this.gameState.trick.jokerCalled) {
                     reasoning.push('조커콜 상황');
 
@@ -6586,13 +6586,10 @@ body:not(.mobile-mode) .player-area.right {
                     });
 
                     if (govJokerForced) {
-                        // 여당 조커가 이미 강제 출전 → 마이티 절대 보존
                         reasoning.push('여당 조커 강제 출전 - 마이티 절대 보존');
                         return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
                     }
 
-                    // 야당 조커가 강제 출전한 경우
-                    // 마이티는 극히 제한적으로만 사용
                     if (hasCard(hand, mighty)) {
                         if (pointsInTrick >= 4 || (pointsInTrick >= 3 && round >= 9)) {
                             reasoning.push('야당 조커 무효화 + 극히 높은 점수 - 마이티 사용');
@@ -6601,7 +6598,6 @@ body:not(.mobile-mode) .player-area.right {
                         reasoning.push('조커콜 트릭 - 마이티 보존');
                     }
 
-                    // 일반 카드로 탈환
                     if (canWin && cardsToWin.length > 0) {
                         const normalWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
                         if (normalWin.length > 0) {
@@ -6609,10 +6605,8 @@ body:not(.mobile-mode) .player-area.right {
                             return this.selectLowestCard(normalWin);
                         }
                     }
-
                     return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
                 }
-
 
                 // ── 주공 조커 리드 시 점수 실어주기 ──
                 const leadCard = this.gameState.trick.cards[0]?.card;
@@ -6634,48 +6628,55 @@ body:not(.mobile-mode) .player-area.right {
                     const winningPlay = this.gameState.trick.cards.find(p => p.player === currentWinner);
                     const winningCard = winningPlay?.card;
 
-                    // 승리 강도 판정
-                    let isWinCardBoss = false;
-                    if (winningCard && !winningCard.isJoker && !winningCard.equals(mighty)) {
-                        isWinCardBoss = this.gameState.getCardAnalysis(winningCard).isBoss;
-                    }
-                    let isStrong = winningCard && (
-                        winningCard.equals(mighty) ||
-                        (winningCard.isJoker && round >= 2 && round <= 9) ||
-                        isWinCardBoss
-                    );
-
-                    // 기루다 컷도 강한 승리로 판정
-                    if (!isStrong && winningCard && !winningCard.isJoker && !winningCard.equals(mighty)) {
-                        const isGirudaCut = giruda &&
-                            winningCard.suit === giruda &&
-                            leadSuit !== giruda;
-                        if (isGirudaCut) {
-                            isStrong = true;
-                            reasoning.push('기루다 컷 → 강한 승리로 판정');
-                        }
-                    }
-
-                    // ── 주공이 이기고 있을 때 ──
                     // ── 주공이 이기고 있을 때 ──
                     if (currentWinner === masterIndex) {
+
+                        // [사용자 요청 수정] ★★★ 주공이 조커로 이기고 있다면 마이티 사용 강제 차단 ★★★
+                        // 조커가 유효한 라운드(2~9)이고, 주공이 낸 카드가 조커라면
+                        if (winningCard && winningCard.isJoker && round >= 2 && round <= 9) {
+                            reasoning.push('주공 조커 승리 중 - 마이티 사용 금지 (안전하게 점수 실어주기)');
+                            
+                            // safeCards에는 이미 마이티와 조커가 제외되어 있음.
+                            
+                            // 1. 비보스 점수 카드 실어주기
+                            const pointCards = safeCards.filter(c => c.isPointCard() && !this.gameState.getCardAnalysis(c).isBoss);
+                            if (pointCards.length > 0) return this.selectHighestCard(pointCards);
+
+                            // 2. 점수 카드가 없다면 낮은 카드 처리
+                            if (safeCards.length > 0) return this.selectLowestCard(safeCards);
+
+                            // 3. 만약 낼 수 있는 카드가 마이티/조커 뿐이라면 규칙상 어쩔 수 없이 냄
+                            return this.selectLowestCard(playableCards);
+                        }
+                        // [수정 끝]
+
+                        // 승리 강도 판정 (기존 로직)
+                        let isWinCardBoss = false;
+                        if (winningCard && !winningCard.isJoker && !winningCard.equals(mighty)) {
+                            isWinCardBoss = this.gameState.getCardAnalysis(winningCard).isBoss;
+                        }
+                        let isStrong = winningCard && (
+                            winningCard.equals(mighty) ||
+                            (winningCard.isJoker && round >= 2 && round <= 9) ||
+                            isWinCardBoss
+                        );
+
+                        if (!isStrong && winningCard && !winningCard.isJoker && !winningCard.equals(mighty)) {
+                            const isGirudaCut = giruda && winningCard.suit === giruda && leadSuit !== giruda;
+                            if (isGirudaCut) { isStrong = true; reasoning.push('기루다 컷 → 강한 승리로 판정'); }
+                        }
 
                         // Case 1: 야당이 모두 완료 → 안전하게 점수 실어주기
                         if (!hasOppositionRemaining) {
                             reasoning.push('주공 승리 + 야당 완료 - 점수 실어주기');
-
-                            // 비보스 점수 카드 실어주기
                             const nonBossPoint = safeCards.filter(c =>
                                 !this.gameState.getCardAnalysis(c).isBoss && c.isPointCard()
                             );
                             if (nonBossPoint.length > 0) return this.selectHighestCard(nonBossPoint);
-
-                            // 점수 카드 없으면 낮은 카드
                             const safeNonBossNonPoint = safeCards.filter(c =>
                                 !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
                             );
                             if (safeNonBossNonPoint.length > 0) return this.selectLowestCard(safeNonBossNonPoint);
-
                             if (safeCards.length > 0) return this.selectLowestCard(safeCards);
                             return this.selectLowestCard(playableCards);
                         }
@@ -6683,52 +6684,22 @@ body:not(.mobile-mode) .player-area.right {
                         // Case 2: 주공 승리 확실 (보스카드/마이티/조커) + 야당 남아있음
                         if (isStrong) {
                             reasoning.push('주공 승리 확실 - 비보스 점수 실어주기');
-
-                            // 확실한 승리이므로 비보스 점수 카드 실어주기
                             const nonBossPoint = safeCards.filter(c =>
                                 !this.gameState.getCardAnalysis(c).isBoss && c.isPointCard()
                             );
                             if (nonBossPoint.length > 0) return this.selectHighestCard(nonBossPoint);
-
-                            // 점수 카드 없으면 낮은 카드
                             const safeNonBossNonPoint = safeCards.filter(c =>
                                 !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
                             );
                             if (safeNonBossNonPoint.length > 0) return this.selectLowestCard(safeNonBossNonPoint);
-
                             if (safeCards.length > 0) return this.selectLowestCard(safeCards);
                             return this.selectLowestCard(playableCards);
                         }
 
-                        // Case 3: 주공이 약한 카드로 이기고 있고 야당 남아있음
-                        // → 야당이 역전할 가능성 높음 → 적극적으로 오버간하여 확보
+                        // Case 3: 주공이 약한 카드로 이기고 있고 야당 남아있음 -> 오버테이크 고려
                         if (hasOppositionRemaining) {
                             reasoning.push('주공 약한 승리 + 야당 남음 - 적극 오버간');
 
-                            // ★ 주공 승리 카드가 보스카드인지 확인
-                            const isMasterWinStrong = winningCard && (
-                                winningCard.equals(mighty) ||
-                                (winningCard.isJoker && round >= 2 && round <= 9) ||
-                                this.gameState.getCardAnalysis(winningCard).isBoss ||
-                                (giruda && winningCard.suit === giruda && leadSuit !== giruda)
-                            );
-
-                            // 주공이 강한 카드로 이기고 있으면 점수 실어주기
-                            if (isMasterWinStrong) {
-                                reasoning.push('주공 강한 승리 - 비보스 점수 실어주기');
-                                const nonBossPoint = safeCards.filter(c =>
-                                    !this.gameState.getCardAnalysis(c).isBoss && c.isPointCard()
-                                );
-                                if (nonBossPoint.length > 0) return this.selectHighestCard(nonBossPoint);
-                                const safeNonBoss = safeCards.filter(c => !this.gameState.getCardAnalysis(c).isBoss);
-                                if (safeNonBoss.length > 0) return this.selectLowestCard(safeNonBoss);
-                                if (safeCards.length > 0) return this.selectLowestCard(safeCards);
-                                return this.selectLowestCard(playableCards);
-                            }
-
-                            // ★ 주공이 약한 카드로 이기고 있음 → 야당 역전 가능성 높음
-
-                            // 보스카드로 확실한 오버간
                             const bossWin = cardsToWin.filter(c =>
                                 !c.isJoker && !c.equals(mighty) && this.gameState.getCardAnalysis(c).isBoss
                             );
@@ -6737,7 +6708,6 @@ body:not(.mobile-mode) .player-area.right {
                                 return this.selectLowestCard(bossWin);
                             }
 
-                            // 기루다 보스카드 컷 가능하면 기루다 컷
                             if (canWin && cardsToWin.length > 0) {
                                 const cheapWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
                                 const girudaCut = cheapWin.filter(c => giruda && c.suit === giruda && leadSuit !== giruda);
@@ -6749,7 +6719,7 @@ body:not(.mobile-mode) .player-area.right {
                                     }
                                 }
                             }
-                            // ★ 보스카드 없으면 조커로 오버간 (마이티보다 먼저)
+                            
                             if (joker && round >= 2 && round <= 9) {
                                 const mightyInTrickCheck = this.gameState.trick.cards.some(p => p.card.equals(mighty));
                                 if (!mightyInTrickCheck) {
@@ -6758,7 +6728,6 @@ body:not(.mobile-mode) .player-area.right {
                                 }
                             }
 
-                            // ★ 보스카드도 기루다 보스컷도 없으면 마이티 사용
                             if (hasCard(hand, mighty)) {
                                 const pointsNeeded = this.gameState.contract.bidValue - this.gameState.governmentScore;
                                 const shouldUseMighty = (
@@ -6774,19 +6743,15 @@ body:not(.mobile-mode) .player-area.right {
                                 reasoning.push(`마이티 보존 (트릭 점수 ${pointsInTrick}점 - 가치 부족)`);
                             }
 
-
-                            // 오버간 불가 - 비점수 낮은 카드
                             reasoning.push('오버간 불가 - 비점수 낮은 카드');
                             const nonPoint = safeCards.filter(c => !c.isPointCard());
                             if (nonPoint.length > 0) return this.selectLowestCard(nonPoint);
                             if (safeCards.length > 0) return this.selectLowestCard(safeCards);
                             return this.selectLowestCard(playableCards);
                         }
-
                     }
 
-
-                    // ── 여당 승리 공통: 보스카드 보존, 낮은 카드 ──
+                    // ── 여당 승리 공통 (친구가 이기고 있거나 위 로직 통과 시) ──
                     reasoning.push('여당 승리 - 보스카드 보존');
                     const nonBossNonPoint = normalCards.filter(c =>
                         !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
@@ -6807,32 +6772,27 @@ body:not(.mobile-mode) .player-area.right {
                     const currentWinCard = currentWinPlay?.card;
                     const pointsNeeded = this.gameState.contract.bidValue - this.gameState.governmentScore;
 
-                    // ── 주공이 리드했는데 야당이 역전한 상황 ──
-                    // ── 주공 리드 - 야당 역전 → 탈환 시도 ── 부분을 찾아서 교체
+                    // ── 주공 리드 - 야당 역전 → 탈환 시도 ──
                     if (isMasterLead) {
                         reasoning.push('주공 리드 - 야당 역전 → 탈환 시도');
                         const mightyInTrick = this.gameState.trick.cards.some(p => p.card.equals(mighty));
 
-                        // ★ 초구 특수 처리
                         if (round === 1 && hasCard(hand, mighty)) {
                             if (!hasOppositionRemaining || pointsInTrick >= 1) {
-                                reasoning.push('초구 - 주공 지원 마이티 (야당 역전 방지)');
+                                reasoning.push('초구 - 주공 지원 마이티');
                                 return mighty;
                             }
                         }
 
-                        // 1순위: 일반 카드로 "확실한" 탈환 (보스카드 또는 야당 없음)
                         if (canWin && cardsToWin.length > 0) {
                             const cheapWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
                             if (cheapWin.length > 0) {
-                                // 야당이 남아있으면 보스카드로만 탈환
                                 if (hasOppositionRemaining) {
                                     const bossWin = cheapWin.filter(c => this.gameState.getCardAnalysis(c).isBoss);
                                     if (bossWin.length > 0) {
                                         reasoning.push('보스카드로 확실한 탈환');
                                         return this.selectLowestCard(bossWin);
                                     }
-                                    // 기루다 컷이 가능하면 기루다 컷 (기루다는 확실한 승리)
                                     const girudaCut = cheapWin.filter(c => giruda && c.suit === giruda && leadSuit !== giruda);
                                     if (girudaCut.length > 0) {
                                         const girudaBossCut = girudaCut.filter(c => this.gameState.getCardAnalysis(c).isBoss);
@@ -6840,26 +6800,21 @@ body:not(.mobile-mode) .player-area.right {
                                             reasoning.push('기루다 보스카드 컷으로 확실한 탈환');
                                             return this.selectLowestCard(girudaBossCut);
                                         }
-                                        // 기루다 컷이지만 보스카드 아님 → 역전 가능성 있으므로 마이티 검토로 넘김
                                     }
-                                    // 보스카드도 기루다 컷도 없으면 → 마이티 검토로 넘어감
                                 } else {
-                                    // 야당이 없으면 아무 카드로든 탈환 OK
                                     reasoning.push('일반 카드로 탈환 (야당 완료)');
                                     return this.selectLowestCard(cheapWin);
                                 }
                             }
                         }
 
-                        // 2순위: 조커로 탈환 (마이티보다 조커를 먼저 소모)
                         if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
                             if (pointsInTrick >= 1 || round >= 3 || !hasOppositionRemaining) {
-                                reasoning.push('조커로 주공 지원 (마이티 보존)');
+                                reasoning.push('조커로 주공 지원');
                                 return joker;
                             }
                         }
 
-                        // 3순위: 마이티로 탈환
                         if (hasCard(hand, mighty)) {
                             const shouldUseMighty = (
                                 pointsInTrick >= 2 ||
@@ -6867,7 +6822,6 @@ body:not(.mobile-mode) .player-area.right {
                                 (pointsNeeded > 0 && round >= 6) ||
                                 (!hasOppositionRemaining && pointsInTrick >= 1) ||
                                 round >= 8 ||
-                                // ★ 보스카드 없이 이길 수 없고 야당이 남아있으면 마이티 사용
                                 (hasOppositionRemaining && (!canWin || cardsToWin.every(c => c.isJoker || c.equals(mighty))))
                             );
                             if (shouldUseMighty) {
@@ -6880,12 +6834,9 @@ body:not(.mobile-mode) .player-area.right {
                         return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
                     }
 
-
-
-                    // ── 야당 리드에서 야당이 이기고 있는 상황 ──
+                    // ── 야당 리드 - 야당 승리 중 ──
                     reasoning.push('야당 리드 - 야당 승리 중');
 
-                    // 야당 조커가 이기고 있는 경우
                     const isJokerWinning = currentWinCard && currentWinCard.isJoker
                         && round >= 2 && round <= 9 && !this.gameState.trick.jokerCalled;
 
@@ -6896,21 +6847,18 @@ body:not(.mobile-mode) .player-area.right {
                                 return mighty;
                             }
                         }
-                        reasoning.push('조커 승리 - 탈환 불가, 손실 최소화');
+                        reasoning.push('조커 승리 - 탈환 불가');
                         return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
                     }
 
-                    // 조커 사용 판단 (마이티보다 먼저 검토)
                     const mightyInTrick = this.gameState.trick.cards.some(p => p.card.equals(mighty));
                     if (joker && round >= 2 && round <= 9 && !mightyInTrick) {
                         if (pointsInTrick >= 1 || round >= 4 || !hasOppositionRemaining) {
-                            reasoning.push('조커로 탈환 (마이티 보존)');
+                            reasoning.push('조커로 탈환');
                             return joker;
                         }
                     }
 
-
-                    // 마이티 사용 판단 (강화된 조건)
                     if (hasCard(hand, mighty)) {
                         const shouldUseMighty = (
                             pointsInTrick >= 2 ||
@@ -6925,7 +6873,6 @@ body:not(.mobile-mode) .player-area.right {
                         }
                     }
 
-                    // 일반 카드로 탈환
                     if (canWin && cardsToWin.length > 0) {
                         const normalWin = cardsToWin.filter(c => !c.isJoker && !c.equals(mighty));
                         if (normalWin.length > 0) {
@@ -6934,7 +6881,6 @@ body:not(.mobile-mode) .player-area.right {
                                 return this.selectLowestCard(normalWin);
                             }
                         }
-                        // 주공이 남아있으면 위임
                         const isMasterRemaining = trickAnalysis.remainingPlayers.includes(masterIndex);
                         if (isMasterRemaining && pointsInTrick <= 1) {
                             reasoning.push('주공에게 위임');
@@ -6943,7 +6889,6 @@ body:not(.mobile-mode) .player-area.right {
                         if (normalWin.length > 0) return this.selectLowestCard(normalWin);
                     }
 
-                    // 주공이 남아있으면 위임
                     const isMasterRemaining = trickAnalysis.remainingPlayers.includes(masterIndex);
                     if (isMasterRemaining) {
                         reasoning.push('탈환 불가 - 주공에게 위임');
@@ -6954,7 +6899,6 @@ body:not(.mobile-mode) .player-area.right {
                     return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
                 }
 
-
                 // ══════════════════════════════════════
                 // ★★★ 미확정 상황 ★★★
                 // ══════════════════════════════════════
@@ -6964,10 +6908,11 @@ body:not(.mobile-mode) .player-area.right {
                     if (cheapWin.length > 0) return this.selectLowestCard(cheapWin);
                     return this.selectLowestCard(cardsToWin);
                 }
-                reasoning.push('기본 - 낮은 카드 (마이티/조커 보존)');
+                reasoning.push('기본 - 낮은 카드');
                 if (safeCards.length > 0) return this.selectLowestCard(safeCards);
                 return this.selectLowestCard(playableCards);
             }
+
 
             // ===== 야당 팔로우 전략 =====
             oppositionFollowStrategy(hand, trickAnalysis, teamContext, reasoning, trackingSummary = null) {
