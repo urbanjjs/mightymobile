@@ -5915,6 +5915,18 @@
                         return mighty;
                     }
                     if (isFriendMighty) {
+                        // 비기루다 보스카드가 있으면 무조건 우선 사용
+                        const nonGirudaBoss = playableCards.filter(c => {
+                            if (c.isJoker || c.equals(mighty)) return false;
+                            if (giruda && c.suit === giruda) return false;
+                            if (jokerCall && c.equals(jokerCall)) return false;
+                            return this.gameState.getCardAnalysis(c).isBoss;
+                        });
+                        if (nonGirudaBoss.length > 0) {
+                            reasoning.push('초구 - 마이티 프렌드, 비기루다 보스카드 우선 리드');
+                            return this.selectHighestCard(nonGirudaBoss);
+                        }
+                        // 비기루다 보스카드 없을 때만 낮은 카드로 유도
                         reasoning.push('초구 - 친구가 마이티 (낮은 카드로 유도)');
                         const nonGirudaCards = playableCards.filter(c => !c.isJoker && c.suit !== giruda && !c.isPointCard());
                         if (nonGirudaCards.length > 0) return this.selectLowestCard(nonGirudaCards);
