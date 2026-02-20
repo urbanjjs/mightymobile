@@ -4489,6 +4489,11 @@
                 return playableCards;
             }
             if (mightyPlayedInTrick) return hand.filter(c => !c.isJoker);
+            // 초구(1라운드): 팔로우 시에도 기루다 사용 불가 (리드와 동일 규칙)
+            if (round === 1 && gameContext.giruda) {
+                const nonGiruda = hand.filter(c => !c.isJoker && c.suit !== gameContext.giruda);
+                if (nonGiruda.length > 0) return nonGiruda;
+            }
             return [...hand];
         }
 
