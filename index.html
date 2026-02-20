@@ -6846,8 +6846,13 @@
                                 return mighty;
                             }
                         }
-                        reasoning.push('조커 승리 - 탈환 불가, 손실 최소화');
-                        return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
+                        reasoning.push('조커 승리 - 탈환 불가, 기루다 보존');
+                        // 기루다 보존: 비기루다·비조커·비마이티 카드 먼저 버리기
+                        const nonGirudaDiscard = playableCards.filter(c =>
+                            !c.isJoker && !c.equals(mighty) && (!giruda || c.suit !== giruda)
+                        );
+                        const discardPool = nonGirudaDiscard.length > 0 ? nonGirudaDiscard : playableCards;
+                        return this.selectLowestNonPointCard(discardPool) || this.selectLowestCard(discardPool);
                     }
 
                     // 친구 보스기루다 위임 - 마이티 보존
