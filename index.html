@@ -6142,6 +6142,12 @@
                 const round = this.gameState.round;
                 const friendCard = this.gameState.contract.friendCard;
                 const jokerCall = this.gameState.contract.jokerCall;
+                // 조커가 아직 사용 안 됐으면 조커콜 카드를 일반 선택 풀에서 제외
+                // (의도치 않게 조커콜 카드를 내서 조커콜이 발동되는 버그 방지)
+                const isJokerStillActive = jokerCall && !this.gameState.jokerUsed;
+                const safePlayable = isJokerStillActive
+                    ? playableCards.filter(c => !c.equals(jokerCall))
+                    : playableCards;
 
                 const govScore = this.gameState.governmentScore;
                 const bidValue = this.gameState.contract.bidValue;
@@ -6238,8 +6244,13 @@
                     const isFriendJoker = friendCard && friendCard.isJoker;
                     const friendHasJoker = isFriendJoker || this.gameState.sayeonResponse === '넌사';
                     if (!iHaveJoker && !friendHasJoker) {
-                        reasoning.push('조커콜 - 야당 조커 조기 제거');
-                        return jokerCall;
+                        // 반드시 사연 응답 '사연'으로 야당 보유 확인 후에만 조커콜
+                        // null(사연 안 물어봄/건너뜀) → 팀킬 위험, 조커콜 금지
+                        const sayeonConfirmed = this.gameState.sayeonResponse === '사연';
+                        if (sayeonConfirmed) {
+                            reasoning.push('조커콜 - 사연 확인 후 야당 조커 제거');
+                            return jokerCall;
+                        }
                     }
                 }
 
@@ -6332,13 +6343,37 @@
                     return this.gameState.getCardAnalysis(c).isBoss;
                 });
 
-                if (!hasBossCard && friendCard && !friendCard.isJoker && !friendCard.equals(mighty) && friendCardSuit) {
-                    const sameSuitCards = getCardsOfSuit(hand, friendCardSuit);
-                    if (sameSuitCards.length > 0) {
-                        const lowerCards = sameSuitCards.filter(c => RANK_VALUES[c.rank] < RANK_VALUES[friendCardRank]);
+                if (!hasBossCard) {
+                    // ── 방법 1: 친구 카드 미출현 → 그 수트로 낮게 리드 ──
+                    if (friendCard && !friendCard.isJoker && !friendCard.equals(mighty) && friendCardSuit) {
+                        const lowerCards = getCardsOfSuit(hand, friendCardSuit).filter(c =>
+                            RANK_VALUES[c.rank] < RANK_VALUES[friendCardRank] &&
+                            !(isJokerStillActive && c.equals(jokerCall))
+                        );
                         if (lowerCards.length > 0 && this.gameState.isCardStillInPlay(friendCard)) {
-                            reasoning.push(`친구 카드(${friendCard.toString()}) 활용`);
+                            reasoning.push(`친구 카드(${friendCard.toString()}) 유도 - 낮게 리드`);
                             return this.selectLowestCard(lowerCards);
+                        }
+                    }
+
+                    // ── 방법 2: 미출 보스카드 수트로 낮게 리드 (카드 카운팅) ──
+                    // 아직 나오지 않은 보스카드가 있는 비기루다 수트 찾기
+                    // → 친구가 그 보스카드를 가졌을 가능성에 베팅, 마이티 보존
+                    for (const suit of Object.values(SUITS)) {
+                        if (suit === giruda) continue;
+                        const remainingInSuit = this.gameState.getRemainingCardsOfSuit(suit);
+                        const hasBossRemaining = remainingInSuit.some(c =>
+                            !c.equals(mighty) && this.gameState.getCardAnalysis(c).isBoss
+                        );
+                        if (hasBossRemaining) {
+                            const masterSuitCards = getCardsOfSuit(hand, suit).filter(c =>
+                                !c.equals(mighty) && !(isJokerStillActive && c.equals(jokerCall)) &&
+                                !this.gameState.getCardAnalysis(c).isBoss
+                            );
+                            if (masterSuitCards.length > 0) {
+                                reasoning.push(`미출 보스 수트(${SUIT_NAMES[suit]}) 유도 - 마이티 보존`);
+                                return this.selectLowestCard(masterSuitCards);
+                            }
                         }
                     }
                 }
@@ -6347,7 +6382,9 @@
                 const longestSuit = this.findLongestSuit(hand, giruda);
                 if (longestSuit) {
                     const suitCards = getCardsOfSuit(hand, longestSuit);
-                    const nonMightySuitCards = suitCards.filter(c => !c.equals(mighty));
+                    const nonMightySuitCards = suitCards.filter(c =>
+                        !c.equals(mighty) && !(isJokerStillActive && c.equals(jokerCall))
+                    );
                     if (nonMightySuitCards.length > 0) {
                         const bossInSuit = nonMightySuitCards.find(c => this.gameState.getCardAnalysis(c).isBoss);
                         if (bossInSuit) { reasoning.push(`${SUIT_NAMES[longestSuit]} 보스카드 리드`); return bossInSuit; }
@@ -6369,8 +6406,8 @@
                 }
 
                 // ── 폴백 ──
-                if (hasBossCard) return this.selectHighestCard(playableCards);
-                return this.selectLowestCard(playableCards);
+                if (hasBossCard) return this.selectHighestCard(safePlayable.length > 0 ? safePlayable : playableCards);
+                return this.selectLowestCard(safePlayable.length > 0 ? safePlayable : playableCards);
             }
 
             // ===== 친구 리드 전략 =====
