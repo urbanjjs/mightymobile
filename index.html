@@ -108,35 +108,6 @@
             /* 글자 가독성을 위한 그림자 추가 */
         }
 
-        /* ===== 데스크탑 중앙 점수판 ===== */
-        .mobile-center-score {
-            margin-top: 8px;
-            background: rgba(0, 0, 0, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            padding: 5px 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .mobile-center-score .gov-score,
-        .mobile-center-score .opp-score {
-            font-size: 15px;
-            font-weight: bold;
-            line-height: 1.3;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-        }
-
-        .mobile-center-score .gov-score {
-            color: #66bb6a;
-        }
-
-        .mobile-center-score .opp-score {
-            color: #42a5f5;
-        }
-
 
         /* 기루다와 숫자를 겹치기 위한 래퍼 */
         .overlap-wrapper {
@@ -2054,13 +2025,13 @@
             }
 
             .player-area.user {
-                width: min(700px, 74vw);
+                width: min(920px, 92vw);
                 padding: 5px 10px;
             }
 
             .player-area.user .card {
-                width: 72px;
-                height: 97px;
+                width: 86px;
+                height: 116px;
                 flex-shrink: 0;
             }
 
@@ -2074,7 +2045,7 @@
             }
 
             .player-area.user .player-hand .card {
-                margin-left: -10px;
+                margin-left: 0;
             }
 
             .player-area.user .player-hand .card:first-child {
@@ -3052,7 +3023,7 @@
                 display: none;
             }
 
-            /* ===== 최종 요약 전체화면 오버레이 (데스크탑 30% 축소 적용) ===== */
+            /* ===== 최종 요약 전체화면 오버레이 ===== */
             #final-summary-overlay {
                 position: fixed;
                 top: 0;
@@ -3061,47 +3032,54 @@
                 bottom: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.97);
+                background: radial-gradient(ellipse at 50% 20%, #1a1f3a 0%, #070910 80%);
                 z-index: 3000;
                 display: flex;
                 justify-content: center;
-                align-items: center;
+                align-items: flex-start;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
+                padding: 40px 20px;
+                box-sizing: border-box;
             }
 
             #final-summary-overlay.hidden {
                 display: none !important;
             }
 
-            /* [수정] 최종 결과 화면 (데스크탑 컴팩트 버전) */
+            /* 최종 결과 화면 — 글래스모피즘 카드 */
             .final-summary-content {
                 width: 100%;
-                /* 기존 420px에서 게임 결과 모달과 동일한 700px로 변경 */
-                max-width: 700px;
-                /* 패딩도 게임 결과창(30px 32px)과 유사하게 조정 */
-                padding: 30px 32px;
+                max-width: 860px;
+                padding: 50px 64px;
                 color: #e0e0e0;
-                /* 배경 및 테두리 스타일 */
-                background: rgba(30, 30, 30, 0.95);
-                border-radius: 16px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+                background: rgba(15, 20, 45, 0.72);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border-radius: 20px;
+                border: 1px solid rgba(255, 215, 0, 0.15);
+                box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.04);
                 text-align: center;
             }
 
             .final-summary-content h2 {
-                font-size: 24px;
-                /* 제목 크기 축소 */
-                margin: 0 0 10px 0;
+                font-size: 42px;
+                font-weight: 900;
+                letter-spacing: 2px;
+                margin: 0 0 12px 0;
                 color: #FFD700;
+                text-shadow: 0 0 40px rgba(255, 215, 0, 0.55), 0 0 80px rgba(255, 215, 0, 0.2);
             }
 
             .final-summary-content .fs-subtitle {
-                color: #aaa;
+                display: inline-block;
+                background: rgba(255, 215, 0, 0.08);
+                border: 1px solid rgba(255, 215, 0, 0.18);
+                border-radius: 50px;
+                padding: 5px 18px;
+                color: rgba(210, 175, 100, 0.75);
                 font-size: 13px;
-                /* 부제목 축소 */
-                margin-bottom: 20px;
+                margin-bottom: 36px;
             }
 
             /* 플레이어 점수 행 */
@@ -3109,82 +3087,72 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 10px 15px;
-                /* 행 높이 축소 */
-                margin: 6px 0;
-                border-radius: 8px;
+                padding: 14px 24px;
+                margin: 5px 0;
+                border-radius: 10px;
                 font-size: 15px;
-                /* 텍스트 크기 축소 */
+                transition: background 0.2s;
             }
 
             .final-summary-content .fs-player-row.normal {
-                background: rgba(255, 255, 255, 0.06);
-                border: 1px solid rgba(255, 255, 255, 0.05);
+                background: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.07);
             }
 
             .final-summary-content .fs-player-row.winner {
-                border: 2px solid #FFD700;
-                background: rgba(255, 215, 0, 0.15);
+                border: 1px solid rgba(255, 215, 0, 0.5);
+                background: rgba(255, 215, 0, 0.1);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.15), inset 0 0 20px rgba(255, 215, 0, 0.04);
             }
 
             .final-summary-content .fs-player-name {
                 font-weight: bold;
+                color: rgba(210, 175, 100, 0.88);
+            }
+
+            .final-summary-content .fs-player-row.winner .fs-player-name {
+                color: #FFD700;
             }
 
             .final-summary-content .fs-score {
-                font-weight: bold;
+                font-weight: 700;
+                color: #ffffff;
             }
 
-            /* [수정] 새 게임 시작 버튼 디자인 (예쁘게 변경) */
+            /* 새 게임 시작 버튼 */
             .final-summary-content .fs-reload-btn {
                 display: block;
-                width: 80%;
-                /* 버튼 너비 적절하게 조정 */
-                margin: 30px auto 0;
-                /* 상단 여백 조금 더 줌 */
-
-                /* 크기 키움 */
+                width: 70%;
+                margin: 36px auto 0;
                 padding: 18px 0;
-                font-size: 20px;
-                font-weight: bold;
+                font-size: 18px;
+                font-weight: 700;
                 color: white;
-
-                /* 그라데이션 및 그림자 추가 */
-                background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-                /* 진한 녹색 그라데이션 */
+                letter-spacing: 1.5px;
+                background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
                 border: none;
-                border-radius: 12px;
+                border-radius: 10px;
                 cursor: pointer;
-                box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-                /* 부드러운 그림자 */
-
-                /* 애니메이션 효과 */
-                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-                letter-spacing: 1px;
-                /* 자간 살짝 넓힘 */
+                box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+                transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
             }
 
-            /* Hover 효과 (마우스 올렸을 때) */
             .final-summary-content .fs-reload-btn:hover {
-                transform: translateY(-3px) scale(1.02);
-                /* 위로 살짝 떠오르며 커짐 */
-                box-shadow: 0 10px 30px rgba(76, 175, 80, 0.6);
-                /* 그림자 진하게 */
-                background: linear-gradient(135deg, #66BB6A 0%, #388E3C 100%);
-                /* 색상 밝게 */
+                transform: translateY(-3px);
+                box-shadow: 0 12px 32px rgba(76, 175, 80, 0.55);
+                background: linear-gradient(135deg, #388e3c 0%, #66bb6a 100%);
             }
 
-            /* Active 효과 (클릭했을 때) */
             .final-summary-content .fs-reload-btn:active {
                 transform: translateY(1px) scale(0.98);
-                /* 눌리는 느낌 */
                 box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
             }
 
             .final-summary-content .fs-footer {
                 font-size: 11px;
-                color: #666;
-                margin-top: 15px;
+                color: rgba(255, 255, 255, 0.28);
+                margin-top: 20px;
+                letter-spacing: 0.5px;
             }
 
 
@@ -8102,12 +8070,10 @@
                 // 3. 라운드 텍스트 수정 (대문자 ROUND -> Round)
                 const roundText = `Round ${this.gameState.round || 1}/10`;
 
-                // 4. 점수 데이터
-                const govScore = this.gameState.governmentScore;
-                const oppScore = this.gameState.oppositionScore;
+                // 4. 비드값
                 const bidValue = contract.bidValue;
 
-                // 5. HTML 조립 (점수판 포함)
+                // 5. HTML 조립
                 container.innerHTML = `
                     <div class="center-round-text">${roundText}</div>
                     <div class="overlap-wrapper">
@@ -8115,10 +8081,6 @@
                         <div class="overlap-number">${bidValue}</div>
                     </div>
                     <div class="center-friend-text">${friendText}</div>
-                    <div class="mobile-center-score">
-                        <div class="gov-score">여당 : ${govScore} / ${bidValue}</div>
-                        <div class="opp-score">야당 : ${oppScore}</div>
-                    </div>
                 `;
 
                 // 위치 스타일 (정중앙)
