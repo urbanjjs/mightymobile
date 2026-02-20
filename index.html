@@ -3138,9 +3138,45 @@
                 color: #FFD700;
             }
 
+            .final-summary-content .fs-score-table {
+                margin: 0 0 8px 0;
+                border-radius: 12px;
+                overflow: hidden;
+                border: 1px solid rgba(255, 215, 0, 0.1);
+            }
+
+            .final-summary-content .fs-rank {
+                font-size: 20px;
+                min-width: 36px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .final-summary-content .fs-you-tag {
+                display: inline-block;
+                background: rgba(255, 215, 0, 0.18);
+                border: 1px solid rgba(255, 215, 0, 0.4);
+                border-radius: 4px;
+                padding: 1px 6px;
+                font-size: 10px;
+                color: #FFD700;
+                margin-left: 7px;
+                vertical-align: middle;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+
             .final-summary-content .fs-score {
                 font-weight: 700;
-                color: #ffffff;
+            }
+
+            .final-summary-content .fs-score.positive { color: #66bb6a; }
+            .final-summary-content .fs-score.negative  { color: #ef5350; }
+
+            .final-summary-content .fs-divider {
+                height: 1px;
+                background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+                margin: 28px 0;
             }
 
             /* 새 게임 시작 버튼 */
@@ -3173,10 +3209,23 @@
             }
 
             .final-summary-content .fs-footer {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
                 font-size: 11px;
                 color: rgba(255, 255, 255, 0.28);
-                margin-top: 20px;
-                letter-spacing: 0.5px;
+                margin-top: 24px;
+                letter-spacing: 1px;
+            }
+
+            .final-summary-content .fs-footer::before,
+            .final-summary-content .fs-footer::after {
+                content: '';
+                flex: 1;
+                max-width: 80px;
+                height: 1px;
+                background: rgba(255, 255, 255, 0.1);
             }
 
 
@@ -6112,20 +6161,8 @@
                     const isFriendMighty = friendCard && friendCard.equals(mighty);
                     const isFriendJoker = friendCard && friendCard.isJoker;
 
-                    if (hasMighty) {
-                        // 비기루다 보스카드가 있으면 마이티 대신 그것을 사용 (마이티 보존)
-                        const nonGirudaBossInHand = playableCards.filter(c => {
-                            if (c.isJoker || c.equals(mighty)) return false;
-                            if (giruda && c.suit === giruda) return false;
-                            if (jokerCall && c.equals(jokerCall)) return false;
-                            return this.gameState.getCardAnalysis(c).isBoss;
-                        });
-                        if (nonGirudaBossInHand.length === 0) {
-                            reasoning.push('초구 - 마이티 리드 (다른 보스카드 없음)');
-                            return mighty;
-                        }
-                        // 비기루다 보스카드가 있으면 fall-through → 아래 보스카드 리드 로직으로
-                    }
+                    // 마이티 보유 시 초구에서는 보스카드 or 낮은 카드로 fall-through (마이티 보존)
+                    // 보스카드 없을 때도 얼리 리턴 없이 아래 친구 유도 로직으로 이어짐
                     if (isFriendMighty) {
                         // 비기루다 보스카드가 있으면 무조건 우선 사용
                         const nonGirudaBoss = playableCards.filter(c => {
@@ -6151,7 +6188,8 @@
                     if (isFriendJoker) {
                         reasoning.push('초구 - 친구가 조커 (1라운드 조커 무효)');
                         if (giruda) {
-                            const girudaCards = getCardsOfSuit(hand, giruda);
+                            // playableCards 사용: 초구 기루다 리드 제한 준수
+                            const girudaCards = playableCards.filter(c => c.suit === giruda);
                             for (const card of girudaCards) {
                                 if (this.gameState.getCardAnalysis(card).isBoss) {
                                     reasoning.push('초구 - 기루다 보스카드 리드');
@@ -6164,7 +6202,8 @@
                     const girudaAce = giruda ? new Card(giruda, 'A') : null;
                     if (friendCard && girudaAce && friendCard.equals(girudaAce) && giruda) {
                         reasoning.push('초구 - 친구가 기루다 A (기루다 리드)');
-                        const girudaCards = getCardsOfSuit(hand, giruda);
+                        // playableCards 사용: 초구 기루다 리드 제한 준수
+                        const girudaCards = playableCards.filter(c => c.suit === giruda);
                         if (girudaCards.length > 0) return this.selectLowestCard(girudaCards);
                     }
 
@@ -10646,18 +10685,8 @@
                 const overlay = document.getElementById('final-summary-overlay');
                 overlay.classList.remove('hidden');
 
-                // 오버레이 스타일 (전체 화면 덮기)
-                overlay.style.cssText = `
-                    position: fixed;
-                    top: 0; left: 0; right: 0; bottom: 0;
-                    width: 100%; height: 100%;
-                    background: rgba(0, 0, 0, 0.98);
-                    z-index: 9999;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    overflow-y: auto;
-                `;
+                // z-index만 인라인으로 보장 (배경 등 나머지는 CSS에서 처리)
+                overlay.style.zIndex = '9999';
 
                 // 3. HTML 생성 (인라인 스타일 대신 CSS 클래스 사용)
                 let html = `<div class="final-summary-content">`;
@@ -10665,19 +10694,31 @@
                 html += `<h2>🎴 게임 종료</h2>`;
                 html += `<div class="fs-subtitle">총 ${this.gameHistory.length}게임 — 최종 누적 점수</div>`;
 
-                for (let i = 0; i < playerNames.length; i++) {
-                    const score = finalScores[i] || 0;
-                    const isWinner = i === winnerIndex;
-                    const scoreColor = score >= 0 ? '#4CAF50' : '#f44336';
-                    const scoreText = score >= 0 ? `+${score}` : `${score}`;
-                    const crown = isWinner ? '👑 ' : '';
+                // 점수 내림차순 정렬
+                const sortedPlayers = playerNames.map((name, i) => ({
+                    name,
+                    score: finalScores[i] || 0,
+                    originalIndex: i
+                })).sort((a, b) => b.score - a.score);
+
+                const rankMedals = ['🥇', '🥈', '🥉', '4위', '5위'];
+                html += `<div class="fs-score-table">`;
+                for (let rank = 0; rank < sortedPlayers.length; rank++) {
+                    const p = sortedPlayers[rank];
+                    const isWinner = p.originalIndex === winnerIndex;
+                    const isHuman = p.originalIndex === 0;
+                    const scoreClass = p.score >= 0 ? 'positive' : 'negative';
+                    const scoreText = p.score >= 0 ? `+${p.score}` : `${p.score}`;
                     const rowClass = isWinner ? 'winner' : 'normal';
+                    const humanTag = isHuman ? '<span class="fs-you-tag">나</span>' : '';
 
                     html += `<div class="fs-player-row ${rowClass}">
-                        <span class="fs-player-name">${crown}${playerNames[i]}</span>
-                        <span class="fs-score" style="color:${scoreColor}">${scoreText}점</span>
+                        <span class="fs-rank">${rankMedals[rank]}</span>
+                        <span class="fs-player-name">${p.name}${humanTag}</span>
+                        <span class="fs-score ${scoreClass}">${scoreText}점</span>
                     </div>`;
                 }
+                html += `</div>`;
 
                 const isHumanWinner = winnerIndex === 0;
                 if (isHumanWinner) {
@@ -10700,11 +10741,9 @@
                     </div>`;
                 }
 
-                // [수정] 버튼 작동 방식 개선 (window.location.reload 사용)
+                html += `<div class="fs-divider"></div>`;
                 html += `<button class="fs-reload-btn" onclick="window.location.reload()">새 게임 시작</button>`;
-
-                html += `<div class="fs-footer">Designed by 장준석`;
-                html += `</div>`;
+                html += `<div class="fs-footer"><span>Designed by 장준석</span></div>`;
 
                 overlay.innerHTML = html;
             }
