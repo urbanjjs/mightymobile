@@ -15,11 +15,11 @@
             --primary-dark: #388E3C;
             --secondary-color: #FFD700;
             --accent-color: #FF5252;
-            --bg-gradient: radial-gradient(circle at center, #1b5e20 0%, #0d2e12 100%);
-            --glass-bg: rgba(20, 20, 20, 0.6);
-            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-            --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            --card-hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            --bg-gradient: radial-gradient(ellipse at 50% 40%, #1a1f3a 0%, #0b0e1f 60%, #070910 100%);
+            --glass-bg: rgba(15, 20, 45, 0.65);
+            --glass-border: 1px solid rgba(255, 215, 0, 0.12);
+            --card-shadow: 0 6px 14px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+            --card-hover-shadow: 0 10px 24px rgba(0, 0, 0, 0.7);
             --text-color: #e0e0e0;
             --font-main: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
         }
@@ -53,9 +53,12 @@
 
         /* ===== 상단 정보 바 ===== */
         #info-bar {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(8, 10, 28, 0.85);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             padding: 5px 15px;
-            border-radius: 8px;
+            border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -225,17 +228,17 @@
 
         /* ===== 플레이어 영역 ===== */
         .player-area {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 6px;
+            background: rgba(15, 20, 45, 0.65);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 12px;
             padding: 4px 8px;
             transition: all 0.3s;
         }
 
 
-        .player-area.active-turn {
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
-            border: 2px solid gold;
-        }
+        /* active-turn 스타일은 아래 luxuryPulse 애니메이션에서 처리 */
 
         .player-header {
             display: flex;
@@ -243,13 +246,15 @@
             align-items: center;
             margin-bottom: 2px;
             padding-bottom: 2px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.15);
         }
 
 
         .player-name {
             font-weight: bold;
             font-size: 13px;
+            color: rgba(210, 175, 100, 0.88);
+            letter-spacing: 0.4px;
         }
 
 
@@ -260,18 +265,21 @@
         }
 
         .player-role.master {
-            background: #FFD700;
+            background: linear-gradient(135deg, #FFD700, #FFA000);
             color: #000;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
         }
 
         .player-role.friend {
-            background: #FF69B4;
-            color: #000;
+            background: linear-gradient(135deg, #FF69B4, #E91E8C);
+            color: #fff;
+            box-shadow: 0 0 8px rgba(255, 105, 180, 0.4);
         }
 
         .player-role.opposition {
-            background: #666;
-            color: #fff;
+            background: rgba(80, 80, 100, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ccc;
         }
 
         .player-hand {
@@ -315,7 +323,7 @@
 
         .player-area.top-left,
         .player-area.top-right {
-            width: 520px;
+            width: clamp(220px, 31vw, 520px);
         }
 
         .player-area.top-left .player-hand .card,
@@ -338,7 +346,7 @@
 
         .player-area.left,
         .player-area.right {
-            width: 520px;
+            width: clamp(220px, 31vw, 520px);
             padding: 4px 8px;
         }
 
@@ -373,7 +381,7 @@
 
         #debug-discard-panel {
             position: absolute;
-            left: calc(50% + 515px);
+            left: calc(50% + clamp(275px, 30vw, 515px) + 5px);
             top: 50%;
             transform: translateY(-50%);
             display: none;
@@ -402,7 +410,7 @@
         }
 
         .player-area.user {
-            width: 1000px;
+            width: clamp(550px, 60vw, 1000px);
             padding: 3px 8px;
         }
 
@@ -438,6 +446,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
         }
 
         /* [수정] 카드 뒷면 이미지를 CSS 변수로 처리하거나 아래 JS에서 주입합니다. 
@@ -546,6 +555,21 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
+        }
+
+        #trick-area::before {
+            content: '';
+            position: absolute;
+            width: 340px;
+            height: 340px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(255, 215, 0, 0.055) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .trick-cards {
@@ -597,7 +621,7 @@
         }
 
         .trick-card.winner .card {
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.9);
+            box-shadow: 0 0 28px rgba(255, 215, 0, 1), 0 0 55px rgba(255, 215, 0, 0.45);
             border-color: #ffd700;
         }
 
@@ -635,15 +659,12 @@
             min-width: 320px;
             max-width: 800px;
 
-            /* 디자인: 모바일과 통일감 있게 조금 더 강조 */
-            background: rgba(0, 0, 0, 0.85);
+            /* 다크 럭셔리 스타일 */
+            background: rgba(8, 10, 28, 0.93);
             padding: 15px 30px;
-            /* 데스크탑이라 여백을 좀 더 넉넉하게 */
             border-radius: 30px;
-            border: 1px solid rgba(255, 215, 0, 0.5);
-            /* 금색 테두리 */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-            /* 그림자 강조 */
+            border: 1px solid rgba(255, 215, 0, 0.45);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.1), 0 15px 40px rgba(0, 0, 0, 0.7);
 
             /* 내부 정렬 */
             display: flex;
@@ -769,7 +790,8 @@
             right: 10px;
             width: 300px;
             max-height: calc(100vh - 80px);
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(8, 10, 28, 0.9);
+            border: 1px solid rgba(255, 215, 0, 0.12);
             border-radius: 10px;
             z-index: 100;
             display: flex;
@@ -1399,11 +1421,13 @@
             bottom: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.97);
+            background: radial-gradient(ellipse at 50% 20%, #1a1f3a 0%, #070910 80%);
             z-index: 2000;
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            overflow-y: auto;
+            padding: 40px 20px;
         }
 
         #result-modal.hidden {
@@ -1412,26 +1436,32 @@
 
         .result-scroll-wrap {
             width: 100%;
-            max-width: 700px;
-            max-height: 100vh;
-            max-height: 100dvh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 30px 32px 40px;
+            max-width: 860px;
+            padding: 50px 64px 50px;
+            background: rgba(15, 20, 45, 0.72);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            border-radius: 20px;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.06), 0 30px 80px rgba(0, 0, 0, 0.6);
         }
 
         #result-title {
-            font-size: 36px;
-            margin-bottom: 16px;
+            font-size: 56px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin-bottom: 12px;
             text-align: center;
         }
 
         #result-title.win {
-            color: #4CAF50;
+            color: #FFD700;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.55), 0 0 80px rgba(255, 215, 0, 0.2);
         }
 
         #result-title.lose {
-            color: #f44336;
+            color: #ef5350;
+            text-shadow: 0 0 40px rgba(239, 83, 80, 0.5), 0 0 80px rgba(239, 83, 80, 0.15);
         }
 
         #result-content {
@@ -1440,25 +1470,42 @@
 
         .result-summary {
             text-align: center;
-            margin-bottom: 16px;
-            font-size: 18px;
-            color: #ccc;
+            margin-bottom: 28px;
+        }
+
+        /* JS가 .result-summary 내부에 텍스트를 직접 넣으므로 래퍼에 필 스타일 적용 */
+        .result-summary {
+            display: block;
+            font-size: 17px;
+            color: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 8px 28px;
+            max-width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .result-scores {
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 215, 0, 0.12);
+            border-radius: 14px;
+            padding: 0;
+            overflow: hidden;
         }
 
         .result-header {
             display: flex;
             justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.25);
-            font-weight: bold;
-            font-size: 16px;
-            color: #999;
+            padding: 12px 24px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 1px;
+            color: rgba(255, 215, 0, 0.55);
+            background: rgba(255, 215, 0, 0.05);
+            text-transform: uppercase;
         }
 
         /* 첫번째 컬럼(이름)은 남은 공간 차지, 나머지 3개는 고정 너비 */
@@ -1470,7 +1517,7 @@
         .result-header span:nth-child(2),
         .result-header span:nth-child(3),
         .result-header span:nth-child(4) {
-            width: 60px;
+            width: 72px;
             text-align: right;
         }
 
@@ -1478,9 +1525,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            font-size: 20px;
+            padding: 14px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 18px;
+            transition: background 0.15s;
+        }
+
+        .score-row:hover {
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .score-row:last-child {
@@ -1490,70 +1542,85 @@
         .score-row .player-name {
             font-weight: bold;
             flex: 1;
-            font-size: 20px;
+            font-size: 18px;
+            color: rgba(210, 175, 100, 0.88);
         }
 
         /* 각 점수 칸 너비 및 스타일 */
         .score-row .earned-points {
-            width: 60px;
+            width: 72px;
             text-align: right;
-            color: #aaa;
+            color: rgba(255, 255, 255, 0.4);
             font-size: 16px;
         }
 
         .score-row .score-change {
-            width: 60px;
+            width: 72px;
             text-align: right;
             font-weight: bold;
+            font-size: 17px;
         }
 
         .score-row .total-score {
-            width: 60px;
+            width: 72px;
             text-align: right;
             color: #FFD700;
             font-weight: bold;
+            font-size: 18px;
         }
 
-        /* 누적 점수 강조 */
-
         .score-row .score-change.positive {
-            color: #4CAF50;
+            color: #66bb6a;
         }
 
         .score-row .score-change.negative {
-            color: #f44336;
+            color: #ef5350;
         }
 
         .friend-contribution-line {
-            margin-top: 12px;
-            padding: 10px 16px;
-            background: rgba(255, 215, 0, 0.1);
-            border-radius: 5px;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            font-size: 16px;
-            color: #FFD700;
+            margin-top: 16px;
+            padding: 12px 20px;
+            background: rgba(255, 215, 0, 0.07);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.18);
+            font-size: 15px;
+            color: rgba(255, 215, 0, 0.82);
             text-align: center;
+            letter-spacing: 0.3px;
         }
 
         .game-history {
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            margin-top: 28px;
+            padding-top: 28px;
+        }
+
+        .game-history::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 8%;
+            right: 8%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.35), transparent);
         }
 
         .history-header {
-            font-size: 18px;
-            font-weight: bold;
-            color: #FFD700;
-            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: rgba(255, 215, 0, 0.6);
+            margin-bottom: 12px;
             text-align: center;
+            text-transform: uppercase;
         }
 
         .history-table-wrapper {
-            max-height: 200px;
+            max-height: 240px;
             overflow-y: auto;
-            border-radius: 6px;
-            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .history-table {
@@ -1564,35 +1631,36 @@
 
         .history-table th,
         .history-table td {
-            padding: 6px 6px;
+            padding: 8px 10px;
             text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .history-table th {
-            background: rgba(0, 0, 0, 0.4);
-            color: #888;
-            font-weight: normal;
+            background: rgba(0, 0, 0, 0.35);
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 500;
             position: sticky;
             top: 0;
-            font-size: 14px;
+            font-size: 12px;
+            letter-spacing: 0.5px;
         }
 
         .history-table td.positive {
-            color: #4CAF50;
+            color: #66bb6a;
         }
 
         .history-table td.negative {
-            color: #f44336;
+            color: #ef5350;
         }
 
         .history-table td.gov-win {
-            color: #4CAF50;
+            color: #66bb6a;
             font-weight: bold;
         }
 
         .history-table td.opp-win {
-            color: #2196F3;
+            color: #42a5f5;
             font-weight: bold;
         }
 
@@ -1601,44 +1669,56 @@
         }
 
         .history-table tfoot td {
-            padding: 3px 2px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 6px 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
             font-weight: bold;
+            color: rgba(255, 215, 0, 0.75);
         }
 
         .result-buttons {
             display: flex;
             justify-content: center;
-            gap: 12px;
-            margin-top: 15px;
+            gap: 16px;
+            margin-top: 36px;
         }
 
         #new-game-btn {
-            padding: 16px 50px;
-            font-size: 20px;
-            background: #4CAF50;
+            padding: 16px 60px;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #2e7d32, #43a047);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+            transition: all 0.2s ease;
         }
 
         #new-game-btn:hover {
-            background: #45a049;
+            background: linear-gradient(135deg, #388e3c, #66bb6a);
+            box-shadow: 0 6px 28px rgba(76, 175, 80, 0.5);
+            transform: translateY(-2px);
         }
 
         #end-game-btn {
-            padding: 16px 50px;
-            font-size: 20px;
-            background: #555;
-            color: white;
-            border: none;
-            border-radius: 6px;
+            padding: 16px 60px;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: rgba(70, 70, 95, 0.5);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
 
         #end-game-btn:hover {
-            background: #444;
+            background: rgba(90, 90, 115, 0.65);
+            color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
         }
 
 
@@ -1776,22 +1856,22 @@
 
 
         /* ===== 애니메이션 ===== */
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        @keyframes luxuryPulse {
+            0%, 100% {
+                box-shadow: 0 0 12px rgba(255, 215, 0, 0.3),
+                            0 0 25px rgba(255, 215, 0, 0.12),
+                            inset 0 0 15px rgba(255, 215, 0, 0.04);
             }
-
             50% {
-                box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
-            }
-
-            100% {
-                box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+                box-shadow: 0 0 22px rgba(255, 215, 0, 0.6),
+                            0 0 50px rgba(255, 215, 0, 0.25),
+                            inset 0 0 28px rgba(255, 215, 0, 0.08);
             }
         }
 
         .player-area.active-turn {
-            animation: pulse 1.5s infinite;
+            animation: luxuryPulse 2s ease-in-out infinite;
+            border: 1px solid rgba(255, 215, 0, 0.55) !important;
         }
 
         @keyframes cardDeal {
@@ -1895,6 +1975,10 @@
         @media (max-width: 1200px) {
             #app {
                 padding-right: 10px;
+            }
+
+            #debug-discard-panel {
+                left: calc(50% + 295px);
             }
 
             #ai-log-panel {
@@ -5978,12 +6062,6 @@
                 const hasJoker = hand.some(c => c.isJoker);
                 const joker = hand.find(c => c.isJoker);
 
-                // ── 공약 달성 완료 → 방어적 플레이 ──
-                if (pointsNeeded <= 0) {
-                    reasoning.push('공약 달성 완료 - 방어적 플레이');
-                    return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
-                }
-
                 // ── 9라운드 조커 강제 리드 (10라운드에서는 조커 무효) ──
                 if (round === 9 && hasJoker) {
                     reasoning.push('9라운드 - 조커 강제 리드 (10라운드 무효화 방지)');
@@ -6073,10 +6151,17 @@
                     return this.selectLowestCard(playableCards);
                 }
 
-                // ── 마이티 사용 결정 ──
-                if (this.shouldPlayMighty(hand, trickAnalysis, teamContext, true, round, trackingSummary)) {
-                    reasoning.push('주공 마이티 리드');
-                    return mighty;
+                // ── 조커콜 전략 (최우선 - 야당 조커 초반 제거) ──
+                const hasJokerCallCard = jokerCall && hand.some(c => c.equals(jokerCall));
+                const isJokerStillOut = !this.gameState.jokerUsed;
+                if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut) {
+                    const iHaveJoker = hand.some(c => c.isJoker);
+                    const isFriendJoker = friendCard && friendCard.isJoker;
+                    const friendHasJoker = isFriendJoker || this.gameState.sayeonResponse === '넌사';
+                    if (!iHaveJoker && !friendHasJoker) {
+                        reasoning.push('조커콜 - 야당 조커 조기 제거');
+                        return jokerCall;
+                    }
                 }
 
                 // ── 기루다 보스카드 리드 (조커보다 우선) ──
@@ -6119,20 +6204,6 @@
                     return joker;
                 }
 
-                // ── 조커콜 전략 ──
-                const hasJokerCallCard = jokerCall && hand.some(c => c.equals(jokerCall));
-                const isJokerStillOut = !this.gameState.jokerUsed;
-                if (round >= 2 && round <= 9 && hasJokerCallCard && isJokerStillOut) {
-                    const iHaveJoker = hand.some(c => c.isJoker);
-                    // 친구카드가 조커인 경우 조커콜 절대 금지 (팀킬 방지)
-                    const isFriendJoker = friendCard && friendCard.isJoker;
-                    // 사연 응답으로 친구가 조커를 가지고 있다고 알려진 경우 조커콜 금지
-                    const friendHasJoker = isFriendJoker || this.gameState.sayeonResponse === '넌사';
-                    if (!iHaveJoker && !friendHasJoker && round >= 5) {
-                        reasoning.push('조커콜 - 야당 조커 견제');
-                        return jokerCall;
-                    }
-                }
                 // ── 수트 절제(Void) 전략 ──
                 if (giruda) {
                     const girudaCardsInHand = getCardsOfSuit(hand, giruda);
@@ -6205,6 +6276,22 @@
                     }
                 }
 
+                // ── 마이티 최후 수단 리드 (보스카·물카 소진 후 수비적 사용) ──
+                if (hasMighty) {
+                    const nonMightyPlayable = playableCards.filter(c => !c.equals(mighty) && !c.isJoker);
+                    const hasBossNonMighty = nonMightyPlayable.some(c => this.gameState.getCardAnalysis(c).isBoss);
+                    const hasTrash = nonMightyPlayable.some(c => {
+                        if (giruda && c.suit === giruda) return false;
+                        if (this.gameState.getCardAnalysis(c).isBoss) return false;
+                        if (c.isPointCard()) return false;
+                        return true;
+                    });
+                    if (!hasBossNonMighty && !hasTrash) {
+                        reasoning.push('주공 마이티 리드 (보스카·물카 소진 후 수비적 사용)');
+                        return mighty;
+                    }
+                }
+
                 // ── 폴백 ──
                 if (hasBossCard) return this.selectHighestCard(playableCards);
                 return this.selectLowestCard(playableCards);
@@ -6238,12 +6325,6 @@
                     : (this.gameState.playerVoidSuits.get(masterIndex) || new Set());
 
                 reasoning.push('친구 리드 전략');
-
-                // ── 공약 달성 완료 → 방어적 플레이 ──
-                if (pointsNeeded <= 0) {
-                    reasoning.push('공약 달성 완료 - 방어적 플레이');
-                    return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
-                }
 
                 // ── 9라운드 조커 강제 리드 ──
                 if (round === 9 && hasJoker) {
@@ -6364,18 +6445,6 @@
                 }
 
                 // ... (위쪽 로직들: 조커콜 공격, 기루다 보스, 조커 리드 등은 그대로 유지) ...
-
-                // ── 7. 마이티 리드 ──
-                if (hasMighty) {
-                    if (playableCards.length === 1 && playableCards[0].equals(mighty)) {
-                        reasoning.push('친구 마이티 리드 (유일한 카드)');
-                        return mighty;
-                    }
-                    if (round >= 6) {
-                        reasoning.push('친구 마이티 리드 (선 제압)');
-                        return mighty;
-                    }
-                }
 
                 // ─────────────────────────────────────────────────────────────
                 // [사용자 요청 수정] 최후의 폴백 단계에서도 '조커콜 팀킬' 원천 봉쇄
