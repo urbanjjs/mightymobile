@@ -6347,11 +6347,12 @@
                 const longestSuit = this.findLongestSuit(hand, giruda);
                 if (longestSuit) {
                     const suitCards = getCardsOfSuit(hand, longestSuit);
-                    if (suitCards.length > 0) {
-                        const bossInSuit = suitCards.find(c => this.gameState.getCardAnalysis(c).isBoss);
+                    const nonMightySuitCards = suitCards.filter(c => !c.equals(mighty));
+                    if (nonMightySuitCards.length > 0) {
+                        const bossInSuit = nonMightySuitCards.find(c => this.gameState.getCardAnalysis(c).isBoss);
                         if (bossInSuit) { reasoning.push(`${SUIT_NAMES[longestSuit]} 보스카드 리드`); return bossInSuit; }
                         reasoning.push(`${SUIT_NAMES[longestSuit]} 리드 (낮은 카드)`);
-                        return this.selectLowestCard(suitCards);
+                        return this.selectLowestCard(nonMightySuitCards);
                     }
                 }
 
