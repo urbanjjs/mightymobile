@@ -893,7 +893,7 @@
         .modal {
             position: fixed;
             top: 50%;
-            left: calc(50% - 140px);
+            left: 50%;
             transform: translate(-50%, -50%);
             background: #2d2d2d;
             border-radius: 12px;
@@ -939,11 +939,6 @@
             min-width: 320px;
             max-width: 750px;
             padding: 15px 20px;
-            /* 위치 변경: 중앙(30%) -> 상단(50px) */
-            top: 50px !important;
-
-            /* 세로 중앙 정렬 해제 (가로만 중앙 정렬 유지) */
-            transform: translateX(-50%) !important;
         }
 
         #bidding-modal h3 {
@@ -2172,6 +2167,8 @@
                     max-width: 320px;
                 }
             }
+        }
+        /* ↑ @media (max-width: 900px) 닫힘 */
 
             /* -------------------------------------------------------- */
             /* [수정] 데스크탑 AI-1(Left), AI-4(Right) 정보 위치 하단 이동 */
@@ -3060,7 +3057,7 @@
                 z-index: 3000;
                 display: flex;
                 justify-content: center;
-                align-items: flex-start;
+                align-items: center;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
                 padding: 40px 20px;
@@ -3075,6 +3072,8 @@
             .final-summary-content {
                 width: 100%;
                 max-width: 860px;
+                min-height: 560px;
+                margin: auto;
                 padding: 50px 64px;
                 color: #e0e0e0;
                 background: rgba(15, 20, 45, 0.72);
@@ -3084,6 +3083,9 @@
                 border: 1px solid rgba(255, 215, 0, 0.15);
                 box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.04);
                 text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
             }
 
             .final-summary-content h2 {
@@ -6351,18 +6353,14 @@
                     }
                 }
 
-                // ── 마이티 최후 수단 리드 (보스카·물카 소진 후 수비적 사용) ──
+                // ── 마이티 최후 수단 리드 (보스카·비점수카드 완전 소진 후) ──
                 if (hasMighty) {
                     const nonMightyPlayable = playableCards.filter(c => !c.equals(mighty) && !c.isJoker);
                     const hasBossNonMighty = nonMightyPlayable.some(c => this.gameState.getCardAnalysis(c).isBoss);
-                    const hasTrash = nonMightyPlayable.some(c => {
-                        if (giruda && c.suit === giruda) return false;
-                        if (this.gameState.getCardAnalysis(c).isBoss) return false;
-                        if (c.isPointCard()) return false;
-                        return true;
-                    });
-                    if (!hasBossNonMighty && !hasTrash) {
-                        reasoning.push('주공 마이티 리드 (보스카·물카 소진 후 수비적 사용)');
+                    // 점수카드(A/K/Q/J/10) 이외의 카드가 하나라도 있으면 그걸 먼저 내야 함
+                    const hasNonPointAlternative = nonMightyPlayable.some(c => !c.isPointCard());
+                    if (!hasBossNonMighty && !hasNonPointAlternative) {
+                        reasoning.push('주공 마이티 리드 (보스카·비점수카드 완전 소진 후 수비적 사용)');
                         return mighty;
                     }
                 }
