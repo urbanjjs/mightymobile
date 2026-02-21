@@ -7586,9 +7586,21 @@
                     }
 
                     reasoning.push('손실 최소화');
-                    if (nonBossNonPoint.length > 0) return this.selectLowestCard(nonBossNonPoint);
-                    if (nonBossCards.length > 0) return this.selectLowestCard(nonBossCards);
-                    return this.selectLowestNonPointCard(playableCards) || this.selectLowestCard(playableCards);
+                    // 마이티/기루다 보존 - 비기루다 카드 우선
+                    const nonGirudaDiscard = playableCards.filter(c =>
+                        !c.isJoker && !c.equals(mighty) && (!giruda || c.suit !== giruda)
+                    );
+                    const discardPool = nonGirudaDiscard.length > 0 ? nonGirudaDiscard : playableCards;
+                    const poolNBNP = discardPool.filter(c =>
+                        !c.isJoker && !c.equals(mighty) &&
+                        !this.gameState.getCardAnalysis(c).isBoss && !c.isPointCard()
+                    );
+                    const poolNB = discardPool.filter(c =>
+                        !c.isJoker && !c.equals(mighty) && !this.gameState.getCardAnalysis(c).isBoss
+                    );
+                    if (poolNBNP.length > 0) return this.selectLowestCard(poolNBNP);
+                    if (poolNB.length > 0) return this.selectLowestCard(poolNB);
+                    return this.selectLowestNonPointCard(discardPool) || this.selectLowestCard(discardPool);
                 }
 
                 // 미확정
