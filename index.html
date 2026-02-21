@@ -6067,6 +6067,10 @@
                 const mightyPlayedInTrick = this.gameState.trick.cards.some(p => p.card.equals(mighty));
                 if (mightyPlayedInTrick) return false;
 
+                // 초구에 그림(점수카드)이 하나도 없으면 마이티 사용 금지
+                // (낼 카드가 마이티 하나뿐인 경우는 위에서 이미 처리됨)
+                if (round === 1 && pointsInTrick === 0) return false;
+
                 // 1. 내가 리드(선)를 잡은 경우
                 if (isLead) {
                     // 7라운드 이후에는 아끼지 말고 털어버림
